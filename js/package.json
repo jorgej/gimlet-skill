@@ -1,17 +1,13 @@
 {
-  "name": "skill-sample-nodejs-audio-player",
+  "name": "gimlet-skill",
   "version": "1.0.0",
-  "description": "An audio player sample skill.",
+  "description": "Amazon Alexa skill for Gimlet Media.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [
-    "alexa",
-    "skill",
-    "audio player"
-  ],
-  "author": "Amazon.com",
+  "keywords": [],
+  "author": "Conversant Labs",
   "license": "See license in ../LICENSE.txt",
   "dependencies": {
     "alexa-sdk": "^1.0.4",
@@ -19,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/alexa/skill-sample-nodejs-audio-player"
+    "url": "https://github.com/ConversantLabs/gimlet-skill"
   },
   "devDependencies": {
     "bespoken-tools": "^0.9.15"
