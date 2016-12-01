@@ -23,11 +23,7 @@ var stateHandlers = {
         /*
          *  All Intent Handlers for state : START_MODE
          */
-        'LaunchRequest' : function () { myHandlers.LaunchRequest(constants.states.START_MODE).call(this) },
-
-        
-
-        's': {
+        'LaunchRequest' : function() {
             // Initialize Attributes
             this.attributes['playOrder'] = Array.apply(null, {length: audioData.length}).map(Number.call, Number);
             this.attributes['index'] = 0;
