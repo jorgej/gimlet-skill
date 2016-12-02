@@ -8,15 +8,9 @@ module.exports = function(key, ...args) {
 };
 
 function text(text) {
-    return {
-        type: 'SSML',
-        ssml: `<speak> ${text} </speak>`
-    };
+    return `${text}`;
 }
 
 function audio(url) {
-    return {
-        type: 'SSML',
-        ssml: `<speak> <audio src="${url}" /> </speak>`
-    };
+    return `<audio src="${url}" />`;
 }
