@@ -2,8 +2,8 @@
 
 var Alexa = require('alexa-sdk');
 var constants = require('./constants');
-var stateHandlers = require('./stateHandlers');
-var audioEventHandlers = require('./audioEventHandlers');
+
+const handlers = require('./handlers');
 
 // TODO: should this just be in dev?
 var AWS = require('aws-sdk');
@@ -14,12 +14,27 @@ exports.handler = function(event, context, callback){
     alexa.appId = constants.appId;
     alexa.dynamoDBTableName = constants.dynamoDBTableName;
     alexa.registerHandlers(
-        stateHandlers.startModeIntentHandlers,
-        stateHandlers.playModeIntentHandlers,
-        stateHandlers.remoteControllerHandlers,
-        stateHandlers.resumeDecisionModeIntentHandlers,
-        audioEventHandlers
+        handlers.startModeIntentHandlers,
+        handlers.playModeIntentHandlers,
+        handlers.remoteControllerHandlers,
+        handlers.audioEventHandlers
     );
+
+    event.session.attributes["STATE"] = constants.states.START_MODE;
+
+    if (!event.context) {
+        event.context = {
+            System: {
+                application: event.session.application,
+                user: event.session.user,
+                device: {
+                    supportedInterfaces: {
+                        AudioPlayer:{}
+                    }
+                }
+            }
+        };
+    }
 
     if (!event.context || event.context.System.device.supportedInterfaces.AudioPlayer === undefined) {
         alexa.emit(':tell', 'Sorry, this skill is not supported on this device');
