@@ -1,11 +1,16 @@
-module.exports = function(key) {
-    // ... return something depending on the key (and maybe fill in the args?) ...
-    return createSSMLSpeechObjectFromText("testing 1 2 3");
+module.exports = function(key, ...args) {
+    var speech = {
+        "ReplyAllIntroduction":     text(`Check out this episode of Reply All!`),
+        "CurrentlyPlayingEpisode":  text(`Now playing episode ${args[0]} of ${args[1]}`),
+        "SomethingWithAudio":       audio(`https://carfu.com/audio/carfu-welcome.mp3`)
+    };
+    return speech[key];
 };
 
-function createSSMLSpeechObjectFromText(text) {
-    return {
-        type: 'SSML',
-        ssml: `<speak> ${text} </speak>`
-    };
+function text(text) {
+    return `${text}`;
+}
+
+function audio(url) {
+    return `<audio src="${url}" />`;
 }
