@@ -7,13 +7,13 @@ module.exports = function(key, ...args) {
             text = "Check out this episode of Reply All!";
             break;
         case "PlayingShow":
-            if (args.length == 1) {
+            if (args.length === 1) {
                 var nameOfShow = args[0];
                 text = `Playing ${nameOfShow}.`;
             }
             else {
-                console.log(`Error: speechGenerator's PlayingShow case was expecting one argument (found ${args.length} arguments).`);
-                // TODO: Handle unexpected number of arguments (e.g. none). Should this be an assert, since it would be a programmer error?
+                logUnexpectedArgumentsCount(key, args.length, 1);
+                // TODO: Should this be an assert, since it would be a programmer error?
                 return undefined;
             }
             break;
@@ -22,16 +22,18 @@ module.exports = function(key, ...args) {
                 text = `Let me tell you about ${args[0]}`;
                 args.forEach(function(arg, index) {
                     if (index > 0) { // Skip the first argument, since we included it in the initial line above.
-                        text += `and ${arg}`;
+                        text += ` and ${arg}`;
                     }
                 });
             }
             else {
-                // TODO: Handle unepxected number of arguments
+                logUnexpectedArgumentsCount(key, args.length, "1 or more");
+                // TODO: Should this be an assert, since it would be a programmer error?
+                return undefined;
             }
             break;
         default:
-            // TODO: Handle an invalid key.
+            console.log(`Error: speechGenerator encountered unexpected key "${key}"`);
             return undefined;
     }
 
@@ -43,4 +45,8 @@ function createSSMLSpeechObjectFromText(text) {
         type: 'SSML',
         ssml: `<speak> ${text} </speak>`
     };
+}
+
+function logUnexpectedArgumentsCount(key, argsCount, expectedArgsCount) {
+    console.log(`Error: speechGenerator encountered ${argsCount} argument(s), but was expecting ${expectedArgsCount} argument(s) for key "${key}".`);
 }
