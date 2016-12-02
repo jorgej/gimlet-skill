@@ -1,7 +1,46 @@
 {
   "intents": [
     {
-      "intent": "PlayAudio"
+      "intent": "ListShows"
+    },
+    {
+      "intent": "WhoIsMatt"
+    },    
+    {
+      "intent": "PlayLatest",
+      "slots": [
+        {
+          "name": "ShowTitle",
+          "type": "LIST_OF_SHOW_TITLES"
+        }
+      ]
+    },
+    {
+      "intent": "PlayExclusive",
+      "slots": [
+        {
+          "name": "ShowTitle",
+          "type": "LIST_OF_SHOW_TITLES"
+        }
+      ]
+    },
+    {
+      "intent": "PlayFavorite",
+      "slots": [
+        {
+          "name": "ShowTitle",
+          "type": "LIST_OF_SHOW_TITLES"
+        }
+      ]
+    },
+    {
+      "intent": "ShowTitle",
+      "slots": [
+        {
+          "name": "ShowTitle",
+          "type": "LIST_OF_SHOW_TITLES"
+        }
+      ]
     },
     {
       "intent": "AMAZON.PauseIntent"
