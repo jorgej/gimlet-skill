@@ -34,7 +34,7 @@
       ]
     },
     {
-      "intent": "ShowTitle",
+      "intent": "ShowTitleIntent",
       "slots": [
         {
           "name": "ShowTitle",

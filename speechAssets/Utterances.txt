@@ -552,7 +552,6 @@ PlayFavorite for the recommended episode from {ShowTitle}
 PlayFavorite for the recommended episode for {ShowTitle}
 PlayFavorite for the recommended episode of {ShowTitle}
 // PlayFavorite to (play|start|begin) (a|the) (favorite|best|good|recommended) episode ( |from {ShowTitle}|for {ShowTitle}|of {ShowTitle})
-
 PlayFavorite to play a favorite episode
 PlayFavorite to play a favorite episode from {ShowTitle}
 PlayFavorite to play a favorite episode for {ShowTitle}
@@ -664,5 +663,10 @@ WhoIsMatt who is matt leeber
 WhoIsMatt who is matt
 WhoIsMatt who is lieber
 WhoIsMatt who is leeber
+WhoIsMatt who matt lieber is
+WhoIsMatt who matt leeber is
+WhoIsMatt who matt is
+WhoIsMatt who lieber is
+WhoIsMatt who leeber is
 
-ShowTitle {ShowTitle}
+ShowTitleIntent {ShowTitle}
