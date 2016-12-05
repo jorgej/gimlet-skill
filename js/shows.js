@@ -18,10 +18,10 @@ function Show(id, title, slotValues, spokenTitle, url) {
     }
 
     this.title = title;
-    this.url = url;
     this.spokenTitle = spokenTitle || title;
     this.url = url || feedURLFromId(id);
-
+    this.slotValues = slotValues;
+    
     if (!slotValues || !slotValues.length) {
         this.slotValues = [title.toLowerCase()];
     }

@@ -3,6 +3,7 @@ const constants = require("./constants");
 const shows = require("./shows");
 const PlaybackController = require("./playbackController");
 const Track = require("./track");
+const _ = require("lodash");
 
 const rss = require("rss-parser");
 
@@ -43,30 +44,51 @@ function help(event) {
 }
 
 function playLatest(event) {
-    const show = shows.ReplyAll;
-    playShow(event,
-        shows.ReplyAll,
-        Say("PlayingLatest", show.title),
-        (entries) => entries[0]
-    );
+    const show = getShowFromSlotValue(event.event.request);
+    if (show) {
+        playShow(event,
+            show,
+            Say("PlayingLatest", show.title),
+            (entries) => entries[0]
+        );
+    }
+    else {
+        event.response.speak(Say("AskForShowTitle"));
+        // TODO: change state
+    }
+    event.emit(":responseReady");
 }
 
 function playExclusive(event) {
-    const show = shows.ReplyAll;
-    playShow(event,
-        shows.ReplyAll,
-        Say("PlayingExclusive", show.title),
-        pickRandom
-    );
+    const show = getShowFromSlotValue(event.event.request);
+    if (show) {
+        playShow(event,
+            show,
+            Say("PlayingExclusive", show.title),
+            pickRandom
+        );
+    }
+    else {
+        event.response.speak(Say("AskForShowTitle"));
+        // TODO: change state, remember original intent
+    }
+    event.emit(":responseReady");
 }
 
 function playFav(event) {
-    const show = shows.ReplyAll;
-    playShow(event,
-        shows.ReplyAll,
-        Say("PlayingFavorite", show.title),
-        pickRandom
-    );
+    const show = getShowFromSlotValue(event.event.request);    
+    if (show) {
+        playShow(event,
+            show,
+            Say("PlayingFavorite", show.title),
+            pickRandom
+        );
+    }
+    else {
+        event.response.speak(Say("AskForShowTitle"));
+        // TODO: change state, remember original intent
+    }
+    event.emit(":responseReady");
 }
 
 function listShows(event) {
@@ -247,16 +269,18 @@ function playShow(event, show, introSpeech, chooseFn) {
         }
         
         controller.start(track);
-        event.emit(":responseReady");
     });
 }
 
-function getTitleSlot(event) {
-    const slot = event.event.request.intent.slots["ShowTitle"];
-    if (slot && slot.value) {
-        return slot.value;
+function getShowFromSlotValue(request) {
+    const slots = request.intent.slots;
+    if (slots) {
+        const slot = slots["ShowTitle"];
+        if (slot && slot.value) {
+            const targetVal = slot.value.toLowerCase();
+            return _.find(_.values(shows), s => _.includes(s.slotValues, targetVal));
+        }
     }
-    return undefined;
 }
 
 function pickRandom(entries) {

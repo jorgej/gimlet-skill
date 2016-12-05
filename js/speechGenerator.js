@@ -11,6 +11,7 @@ module.exports = function(key, ...args) {
         "MattLieberIs":     "Matt Lieber is a guy who Tomer would like to meet.",
         
         "Goodbye":          "Ok I love you goodbye.",
+        "AskForShowTitle":  "What show would you like to listen to?",
         
         "UnsupportedOperation": "Sorry, we do not support that operation.",
         "_Unhandled":       "Sorry, I don't know what to do about that.",
