@@ -1,6 +1,6 @@
 const Say = require("./speechGenerator");
 const constants = require("./constants");
-const gimlet = require("./gimletConfig");
+const shows = require("./shows");
 const PlaybackController = require("./playbackController");
 const Track = require("./track");
 
@@ -43,39 +43,35 @@ function help(event) {
 }
 
 function playLatest(event) {
-    const controller = PlaybackController(event);
-    const showTitle = gimlet.ShowId.ReplyAll;
-    // TODO: insert logic if feed not found
-    const url = gimlet.feedUrl[showTitle];
-
-    rss.parseURL(url, function(err, parsed) {
-        if (err) {
-            // TODO
-        }
-
-        const show = parsed.feed.entries[0];
-        const url = show.enclosure.url.replace('http://', 'https://');
-        const track = new Track(url, show.title);
-
-        event.response.speak(Say("PlayingLatest", parsed.feed.title));
-        controller.start(track);
-        event.emit(":responseReady");
-    });
+    const show = shows.ReplyAll;
+    playShow(shows.ReplyAll,
+        PlaybackController(event),
+        Say("PlayingLatest", show.title),
+        (entries) => entries[0]
+    );
 }
 
 function playExclusive(event) {
-    event.response.speak(`PlayExclusive: <${getTitleSlot(event)}>`);
-    event.emit(":responseReady");
+    const show = shows.ReplyAll;
+    playShow(shows.ReplyAll,
+        PlaybackController(event),
+        Say("PlayingExclusive", show.title),
+        pickRandom
+    );
+}
+
+function playFav(event) {
+    const show = shows.ReplyAll;
+    playShow(shows.ReplyAll,
+        PlaybackController(event),
+        Say("PlayingFavorite", show.title),
+        pickRandom
+    );
 }
 
 function listShows(event) {
     let speech = Say("ShowList"); 
     event.response.speak(speech);
-    event.emit(":responseReady");
-}
-
-function playFav(event) {
-    event.response.speak(`PlayFavorite: <${getTitleSlot(event)}>`);
     event.emit(":responseReady");
 }
 
@@ -225,10 +221,42 @@ module.exports = {
     unhandledAction: unhandledAction,
 };
 
+/**
+ * Helpers
+ */
+
+function playShow(show, controller, introSpeech, chooseFn) {
+    rss.parseURL(show.url, function(err, parsed) {
+        if (err) {
+            // TODO
+        }
+
+        const entry = chooseFn(parsed.feed.entries);
+        if (!entry) {
+            // TODO
+        }
+
+        // Alexa only plays HTTPS urls
+        const url = entry.enclosure.url.replace('http://', 'https://');
+        const track = new Track(url, entry.title);
+
+        if (introSpeech) {
+            event.response.speak(introSpeech);
+        }
+        
+        controller.start(track);
+        event.emit(":responseReady");
+    });
+}
+
 function getTitleSlot(event) {
     const slot = event.event.request.intent.slots["ShowTitle"];
     if (slot && slot.value) {
         return slot.value;
     }
     return undefined;
+}
+
+function pickRandom(entries) {
+    return entries[Math.floor(Math.random() * entries.length)];
 }

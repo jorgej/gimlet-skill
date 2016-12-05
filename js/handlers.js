@@ -3,13 +3,19 @@ var constants = require('./constants');
 
 var actions = require('./actions.js')
 
+const states = constants.states;
+const intents = constants.intents;
+intents.PlayExclusive
+
 // TODO: revisit this in a way that isn't organized by state-first
-var startModeIntentHandlers = Alexa.CreateStateHandler(constants.states.START_MODE, {
+var startModeIntentHandlers = Alexa.CreateStateHandler(states.START_MODE, {
     /*
     *  All Intent Handlers for state : START_MODE
     */
     'LaunchRequest': function() { actions.launchRequest(this) },
     'PlayLatest': function() { actions.playLatest(this) },
+    'PlayFavorite': function() { actions.playFav(this) },
+    'PlayExclusive': function() { actions.playExclusive(this) },
     'AMAZON.HelpIntent': function() { actions.help(this) },
     'AMAZON.StopIntent': function() { actions.cancel(this) },
     'AMAZON.CancelIntent': function() { actions.cancel(this) },
@@ -17,9 +23,13 @@ var startModeIntentHandlers = Alexa.CreateStateHandler(constants.states.START_MO
     'Unhandled': function() { actions.unhandledAction(this) },
 });
 
-var playModeIntentHandlers = Alexa.CreateStateHandler(constants.states.PLAY_MODE, {
+// TODO: use enums instead of strings for intent names
+
+var playModeIntentHandlers = Alexa.CreateStateHandler(states.PLAY_MODE, {
     'LaunchRequest': function() { actions.launchRequest(this) },
     'PlayLatest': function() { actions.playLatest(this) },
+    'PlayFavorite': function() { actions.playFav(this) },
+    'PlayExclusive': function() { actions.playExclusive(this) },
     'AMAZON.HelpIntent': function() { actions.help(this) },
     
     'AMAZON.PauseIntent': function() { actions.pause(this) },
@@ -39,7 +49,7 @@ var playModeIntentHandlers = Alexa.CreateStateHandler(constants.states.PLAY_MODE
     'Unhandled': function() { actions.unhandledAction(this) },
 });
 
-var remoteControllerHandlers = Alexa.CreateStateHandler(constants.states.PLAY_MODE, {
+var remoteControllerHandlers = Alexa.CreateStateHandler(states.PLAY_MODE, {
     /*
         *  All Requests are received using a Remote Control. Calling corresponding handlers for each of them.
         */
@@ -100,7 +110,7 @@ var remoteControllerHandlers = Alexa.CreateStateHandler(constants.states.PLAY_MO
     // })
     // };
 
-var audioEventHandlers = Alexa.CreateStateHandler(constants.states.PLAY_MODE, {
+var audioEventHandlers = Alexa.CreateStateHandler(states.PLAY_MODE, {
     'PlaybackStarted': function() { actions.playbackStarted(this) },
     'PlaybackStopped': function() { actions.playbackStopped(this) },
     'PlaybackNearlyFinished': function() { actions.playbackNearlyFinished(this) },
