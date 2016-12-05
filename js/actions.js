@@ -13,15 +13,18 @@ function launchRequest(event) {
     let speech;
     const state = event.handler.state;
 
-    if (event.handler.state == appStates.START_MODE) {
-        speech = Say("Launch:START");
-    }
-    else if (state == appStates.PLAY_MODE) {
-        speech = Say("Launch:PLAY_MODE");
+    if (state == appStates.PLAY_MODE) {
+        speech = Say("Welcome:Playback");
+        const controller = PlaybackController(event);
+        controller.play();
     }
     else {
-        speech = Say("_Fail");
+        // ensure we're in START_MODE (should be true, but this will force us out of 
+        //  state transition holes in case the logic is broken and the user is we're stuck) 
+        event.handlers.state = appStates.START_MODE;
+        speech = Say("Welcome");
     }
+
     event.response.speak(speech);
     event.emit(":responseReady");
 }
@@ -31,10 +34,13 @@ function help(event) {
     let speech;
 
     if (state == appStates.START_MODE) {
-        speech = Say("Help:START");
+        speech = Say("Help");
     }
     else if (state == appStates.PLAY_MODE) {
-        speech = Say("Help:PLAY_MODE");
+        speech = Say("Help:Playback");
+    }
+    else if (state == appStates.ASK_FOR_SHOW) {
+        speech = Say("Help:AskForShow");
     }
     else {
         speech = Say("_Unknown");
@@ -53,10 +59,14 @@ function playLatest(event) {
         );
     }
     else {
-        event.response.speak(Say("AskForShowTitle"));
-        // TODO: change state
+        event.response.speak("Sorry, I don't know what show you're referring to.");
+        // event.response.speak(Say("AskForShowTitle"))
+        //         .listen(Say("RepromptForShowTitle"));
+        // event.handler.state = appStates.ASK_FOR_SHOW;
+        // // TODO: revisit handling of this
+        // event.attributes["intentAskingFor"] = "PlayLatest";
+        event.emit(":responseReady");
     }
-    event.emit(":responseReady");
 }
 
 function playExclusive(event) {
@@ -69,10 +79,14 @@ function playExclusive(event) {
         );
     }
     else {
-        event.response.speak(Say("AskForShowTitle"));
-        // TODO: change state, remember original intent
+        event.response.speak("Sorry, I don't know what show you're referring to.");
+        // // TODO: revisit handling of this
+        // event.response.speak(Say("AskForShowTitle"))
+        //         .listen(Say("RepromptForShowTitle"));
+        // event.handler.state = appStates.ASK_FOR_SHOW;
+        // event.attributes["intentAskingFor"] = "PlayExclusive";
+        event.emit(":responseReady");
     }
-    event.emit(":responseReady");
 }
 
 function playFav(event) {
@@ -85,36 +99,66 @@ function playFav(event) {
         );
     }
     else {
-        event.response.speak(Say("AskForShowTitle"));
-        // TODO: change state, remember original intent
+        event.response.speak("Sorry, I don't know what show you're referring to.");
+        // // TODO: revisit handling of this
+        // event.response.speak(Say("AskForShowTitle"))
+        //         .listen(Say("RepromptForShowTitle"));
+        // event.handler.state = appStates.ASK_FOR_SHOW;
+        // event.attributes["intentAskingFor"] = "PlayFavorite";
+        event.emit(":responseReady");
     }
-    event.emit(":responseReady");
 }
 
 function listShows(event) {
     let speech = Say("ShowList"); 
-    event.response.speak(speech);
+    // TODO: revisit handling of this
+    // if (event.handler.state === appStates.ASK_FOR_SHOW) {
+    //     event.response.speak(Say("ShowListThenAsk"))
+    //                   .listen(Say("RepromptForShowTitle"));
+    // }
+    // else {
+        event.response.speak(Say("ShowList"));
+    // }
+
     event.emit(":responseReady");
 }
 
 function cancel(event) {
-    if (event.handler.state === appStates.START_MODE) {
-        event.response.speak(Say("Goodbye"));
+    if (event.handler.state === appStates.PLAY_MODE) {
+        PlaybackController(event).stop();
     }
     else {
-        PlaybackController(event).stop();
+        event.handler.state = appStates.START_MODE;
+        event.response.speak(Say("Goodbye"));
     }
     event.emit(":responseReady");
 }
 
 function whoIsMatt(event) {
-    event.response.speak("MattLieberIs");
+    event.response.speak(Say("MattLieberIs"));
     event.emit(":responseReady");
 }
 
-function showTitleResolution(event) {
-    event.response.speak(`ShowTitleResolution: <${getTitleSlot(event)}>` );
-    event.emit(":responseReady");
+function showTitleNamed(event) {
+    // TODO: revisit handling of this
+    // if (event.handler.state === appStates.ASK_FOR_SHOW) {
+    //     const triggeringIntent = event.attributes["intentAskingFor"];
+    //     delete event.attributes["intentAskingFor"];
+
+    //     event.handler.state = appStates.START_MODE;
+
+    //     // TODO: ensure show is valid
+
+    //     event.emit(triggeringIntent + "_START_MODE");
+    //     return;
+    // }
+    // else {
+        // TODO: react to this state
+        event.context.succeed(true);
+        return;        
+    // }
+
+    // event.emit(":responseReady");
 }
 
 function pause(event) {
@@ -159,7 +203,12 @@ function playbackPause(event) {
  */
 
 function sessionEnded(event) {
-    
+    // TODO: implement
+    // if (event.handler.state === appStates.ASK_FOR_SHOW) {
+    //     event.handler.state = appStates.START_MODE;
+    //     delete event.attributes["intentAskingFor"];
+    //     event.emit(":saveState");
+    // }
 }
 
 // TODO: move logic in here into controller -- it can deal with the playback state all in its module
@@ -205,8 +254,9 @@ function unhandledAction(event) {
     console.log("Unhandled: " + {
         state: event.handler.state,
         type: event.event.request.type,
-        intent: event._event.request.intent.name,
+        intent: event.event.request.intent,
     });
+    
     // console.log(event);
     event.response.speak(message).listen(message);
     event.emit(':responseReady');
@@ -269,6 +319,7 @@ function playShow(event, show, introSpeech, chooseFn) {
         }
         
         controller.start(track);
+        event.emit(":responseReady");
     });
 }
 

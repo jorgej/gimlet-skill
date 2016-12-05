@@ -16,6 +16,10 @@ var startModeIntentHandlers = Alexa.CreateStateHandler(states.START_MODE, {
     'PlayLatest': function() { actions.playLatest(this) },
     'PlayFavorite': function() { actions.playFav(this) },
     'PlayExclusive': function() { actions.playExclusive(this) },
+
+    'WhoIsMatt': function() {actions.whoIsMatt(this) },
+    'ListShows': function() { actions.listShows(this) },
+
     'AMAZON.HelpIntent': function() { actions.help(this) },
     'AMAZON.StopIntent': function() { actions.cancel(this) },
     'AMAZON.CancelIntent': function() { actions.cancel(this) },
@@ -30,8 +34,11 @@ var playModeIntentHandlers = Alexa.CreateStateHandler(states.PLAY_MODE, {
     'PlayLatest': function() { actions.playLatest(this) },
     'PlayFavorite': function() { actions.playFav(this) },
     'PlayExclusive': function() { actions.playExclusive(this) },
+
+    'WhoIsMatt': function() { actions.whoIsMatt(this) },
+    'ListShows': function() { actions.listShows(this) },
+
     'AMAZON.HelpIntent': function() { actions.help(this) },
-    
     'AMAZON.PauseIntent': function() { actions.pause(this) },
     'AMAZON.ResumeIntent': function() { actions.resume(this) },
     'AMAZON.StopIntent': function() { actions.stop(this) },
@@ -49,6 +56,19 @@ var playModeIntentHandlers = Alexa.CreateStateHandler(states.PLAY_MODE, {
     'Unhandled': function() { actions.unhandledAction(this) },
 });
 
+var askShowIntentHandlers = Alexa.CreateStateHandler(states.ASK_FOR_SHOW, {
+    'ShowTitleIntent': function() { actions.showTitleNamed(this) },
+    
+    'PlayLatest': function() { actions.playLatest(this) },
+    'PlayFavorite': function() { actions.playFav(this) },
+    'PlayExclusive': function() { actions.playExclusive(this) },
+
+    'AMAZON.HelpIntent': function() { actions.help(this) },
+    'AMAZON.StopIntent': function() { actions.cancel(this) },
+    'AMAZON.CancelIntent': function() { actions.cancel(this) },
+    'SessionEndedRequest': function() { actions.sessionEnded(this) },
+});
+
 var remoteControllerHandlers = Alexa.CreateStateHandler(states.PLAY_MODE, {
     /*
         *  All Requests are received using a Remote Control. Calling corresponding handlers for each of them.
@@ -58,57 +78,14 @@ var remoteControllerHandlers = Alexa.CreateStateHandler(states.PLAY_MODE, {
     'NextCommandIssued': function() {
         // don't want to react at all to this command
         // TODO: check this works as intended
-        this.context.success(true);
+        this.context.succeed(true);
     },
     'PreviousCommandIssued': function() {
         // don't want to react at all to this command
         // TODO: check this works as intended
-        this.context.success(true);
+        this.context.succeed(true);
     }
 });
-
-    // resumeDecisionModeIntentHandlers : Alexa.CreateStateHandler(constants.states.RESUME_DECISION_MODE, {
-    //     /*
-    //      *  All Intent Handlers for state : RESUME_DECISION_MODE
-    //      */
-    //     'LaunchRequest' : function () {
-    //         var message = 'You were listening to ' + audioData[this.attributes['playOrder'][this.attributes['index']]].title +
-    //             ' Would you like to resume?';
-    //         var reprompt = 'You can say yes to resume or no to play from the top.';
-    //         this.response.speak(message).listen(reprompt);
-    //         this.emit(':responseReady');
-    //     },
-    //     'AMAZON.YesIntent' : function () { controller.play.call(this) },
-    //     'AMAZON.NoIntent' : function () {
-    //         this.emit('LaunchRequest' + constants.states.START_MODE);
-    //     },
-    //     'AMAZON.HelpIntent' : function () {
-    //         var message = 'You were listening to ' + audioData[this.attributes['index']].title +
-    //             ' Would you like to resume?';
-    //         var reprompt = 'You can say yes to resume or no to play from the top.';
-    //         this.response.speak(message).listen(reprompt);
-    //         this.emit(':responseReady');
-    //     },
-    //     'AMAZON.StopIntent' : function () {
-    //         var message = 'Good bye.';
-    //         this.response.speak(message);
-    //         this.emit(':responseReady');
-    //     },
-    //     'AMAZON.CancelIntent' : function () {
-    //         var message = 'Good bye.';
-    //         this.response.speak(message);
-    //         this.emit(':responseReady');
-    //     },
-    //     'SessionEndedRequest' : function () {
-    //         // No session ended logic
-    //     },
-    //     'Unhandled' : function () {
-    //         var message = 'Sorry, this is not a valid command. Please say help to hear what you can say.';
-    //         this.response.speak(message).listen(message);
-    //         this.emit(':responseReady');
-    //     }
-    // })
-    // };
 
 var audioEventHandlers = Alexa.CreateStateHandler(states.PLAY_MODE, {
     'PlaybackStarted': function() { actions.playbackStarted(this) },
@@ -121,6 +98,7 @@ var audioEventHandlers = Alexa.CreateStateHandler(states.PLAY_MODE, {
 module.exports = {
     startModeIntentHandlers: startModeIntentHandlers,
     playModeIntentHandlers: playModeIntentHandlers,
+    askShowIntentHandlers: askShowIntentHandlers,
     remoteControllerHandlers: remoteControllerHandlers,
     audioEventHandlers: audioEventHandlers,
 };

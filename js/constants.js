@@ -18,6 +18,7 @@ module.exports = Object.freeze({
     states : {
         START_MODE : '_START_MODE',
         PLAY_MODE : '_PLAY_MODE',
+        ASK_FOR_SHOW : '_ASK_FOR_SHOW',
         RESUME_DECISION_MODE : '_RESUME_DECISION_MODE'
     },
 
