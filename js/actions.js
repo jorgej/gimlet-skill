@@ -1,5 +1,10 @@
 const Say = require("./speechGenerator");
 const constants = require("./constants");
+const gimlet = require("./gimletConfig");
+const PlaybackController = require("./playbackController");
+const Track = require("./track");
+
+const rss = require("rss-parser");
 
 const appStates = constants.states;
 
@@ -14,7 +19,7 @@ function launchRequest(event) {
         speech = Say("Launch:PLAY_MODE");
     }
     else {
-        speech = Say("Unknown");
+        speech = Say("_Fail");
     }
     event.response.speak(speech);
     event.emit(":responseReady");
@@ -31,15 +36,31 @@ function help(event) {
         speech = Say("Help:PLAY_MODE");
     }
     else {
-        speech = Say("Unknown");
+        speech = Say("_Unknown");
     }
     event.response.speak(speech);
     event.emit(":responseReady");
 }
 
 function playLatest(event) {
-    event.response.speak(`PlayLatest: <${getTitleSlot(event)}>`);
-    event.emit(":responseReady");
+    const controller = PlaybackController(event);
+    const showTitle = gimlet.ShowId.ReplyAll;
+    // TODO: insert logic if feed not found
+    const url = gimlet.feedUrl[showTitle];
+
+    rss.parseURL(url, function(err, parsed) {
+        if (err) {
+            // TODO
+        }
+
+        const show = parsed.feed.entries[0];
+        const url = show.enclosure.url.replace('http://', 'https://');
+        const track = new Track(url, show.title);
+
+        event.response.speak(Say("PlayingLatest", parsed.feed.title));
+        controller.start(track);
+        event.emit(":responseReady");
+    });
 }
 
 function playExclusive(event) {
@@ -59,11 +80,17 @@ function playFav(event) {
 }
 
 function cancel(event) {
-
+    if (event.handler.state === appStates.START_MODE) {
+        event.response.speak(Say("Goodbye"));
+    }
+    else {
+        PlaybackController(event).stop();
+    }
+    event.emit(":responseReady");
 }
 
 function whoIsMatt(event) {
-    event.response.speak("WhoIsMatt");
+    event.response.speak("MattLieberIs");
     event.emit(":responseReady");
 }
 
@@ -72,17 +99,19 @@ function showTitleResolution(event) {
     event.emit(":responseReady");
 }
 
-
 function pause(event) {
-
+    PlaybackController(event).stop();
+    event.emit(":responseReady");
 }
 
 function stop(event) {
-
+    PlaybackController(event).stop();
+    event.emit(":responseReady");
 }
 
 function resume(event) {
-
+    PlaybackController(event).resume();
+    event.emit(":responseReady");
 }
 
 function playbackOperationUnsupported(event, operationName) {
@@ -92,15 +121,18 @@ function playbackOperationUnsupported(event, operationName) {
 }
 
 function startOver(event) {
-
+    PlaybackController(event).restart();
+    event.emit(":responseReady");
 }
 
 function playbackPlay(event) {
-    
+    PlaybackController(event).resume();
+    event.emit(":responseReady");
 }
 
 function playbackPause(event) {
-    
+    PlaybackController(event).stop();
+    event.emit(":responseReady");
 }
 
 
@@ -109,27 +141,36 @@ function playbackPause(event) {
  */
 
 function sessionEnded(event) {
-
+    
 }
 
-function playbackStarted(event) {
+// TODO: move logic in here into controller -- it can deal with the playback state all in its module
 
+function playbackStarted(event) {
+    event.context.succeed(true);
 }
 
 function playbackStopped(event) {
-    
+    const offset = event.event.request.offsetInMilliseconds;
+    // TODO: handle offset not being available
+    PlaybackController(event).onPlaybackStopped(offset);
+    event.emit(':saveState', true);
 }
 
 function playbackNearlyFinished(event) {
-    
+    event.context.succeed(true);
 }
 
 function playbackFinished(event) {
-    
+    // TODO: consider getting rid of this state? really it's inherent in the playbackMode attributes
+    event.handler.state = appStates.START_MODE;
+    PlaybackController(event).onPlaybackFinished();
+    event.emit(':saveState', true);
 }
 
 function playbackFailed(event) {
-    
+    event.handler.state = appStates.START_MODE;
+    event.emit(':saveState', true);
 }
 
 /**
@@ -142,11 +183,16 @@ function systemException(event, err) {
 }
 
 function unhandledAction(event) {
-    var message = Say("Unhandled");
-    this.response.speak(message).listen(message);
-    this.emit(':responseReady');
+    var message = Say("_Unhandled");
+    console.log("Unhandled: " + {
+        state: event.handler.state,
+        type: event.event.request.type,
+        intent: event._event.request.intent.name,
+    });
+    // console.log(event);
+    event.response.speak(message).listen(message);
+    event.emit(':responseReady');
 }
-
 
 module.exports = {
     launchRequest: launchRequest,
@@ -178,7 +224,6 @@ module.exports = {
     systemException: systemException,
     unhandledAction: unhandledAction,
 };
-
 
 function getTitleSlot(event) {
     const slot = event.event.request.intent.slots["ShowTitle"];

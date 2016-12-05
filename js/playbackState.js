@@ -1,12 +1,4 @@
-module.exports = function(track, msOffset) {
+module.exports = function(track, offsetInMilliseconds) {
     this.track = track;
-    this.msOffset = msOffset || 0;
-
-    this.markFinished = function() {
-        this.msOffset = Infinity;
-    }
-
-    this.isFinished = function() {
-        return this.msOffset === Infinity;
-    }
+    this.offset = offsetInMilliseconds || 0;
 }

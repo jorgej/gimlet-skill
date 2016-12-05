@@ -1,5 +1,4 @@
 var Alexa = require('alexa-sdk');
-var audioData = require('./audioAssets');
 var constants = require('./constants');
 
 var actions = require('./actions.js')
@@ -7,8 +6,8 @@ var actions = require('./actions.js')
 // TODO: revisit this in a way that isn't organized by state-first
 var startModeIntentHandlers = Alexa.CreateStateHandler(constants.states.START_MODE, {
     /*
-        *  All Intent Handlers for state : START_MODE
-        */
+    *  All Intent Handlers for state : START_MODE
+    */
     'LaunchRequest': function() { actions.launchRequest(this) },
     'PlayLatest': function() { actions.playLatest(this) },
     'AMAZON.HelpIntent': function() { actions.help(this) },
@@ -107,7 +106,6 @@ var audioEventHandlers = Alexa.CreateStateHandler(constants.states.PLAY_MODE, {
     'PlaybackNearlyFinished': function() { actions.playbackNearlyFinished(this) },
     'PlaybackFinished': function() { actions.playbackFinished(this) },
     'PlaybackFailed': function() { actions.playbackFailed(this) },
-
 });
 
 module.exports = {
