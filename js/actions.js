@@ -44,8 +44,8 @@ function help(event) {
 
 function playLatest(event) {
     const show = shows.ReplyAll;
-    playShow(shows.ReplyAll,
-        PlaybackController(event),
+    playShow(event,
+        shows.ReplyAll,
         Say("PlayingLatest", show.title),
         (entries) => entries[0]
     );
@@ -53,8 +53,8 @@ function playLatest(event) {
 
 function playExclusive(event) {
     const show = shows.ReplyAll;
-    playShow(shows.ReplyAll,
-        PlaybackController(event),
+    playShow(event,
+        shows.ReplyAll,
         Say("PlayingExclusive", show.title),
         pickRandom
     );
@@ -62,8 +62,8 @@ function playExclusive(event) {
 
 function playFav(event) {
     const show = shows.ReplyAll;
-    playShow(shows.ReplyAll,
-        PlaybackController(event),
+    playShow(event,
+        shows.ReplyAll,
         Say("PlayingFavorite", show.title),
         pickRandom
     );
@@ -225,7 +225,7 @@ module.exports = {
  * Helpers
  */
 
-function playShow(show, controller, introSpeech, chooseFn) {
+function playShow(event, show, introSpeech, chooseFn) {
     rss.parseURL(show.url, function(err, parsed) {
         if (err) {
             // TODO
@@ -235,6 +235,8 @@ function playShow(show, controller, introSpeech, chooseFn) {
         if (!entry) {
             // TODO
         }
+
+        const controller = PlaybackController(event); 
 
         // Alexa only plays HTTPS urls
         const url = entry.enclosure.url.replace('http://', 'https://');

@@ -1,15 +1,16 @@
-module.exports = [
-    new Show("crimetownshow", "Crime Town", []),
-    new Show("homecomingshow", "Homecoming"),
-    new Show("undoneshow", "Undone"),
-    new Show("hearreplyall", "Reply All"),
-    new Show("hearstartup", "StartUp"),
-    new Show("sciencevs", "Science Vs"),
-    new Show("heavyweightpodcast", "Heavyweight"),
-    new Show("surprisinglyawesome", "Surprisingly Awesome"),
-    new Show("samplershow", "Sampler"),
-    new Show("mysteryshow", "Mystery Show")
-];
+module.exports = {
+    CrimeTown: new Show("crimetownshow", "Crime Town"),
+    Heavyweight: new Show("heavyweightpodcast", "Heavyweight"),
+    HomecomeShow: new Show("homecomingshow", "Homecoming"),
+    MysteryShow: new Show("mysteryshow", "Mystery Show"),
+    ReplyAll: new Show("hearreplyall", "Reply All"),
+    ScienceVs: new Show("sciencevs", "Science Vs", ["science vs", "science versus"]),
+    StartUp: new Show("hearstartup", "StartUp", ["startup", "start up"]),
+    Sampler: new Show("samplershow", "Sampler"),
+    SurprisinglyAwesome: new Show("surprisinglyawesome", "Surprisingly Awesome"),
+    TwiceRemoved: new Show("twiceremovedshow", "Twice Removed"),
+    Undone: new Show("undoneshow", "Undone"),
+};
 
 function Show(id, title, slotValues, spokenTitle, url) {
     if(!id || !title) {
@@ -18,12 +19,11 @@ function Show(id, title, slotValues, spokenTitle, url) {
 
     this.title = title;
     this.url = url;
-    this.slotValues = slotValues || [title];
     this.spokenTitle = spokenTitle || title;
     this.url = url || feedURLFromId(id);
 
     if (!slotValues || !slotValues.length) {
-        this.slotValues = [title];
+        this.slotValues = [title.toLowerCase()];
     }
 }
 
