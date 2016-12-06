@@ -1,3 +1,5 @@
+'use strict';
+
 const constants = require("./constants");
 const appStates = constants.states;
 const PlaybackState = require("./playbackState");

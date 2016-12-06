@@ -1,3 +1,5 @@
+'use strict';
+
 const Say = require("./speechGenerator");
 const constants = require("./constants");
 const shows = require("./shows");
