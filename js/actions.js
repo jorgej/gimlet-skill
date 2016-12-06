@@ -16,7 +16,7 @@ function launchRequest(event) {
     if (state == appStates.PLAY_MODE) {
         speech = Say("Welcome:Playback");
         const controller = PlaybackController(event);
-        controller.play();
+        controller.resume();
     }
     else {
         // ensure we're in START_MODE (should be true, but this will force us out of 
