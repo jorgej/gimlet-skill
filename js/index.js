@@ -21,21 +21,20 @@ exports.handler = function(event, context, callback){
         handlers.audioEventHandlers
     );
 
-    event.session.attributes["STATE"] = constants.states.START_MODE;
-
-    if (!event.context) {
-        event.context = {
-            System: {
-                application: event.session.application,
-                user: event.session.user,
-                device: {
-                    supportedInterfaces: {
-                        AudioPlayer:{}
-                    }
-                }
-            }
-        };
-    }
+    // Needed for interactions triggered from the Service Simulator 
+    // if (!event.context) {
+    //     event.context = {
+    //         System: {
+    //             application: event.session.application,
+    //             user: event.session.user,
+    //             device: {
+    //                 supportedInterfaces: {
+    //                     AudioPlayer:{}
+    //                 }
+    //             }
+    //         }
+    //     };
+    // }
 
     if (!event.context || event.context.System.device.supportedInterfaces.AudioPlayer === undefined) {
         alexa.emit(':tell', 'Sorry, this skill is not supported on this device');

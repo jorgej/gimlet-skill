@@ -150,6 +150,7 @@ function showTitleNamed(event) {
     //     event.handler.state = appStates.START_MODE;
 
     //     // TODO: ensure show is valid
+    //     // TODO: revisit handling of this. don't like manually concatenating them
 
     //     event.emit(triggeringIntent + "_START_MODE");
     //     return;
@@ -252,15 +253,21 @@ function systemException(event, err) {
 }
 
 function unhandledAction(event) {
-    var message = Say("_Unhandled");
-    console.log("Unhandled: " + {
-        state: event.handler.state,
-        type: event.event.request.type,
-        intent: event.event.request.intent,
-    });
+    /* This function is triggered whenever an intent is understood by Alexa, 
+        but we define no hanlder for it in the current application state.
+    */
+
+    // console.log("Unhandled: " + {
+    //     state: event.handler.state,
+    //     type: event.event.request.type,
+    //     intent: event.event.request.intent,
+    // });
     
-    // console.log(event);
-    event.response.speak(message).listen(message);
+    // TODO: need to reprompt and listen if in an asking state
+    event.handler.state = appStates.START_MODE;
+    
+    var message = Say("_Unhandled");
+    event.response.speak(message);
     event.emit(':responseReady');
 }
 
