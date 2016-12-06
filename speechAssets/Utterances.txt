@@ -551,6 +551,10 @@ PlayFavorite for the recommended episode
 PlayFavorite for the recommended episode from {ShowTitle}
 PlayFavorite for the recommended episode for {ShowTitle}
 PlayFavorite for the recommended episode of {ShowTitle}
+// PlayFavorite (play|start|begin) the best {ShowTitle}
+PlayFavorite play the best {ShowTitle}
+PlayFavorite start the best {ShowTitle}
+PlayFavorite begin the best {ShowTitle}
 // PlayFavorite to (play|start|begin) (a|the) (favorite|best|good|recommended) episode ( |from {ShowTitle}|for {ShowTitle}|of {ShowTitle})
 PlayFavorite to play a favorite episode
 PlayFavorite to play a favorite episode from {ShowTitle}
@@ -648,6 +652,10 @@ PlayFavorite to begin the recommended episode
 PlayFavorite to begin the recommended episode from {ShowTitle}
 PlayFavorite to begin the recommended episode for {ShowTitle}
 PlayFavorite to begin the recommended episode of {ShowTitle}
+// PlayFavorite to (play|start|begin) the best {ShowTitle}
+PlayFavorite to play the best {ShowTitle}
+PlayFavorite to start the best {ShowTitle}
+PlayFavorite to begin the best {ShowTitle}
 
 ListShows what shows are there
 ListShows list shows
