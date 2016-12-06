@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
     CrimeTown: new Show("crimetownshow", "Crime Town"),
     Heavyweight: new Show("heavyweightpodcast", "Heavyweight", ["heavyweight", "heavy weight", "heavyweights", "heavy weights"]),

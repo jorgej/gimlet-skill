@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = function(key, ...args) {
     var speech = {
         "Welcome":          "Welcome to the Gimlet skill. You can say some fun stuff if you want.",

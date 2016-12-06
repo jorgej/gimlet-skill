@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = function(url, title, showTitle) {
     this.url = url;
     this.title = title;
