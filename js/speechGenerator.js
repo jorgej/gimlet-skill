@@ -1,6 +1,10 @@
 'use strict';
 
-module.exports = function(key, ...args) {
+module.exports = function(key) {
+
+    // Convert `arguments` to a proper array and leave out the first argument (which is the parameter 'key'). This is a workaround for Lambda's lack of support for ES6 rest parameters (`...args`). See http://whatdoeslambdasupport.com/. 
+    var args = Array.prototype.slice.call(arguments, 1);
+
     var speech = {
         "Welcome":          "Welcome to the Gimlet skill. You can say some fun stuff if you want.",
         "Welcome:Playback": "Welcome back! Here's where you left off.",
