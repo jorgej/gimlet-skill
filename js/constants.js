@@ -11,4 +11,10 @@ module.exports = Object.freeze({
         ASK_FOR_SHOW : '_ASK_FOR_SHOW',
         CONFIRM_RESUME : '_CONFIRM_RESUME'
     },
+
+    intents : {
+        PlayLatest: 'PlayLatest',
+        PlayExclusive: 'PlayExclusive',
+        PlayFavorite: 'PlayFavorite',
+    }
 });

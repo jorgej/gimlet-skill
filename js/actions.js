@@ -10,6 +10,7 @@ const _ = require("lodash");
 const rss = require("rss-parser");
 
 const appStates = constants.states;
+const intents = constants.intents;
 
 function launchRequest(event) {
     // we can assume we're in DEFAULT state
@@ -67,11 +68,10 @@ function playLatest(event) {
     }
     else {
         event.response.speak("Sorry, I don't know what show you're referring to.");
-        // event.response.speak(Say("AskForShowTitle"))
-        //         .listen(Say("RepromptForShowTitle"));
-        // event.handler.state = appStates.ASK_FOR_SHOW;
-        // // TODO: revisit handling of this
-        // event.attributes["intentAskingFor"] = "PlayLatest";
+        event.response.speak(Say("AskForShowTitle"))
+                .listen(Say("RepromptForShowTitle"));
+        event.attributes["intentAskingFor"] = intents.PlayLatest;
+        event.handler.state = appStates.ASK_FOR_SHOW;
         event.emit(":responseReady");
     }
 }
@@ -87,11 +87,11 @@ function playExclusive(event) {
     }
     else {
         event.response.speak("Sorry, I don't know what show you're referring to.");
-        // // TODO: revisit handling of this
-        // event.response.speak(Say("AskForShowTitle"))
-        //         .listen(Say("RepromptForShowTitle"));
-        // event.handler.state = appStates.ASK_FOR_SHOW;
-        // event.attributes["intentAskingFor"] = "PlayExclusive";
+        event.response.speak(Say("AskForShowTitle"))
+                .listen(Say("RepromptForShowTitle"));
+        event.attributes["intentAskingFor"] = intents.PlayExclusive;
+        event.handler.state = appStates.ASK_FOR_SHOW;
+        
         event.emit(":responseReady");
     }
 }
@@ -107,25 +107,24 @@ function playFav(event) {
     }
     else {
         event.response.speak("Sorry, I don't know what show you're referring to.");
-        // // TODO: revisit handling of this
-        // event.response.speak(Say("AskForShowTitle"))
-        //         .listen(Say("RepromptForShowTitle"));
-        // event.handler.state = appStates.ASK_FOR_SHOW;
-        // event.attributes["intentAskingFor"] = "PlayFavorite";
+        event.response.speak(Say("AskForShowTitle"))
+                .listen(Say("RepromptForShowTitle"));
+        event.attributes["intentAskingFor"] = intents.PlayFavorite;
+        event.handler.state = appStates.ASK_FOR_SHOW;
         event.emit(":responseReady");
     }
 }
 
 function listShows(event) {
-    let speech = Say("ShowList"); 
-    // TODO: revisit handling of this
-    // if (event.handler.state === appStates.ASK_FOR_SHOW) {
-    //     event.response.speak(Say("ShowListThenAsk"))
-    //                   .listen(Say("RepromptForShowTitle"));
-    // }
-    // else {
+    let speech = Say("ShowList");
+    
+    if (event.handler.state === appStates.ASK_FOR_SHOW) {
+        event.response.speak(Say("ShowListThenAsk"))
+                      .listen(Say("RepromptForShowTitle"));
+    }
+    else {
         event.response.speak(Say("ShowList"));
-    // }
+    }
 
     event.emit(":responseReady");
 }
@@ -148,26 +147,35 @@ function cancel(event) {
 }
 
 function showTitleNamed(event) {
-    // TODO: revisit handling of this
-    // if (event.handler.state === appStates.ASK_FOR_SHOW) {
-    //     const triggeringIntent = event.attributes["intentAskingFor"];
-    //     delete event.attributes["intentAskingFor"];
+    if (event.handler.state === appStates.ASK_FOR_SHOW) {
+        const triggeringIntent = event.attributes["intentAskingFor"];
+        delete event.attributes["intentAskingFor"];
 
-    //     event.handler.state = appStates.DEFAULT;
-
-    //     // TODO: ensure show is valid
-    //     // TODO: revisit handling of this. don't like manually concatenating them
-
-    //     event.emit(triggeringIntent + "_DEFAULT");
-    //     return;
-    // }
-    // else {
-        // TODO: react to this state
-        event.context.succeed(true);
+        if(!getShowFromSlotValue(event.event.request)) {
+            event.response.speak(Say("UnknownShowTitle"))
+                            .listen(Say("RepromptForShowTitle"));
+        }
+        else {
+            event.handler.state = appStates.DEFAULT;
+            if (triggeringIntent === intents.PlayFavorite) {
+                PlayFavorite(event);
+            }
+            else if (triggeringIntent === intents.PlayExclusive) {
+                PlayExclusive(event);
+            }
+            else {  // should be PlayLatest
+                PlayLatest(event);
+            }
+            return;
+        }
+    }
+    else {
+        // if the user just names a show on its own, take it to mean "play the latest ..."
+        PlayLatest(event);
         return;        
-    // }
+    }
 
-    // event.emit(":responseReady");
+    event.emit(":responseReady");
 }
 
 function pause(event) {
@@ -268,20 +276,17 @@ function systemException(event, err) {
 
 function unhandledAction(event) {
     /* This function is triggered whenever an intent is understood by Alexa, 
-        but we define no hanlder for it in the current application state.
+        but we define no handler for it in the current application state.
     */
 
-    // console.log("Unhandled: " + {
-    //     state: event.handler.state,
-    //     type: event.event.request.type,
-    //     intent: event.event.request.intent,
-    // });
-    
-    // TODO: need to reprompt and listen if in an asking state
-    event.handler.state = appStates.DEFAULT;
-    
-    var message = Say("_Unhandled");
-    event.response.speak(message);
+    if (event.handler.state === appStates.ASK_FOR_SHOW) {
+        event.response.speak(Say("UnknownShowTitle"))
+                        .listen(Say("RepromptForShowTitle"));
+    }
+    else {
+        event.response.speak(Say("_Unhandled"));
+    }
+
     event.emit(':responseReady');
 }
 

@@ -36,21 +36,26 @@ var defaultIntentHandlers = Alexa.CreateStateHandler(states.DEFAULT, {
     'AMAZON.ShuffleOnIntent': function() { actions.playbackOperationUnsupported(this) },
     'AMAZON.ShuffleOffIntent': function() { actions.playbackOperationUnsupported(this) },
 
-    'SessionEndedRequest': function() { actions.sessionEnded(this) },
     'Unhandled': function() { actions.unhandledAction(this) },
 });
 
 var askShowIntentHandlers = Alexa.CreateStateHandler(states.ASK_FOR_SHOW, {
     'ShowTitleIntent': function() { actions.showTitleNamed(this) },
+    'ListShows': function() { actions.listShows(this) },
     
     'PlayLatest': function() { actions.playLatest(this) },
     'PlayFavorite': function() { actions.playFav(this) },
     'PlayExclusive': function() { actions.playExclusive(this) },
 
     'AMAZON.HelpIntent': function() { actions.help(this) },
-    'AMAZON.StopIntent': function() { actions.cancel(this) },
     'AMAZON.CancelIntent': function() { actions.cancel(this) },
+
+    'AMAZON.ResumeIntent': function() { actions.resume(this) },
+    'AMAZON.StopIntent': function() { actions.stop(this) },
+
     'SessionEndedRequest': function() { actions.sessionEnded(this) },
+
+    'Unhandled': function() { actions.unhandledAction(this) }
 });
 
 var remoteControllerHandlers = Alexa.CreateStateHandler(states.DEFAULT, {
