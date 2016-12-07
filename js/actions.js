@@ -16,8 +16,8 @@ function launchRequest(event) {
     const controller = PlaybackController(event);
     let speech;
     if (controller.isTrackActive()) {
-        speech = Say("Welcome:Playback");
-        controller.resume();
+        event.handler.state = appStates.CONFIRM_RESUME;
+        speech = Say("Welcome:ConfirmResume");
     }
     else {
         // ensure we're in DEFAULT (should be true, but this will force us out of 
@@ -45,8 +45,11 @@ function help(event) {
             speech = Say("Help");
         }
     }
-    else if (state == appStates.ASK_FOR_SHOW) {
+    else if (state === appStates.ASK_FOR_SHOW) {
         speech = Say("Help:AskForShow");
+    }
+    else if (state === appStates.CONFIRM_RESUME) {
+        speech = Say("Help:ConfirmResume");
     }
     else {
         speech = Say("_Unknown");
@@ -184,7 +187,7 @@ function resume(event) {
     const controller = PlaybackController(event);
     const didResume = controller.resume();    
     if (!didResume) {
-        event.speak(Say("EmptyQueueHelp"));
+        event.response.speak(Say("EmptyQueueHelp"));
     }
     event.emit(":responseReady");
 }
@@ -193,9 +196,25 @@ function startOver(event) {
     const controller = PlaybackController(event);
     const didRestart = controller.restart();    
     if (!didRestart) {
-        event.speak(Say("EmptyQueueHelp"));
+        event.response.speak(Say("EmptyQueueHelp"));
     }
     event.emit(":responseReady");
+}
+
+function resumeConfirmed(event, shouldResume) {
+    // Leave the CONFIRM_RESUME state.
+    event.handler.state = appStates.DEFAULT;
+
+    if (shouldResume) {
+        resume(event);
+    }
+    else {
+        const controller = PlaybackController(event);
+        controller.clear();
+
+        event.response.speak(Say("PromptToAction"));
+        event.emit(":responseReady");
+    }
 }
 
 function playbackOperationUnsupported(event, operationName) {

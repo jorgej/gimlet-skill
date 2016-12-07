@@ -6,12 +6,15 @@ module.exports = function(key) {
     var args = Array.prototype.slice.call(arguments, 1);
 
     var speech = {
-        "Welcome":          "Welcome to the Gimlet skill. You can say some fun stuff if you want.",
-        "Welcome:Playback": "Welcome back! Here's where you left off.",
+        "Welcome":                "Welcome to the Gimlet skill. You can say some fun stuff if you want.",
+        "Welcome:ConfirmResume":  "Welcome back! Would you like to resume from where you left off?",
         
-        "Help":             "I get by with a little help from my friends.",
-        "Help:Playback":    "I get by with a little help from my friends.",
-        "Help:AskForShow":  "To continue, name the show you would like to listen to.",
+        "PromptToAction":       "You can say some fun stuff if you want.",
+
+        "Help":                 "I get by with a little help from my friends.",
+        "Help:Playback":        "I get by with a little help from my friends.",
+        "Help:ConfirmResume":   "Say 'Yes' to resume playing from where you left off, or say 'No' to do something else.",
+        "Help:AskForShow":      "To continue, name the show you would like to listen to.",
         
         "Goodbye":          "Ok see ya.",
 
