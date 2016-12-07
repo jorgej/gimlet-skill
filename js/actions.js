@@ -316,11 +316,18 @@ function unhandledAction(event) {
     //     intent: event.event.request.intent,
     // });
     
-    // TODO: need to reprompt and listen if in an asking state
-    event.handler.state = appStates.DEFAULT;
+    let message;
+
+    const state = event.handler.state;
+    if (state === appStates.CONFIRM_RESUME) {
+        message = Say("UnhandledConfirmResume");
+    }
+    else {
+        message = Say("_Unhandled");
+    }
     
-    var message = Say("_Unhandled");
-    event.response.speak(message);
+    event.response.speak(message)
+                  .listen(message);
     event.emit(':responseReady');
 }
 

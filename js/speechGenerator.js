@@ -34,6 +34,8 @@ module.exports = function(key) {
 
         "UnsupportedOperation": "Sorry, we do not support that operation.",
 
+        "UnhandledConfirmResume": "Sorry, I didn't get that. Would you like to resume from where you left off?", 
+
         "_Unhandled":       "Sorry, I don't know what to do about that.",
         "_Fail":            "Sorry, I've encountered a problem.",
     };
