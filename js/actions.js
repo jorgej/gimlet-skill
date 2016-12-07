@@ -60,6 +60,8 @@ function help(event) {
 }
 
 function playLatest(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     const show = getShowFromSlotValue(event.event.request);
     if (show) {
         playShow(event,
@@ -80,6 +82,8 @@ function playLatest(event) {
 }
 
 function playExclusive(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     const show = getShowFromSlotValue(event.event.request);
     if (show) {
         playShow(event,
@@ -100,6 +104,8 @@ function playExclusive(event) {
 }
 
 function playFav(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     const show = getShowFromSlotValue(event.event.request);    
     if (show) {
         playShow(event,
@@ -120,6 +126,8 @@ function playFav(event) {
 }
 
 function listShows(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     let speech = Say("ShowList"); 
     // TODO: revisit handling of this
     // if (event.handler.state === appStates.ASK_FOR_SHOW) {
@@ -134,11 +142,15 @@ function listShows(event) {
 }
 
 function whoIsMatt(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     event.response.speak(Say("MattLieberIs"));
     event.emit(":responseReady");
 }
 
 function cancel(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     const controller = PlaybackController(event);
     if (event.handler.state === appStates.DEFAULT && controller.isTrackActive()) {
         PlaybackController(event).stop();
@@ -174,16 +186,22 @@ function showTitleNamed(event) {
 }
 
 function pause(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     PlaybackController(event).stop();
     event.emit(":responseReady");
 }
 
 function stop(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     PlaybackController(event).stop();
     event.emit(":responseReady");
 }
 
 function resume(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     const controller = PlaybackController(event);
     const didResume = controller.resume();    
     if (!didResume) {
@@ -193,6 +211,8 @@ function resume(event) {
 }
 
 function startOver(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     const controller = PlaybackController(event);
     const didRestart = controller.restart();    
     if (!didRestart) {
@@ -202,7 +222,6 @@ function startOver(event) {
 }
 
 function resumeConfirmed(event, shouldResume) {
-    // Leave the CONFIRM_RESUME state.
     event.handler.state = appStates.DEFAULT;
 
     if (shouldResume) {

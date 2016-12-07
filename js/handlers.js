@@ -58,18 +58,16 @@ var confirmResumeIntentHandlers = Alexa.CreateStateHandler(states.CONFIRM_RESUME
     'AMAZON.NoIntent': function() { actions.resumeConfirmed(this, false) },
 
     // The remaining intents aren't a "proper" answer to a Yes/No question, but handling them lets the user implicitly say "No" with a followup action.
-    // TODO: Figure out how to manage state - when do we leave the CONFIRM_RESUME state?
-    // 'PlayLatest': function() { actions.playLatest(this) },
-    // 'PlayFavorite': function() { actions.playFav(this) },
-    // 'PlayExclusive': function() { actions.playExclusive(this) },
+    'PlayLatest': function() { actions.playLatest(this) },
+    'PlayFavorite': function() { actions.playFav(this) },
+    'PlayExclusive': function() { actions.playExclusive(this) },
 
-    // 'WhoIsMatt': function() {actions.whoIsMatt(this) },
-    // 'ListShows': function() { actions.listShows(this) },
-    // 'AMAZON.HelpIntent': function() { actions.helpDefault(this) },
+    'ListShows': function() { actions.listShows(this) },
+    'AMAZON.HelpIntent': function() { actions.helpDefault(this) },
 
-    // 'AMAZON.StopIntent': function() { actions.stop(this) },
-    // 'AMAZON.CancelIntent': function() { actions.cancel(this) },
-    // 'AMAZON.StartOverIntent': function() { actions.startOver(this) },
+    'AMAZON.StopIntent': function() { actions.stop(this) },
+    'AMAZON.CancelIntent': function() { actions.cancel(this) },
+    'AMAZON.StartOverIntent': function() { actions.startOver(this) },
 
     'SessionEndedRequest': function() { actions.sessionEnded(this) },
     'Unhandled': function() { actions.unhandledAction(this) }
