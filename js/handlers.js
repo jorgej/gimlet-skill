@@ -105,6 +105,7 @@ var audioEventHandlers = Alexa.CreateStateHandler(states.DEFAULT, {
 module.exports = {
     defaultIntentHandlers: defaultIntentHandlers,
     askShowIntentHandlers: askShowIntentHandlers,
+    confirmResumeIntentHandlers: confirmResumeIntentHandlers,
     remoteControllerHandlers: remoteControllerHandlers,
     audioEventHandlers: audioEventHandlers,
 };
