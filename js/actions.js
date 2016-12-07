@@ -246,7 +246,7 @@ function resumeConfirmed(event, shouldResume) {
         const controller = PlaybackController(event);
         controller.clear();
 
-        const message = Say("PromptToAction");
+        const message = Say("PromptForNewAction");
         event.response.speak(message)
                       .listen(message);
         event.emit(":responseReady");

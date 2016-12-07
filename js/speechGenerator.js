@@ -9,7 +9,7 @@ module.exports = function(key) {
         "Welcome":                "Welcome to the Gimlet skill. You can say all sorts of things to me.",
         "Welcome:ConfirmResume":  `Welcome back! Would you like to continue the episode of ${args[0]} you were listening to?`,
         
-        "PromptToAction":       "You can say some fun stuff if you want.",
+        "PromptForNewAction":     "What would you like to do?",
 
         "Help":                 "I get by with a little help from my friends.",
         "Help:Playback":        "I get by with a little help from my friends.",
@@ -26,7 +26,7 @@ module.exports = function(key) {
 
         "MattLieberIs":     "Matt Lieber is a guy who Tomer would like to meet.",
         "ShowList":         "Well, there's StartUp. And then that science one with the Australian host. And um, the one with Ross from Friends?",
-        "ShowListThenAsk":  "There's a bunch of them. Pick one.",
+        "ShowListThenAsk":  "Well, there's StartUp. And then that science one with the Australian host. And um, the one with Ross from Friends? Which one sounds good?",
 
         "AskForShowTitle":       "What show would you like to listen to?",
         "RepromptForShowTitle":  "What show would you like to listen to?",
