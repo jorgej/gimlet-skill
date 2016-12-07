@@ -37,11 +37,7 @@ module.exports = function(event) {
             return false;
         },
         clear: function() {
-            // TODO: Could just call onPlaybackFinished. Is it worth the duplication to have this as its own explicit method?
-            const playbackState = event.attributes["playbackState"];
-            if (playbackState) {
-                markFinished(playbackState);
-            }
+            delete event.attributes["playbackState"];
         },
 
         isTrackActive: function() {
