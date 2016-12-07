@@ -348,6 +348,7 @@ module.exports = {
     resume: resume,
     playbackOperationUnsupported: playbackOperationUnsupported,
     startOver: startOver,
+    resumeConfirmed: resumeConfirmed,
     playbackPlay: playbackPlay,
     playbackPause: playbackPause,
 
