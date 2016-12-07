@@ -57,18 +57,17 @@ var confirmResumeIntentHandlers = Alexa.CreateStateHandler(states.CONFIRM_RESUME
     'AMAZON.YesIntent': function() { actions.resumeConfirmed(this, true) },
     'AMAZON.NoIntent': function() { actions.resumeConfirmed(this, false) },
 
-    // The remaining intents aren't a "proper" answer to a Yes/No question, but handling them lets the user implicitly say "No" with a followup action.
-    'PlayLatest': function() { actions.playLatest(this) },
-    'PlayFavorite': function() { actions.playFav(this) },
-    'PlayExclusive': function() { actions.playExclusive(this) },
-
-    'ListShows': function() { actions.listShows(this) },
     'AMAZON.HelpIntent': function() { actions.helpDefault(this) },
 
-    'AMAZON.StopIntent': function() { actions.stop(this) },
-    'AMAZON.CancelIntent': function() { actions.cancel(this) },
-    'AMAZON.StartOverIntent': function() { actions.startOver(this) },
+    // The following intents aren't a "proper" answer to a Yes/No question, but handling them lets the user implicitly say "No" with a followup action.
+    // 'PlayLatest': function() { actions.playLatest(this) },
+    // 'PlayFavorite': function() { actions.playFav(this) },
+    // 'PlayExclusive': function() { actions.playExclusive(this) },
+    // 'ListShows': function() { actions.listShows(this) },
+    // 'AMAZON.StartOverIntent': function() { actions.startOver(this) },
 
+    'AMAZON.StopIntent': function() { actions.cancel(this) }, // NOTE: In this case, treat this like a "cancel".
+    'AMAZON.CancelIntent': function() { actions.cancel(this) },
     'SessionEndedRequest': function() { actions.sessionEnded(this) },
     'Unhandled': function() { actions.unhandledAction(this) }
 });
