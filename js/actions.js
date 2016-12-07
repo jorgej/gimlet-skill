@@ -27,7 +27,8 @@ function launchRequest(event) {
         // TODO: keep session alive
     }
 
-    event.response.speak(speech);
+    event.response.speak(speech)
+                  .listen(speech);
     event.emit(":responseReady");
 }
 
