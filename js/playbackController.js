@@ -9,10 +9,6 @@ const PlaybackState = require("./playbackState");
 module.exports = function(event) {
     return {
         start: function(track) {
-            // TODO: consider getting rid of this state? its dangerous since it really should just be an
-            //       artifact of the playbackState attr. too easy to get lost in a state hole by making 
-            //       decisions based on this value 
-            event.handler.state = appStates.PLAY_MODE;
             event.attributes['playbackState'] = new PlaybackState(track);
             this.resume();
         },
@@ -39,6 +35,15 @@ module.exports = function(event) {
                 return true;
             }
             return false;
+        },
+
+        isTrackActive: function() {
+            const playbackState = event.attributes['playbackState'];
+            return playbackState && !isFinished(playbackState);
+        },
+
+        hasTrack: function() {
+            return !!event.attributes['playbackState'];
         },
 
         onPlaybackStarted: function() {

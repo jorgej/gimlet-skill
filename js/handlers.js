@@ -7,12 +7,12 @@ var actions = require('./actions.js')
 
 const states = constants.states;
 const intents = constants.intents;
-intents.PlayExclusive
 
+// TODO: use enums instead of strings for intent names
 // TODO: revisit this in a way that isn't organized by state-first
-var startModeIntentHandlers = Alexa.CreateStateHandler(states.START_MODE, {
+var defaultIntentHandlers = Alexa.CreateStateHandler(states.DEFAULT, {
     /*
-    *  All Intent Handlers for state : START_MODE
+    *  All Intent Handlers for state : DEFAULT
     */
     'LaunchRequest': function() { actions.launchRequest(this) },
     'PlayLatest': function() { actions.playLatest(this) },
@@ -22,38 +22,20 @@ var startModeIntentHandlers = Alexa.CreateStateHandler(states.START_MODE, {
     'WhoIsMatt': function() {actions.whoIsMatt(this) },
     'ListShows': function() { actions.listShows(this) },
 
-    'AMAZON.HelpIntent': function() { actions.help(this) },
-    'AMAZON.StopIntent': function() { actions.cancel(this) },
-    'AMAZON.CancelIntent': function() { actions.cancel(this) },
-    'SessionEndedRequest': function() { actions.sessionEnded(this) },
-    'Unhandled': function() { actions.unhandledAction(this) },
-});
-
-// TODO: use enums instead of strings for intent names
-
-var playModeIntentHandlers = Alexa.CreateStateHandler(states.PLAY_MODE, {
-    'LaunchRequest': function() { actions.launchRequest(this) },
-    'PlayLatest': function() { actions.playLatest(this) },
-    'PlayFavorite': function() { actions.playFav(this) },
-    'PlayExclusive': function() { actions.playExclusive(this) },
-
-    'WhoIsMatt': function() { actions.whoIsMatt(this) },
-    'ListShows': function() { actions.listShows(this) },
-
-    'AMAZON.HelpIntent': function() { actions.help(this) },
+    'AMAZON.HelpIntent': function() { actions.helpDefault(this) },
     'AMAZON.PauseIntent': function() { actions.pause(this) },
     'AMAZON.ResumeIntent': function() { actions.resume(this) },
     'AMAZON.StopIntent': function() { actions.stop(this) },
     'AMAZON.CancelIntent': function() { actions.cancel(this) },
     'AMAZON.StartOverIntent': function() { actions.startOver(this) },
-    
+
     'AMAZON.NextIntent': function() { actions.playbackOperationUnsupported(this) },
     'AMAZON.PreviousIntent': function() { actions.playbackOperationUnsupported(this) },
     'AMAZON.LoopOnIntent': function() { actions.playbackOperationUnsupported(this) },
     'AMAZON.LoopOffIntent': function() { actions.playbackOperationUnsupported(this) },
     'AMAZON.ShuffleOnIntent': function() { actions.playbackOperationUnsupported(this) },
     'AMAZON.ShuffleOffIntent': function() { actions.playbackOperationUnsupported(this) },
-    
+
     'SessionEndedRequest': function() { actions.sessionEnded(this) },
     'Unhandled': function() { actions.unhandledAction(this) },
 });
@@ -71,7 +53,7 @@ var askShowIntentHandlers = Alexa.CreateStateHandler(states.ASK_FOR_SHOW, {
     'SessionEndedRequest': function() { actions.sessionEnded(this) },
 });
 
-var remoteControllerHandlers = Alexa.CreateStateHandler(states.PLAY_MODE, {
+var remoteControllerHandlers = Alexa.CreateStateHandler(states.DEFAULT, {
     /*
         *  All Requests are received using a Remote Control. Calling corresponding handlers for each of them.
         */
@@ -89,7 +71,8 @@ var remoteControllerHandlers = Alexa.CreateStateHandler(states.PLAY_MODE, {
     }
 });
 
-var audioEventHandlers = Alexa.CreateStateHandler(states.PLAY_MODE, {
+// TODO: don't we want this for all states?
+var audioEventHandlers = Alexa.CreateStateHandler(states.DEFAULT, {
     'PlaybackStarted': function() { actions.playbackStarted(this) },
     'PlaybackStopped': function() { actions.playbackStopped(this) },
     'PlaybackNearlyFinished': function() { actions.playbackNearlyFinished(this) },
@@ -98,8 +81,7 @@ var audioEventHandlers = Alexa.CreateStateHandler(states.PLAY_MODE, {
 });
 
 module.exports = {
-    startModeIntentHandlers: startModeIntentHandlers,
-    playModeIntentHandlers: playModeIntentHandlers,
+    defaultIntentHandlers: defaultIntentHandlers,
     askShowIntentHandlers: askShowIntentHandlers,
     remoteControllerHandlers: remoteControllerHandlers,
     audioEventHandlers: audioEventHandlers,

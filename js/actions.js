@@ -12,19 +12,19 @@ const rss = require("rss-parser");
 const appStates = constants.states;
 
 function launchRequest(event) {
+    // we can assume we're in DEFAULT state
+    const controller = PlaybackController(event);
     let speech;
-    const state = event.handler.state;
-
-    if (state == appStates.PLAY_MODE) {
+    if (controller.isTrackActive()) {
         speech = Say("Welcome:Playback");
-        const controller = PlaybackController(event);
         controller.resume();
     }
     else {
-        // ensure we're in START_MODE (should be true, but this will force us out of 
+        // ensure we're in DEFAULT (should be true, but this will force us out of 
         //  state transition holes in case the logic is broken and the user is we're stuck) 
-        event.handlers.state = appStates.START_MODE;
+        event.handler.state = appStates.DEFAULT;
         speech = Say("Welcome");
+        // TODO: keep session alive
     }
 
     event.response.speak(speech);
@@ -32,14 +32,18 @@ function launchRequest(event) {
 }
 
 function help(event) {
+    const controller = PlaybackController(event);
+
     const state = event.handler.state;
     let speech;
 
-    if (state == appStates.START_MODE) {
-        speech = Say("Help");
-    }
-    else if (state == appStates.PLAY_MODE) {
-        speech = Say("Help:Playback");
+    if (state === appStates.DEFAULT) {
+        if (controller.isTrackActive()) {
+            speech = Say("Help:Playback");
+        }
+        else {
+            speech = Say("Help");
+        }
     }
     else if (state == appStates.ASK_FOR_SHOW) {
         speech = Say("Help:AskForShow");
@@ -47,6 +51,7 @@ function help(event) {
     else {
         speech = Say("_Unknown");
     }
+
     event.response.speak(speech);
     event.emit(":responseReady");
 }
@@ -125,19 +130,20 @@ function listShows(event) {
     event.emit(":responseReady");
 }
 
-function cancel(event) {
-    if (event.handler.state === appStates.PLAY_MODE) {
-        PlaybackController(event).stop();
-    }
-    else {
-        event.handler.state = appStates.START_MODE;
-        event.response.speak(Say("Goodbye"));
-    }
+function whoIsMatt(event) {
+    event.response.speak(Say("MattLieberIs"));
     event.emit(":responseReady");
 }
 
-function whoIsMatt(event) {
-    event.response.speak(Say("MattLieberIs"));
+function cancel(event) {
+    const controller = PlaybackController(event);
+    if (event.handler.state === appStates.DEFAULT && controller.isTrackActive()) {
+        PlaybackController(event).stop();
+    }
+    else {
+        event.handler.state = appStates.DEFAULT;
+        event.response.speak(Say("Goodbye"));
+    }
     event.emit(":responseReady");
 }
 
@@ -147,12 +153,12 @@ function showTitleNamed(event) {
     //     const triggeringIntent = event.attributes["intentAskingFor"];
     //     delete event.attributes["intentAskingFor"];
 
-    //     event.handler.state = appStates.START_MODE;
+    //     event.handler.state = appStates.DEFAULT;
 
     //     // TODO: ensure show is valid
     //     // TODO: revisit handling of this. don't like manually concatenating them
 
-    //     event.emit(triggeringIntent + "_START_MODE");
+    //     event.emit(triggeringIntent + "_DEFAULT");
     //     return;
     // }
     // else {
@@ -175,20 +181,29 @@ function stop(event) {
 }
 
 function resume(event) {
-    PlaybackController(event).resume();
-    event.emit(":responseReady");
-}
-
-function playbackOperationUnsupported(event, operationName) {
-    speech = Say("UnsupportedOperation", operationName);
-    event.response.speak(speech);
+    const controller = PlaybackController(event);
+    const didResume = controller.resume();    
+    if (!didResume) {
+        event.speak(Say("EmptyQueueHelp"));
+    }
     event.emit(":responseReady");
 }
 
 function startOver(event) {
-    PlaybackController(event).restart();
+    const controller = PlaybackController(event);
+    const didRestart = controller.restart();    
+    if (!didRestart) {
+        event.speak(Say("EmptyQueueHelp"));
+    }
     event.emit(":responseReady");
 }
+
+function playbackOperationUnsupported(event, operationName) {
+    const speech = Say("UnsupportedOperation", operationName);
+    event.response.speak(speech);
+    event.emit(":responseReady");
+}
+
 
 function playbackPlay(event) {
     PlaybackController(event).resume();
@@ -206,9 +221,11 @@ function playbackPause(event) {
  */
 
 function sessionEnded(event) {
+    event.handler.state = appStates.DEFAULT;
+    event.emit(":saveState", true);
     // TODO: implement
     // if (event.handler.state === appStates.ASK_FOR_SHOW) {
-    //     event.handler.state = appStates.START_MODE;
+    //     event.handler.state = appStates.DEFAULT;
     //     delete event.attributes["intentAskingFor"];
     //     event.emit(":saveState");
     // }
@@ -232,15 +249,12 @@ function playbackNearlyFinished(event) {
 }
 
 function playbackFinished(event) {
-    // TODO: consider getting rid of this state? really it's inherent in the playbackMode attributes
-    event.handler.state = appStates.START_MODE;
     PlaybackController(event).onPlaybackFinished();
     event.emit(':saveState', true);
 }
 
 function playbackFailed(event) {
-    event.handler.state = appStates.START_MODE;
-    event.emit(':saveState', true);
+    event.context.succeed(true);
 }
 
 /**
@@ -264,7 +278,7 @@ function unhandledAction(event) {
     // });
     
     // TODO: need to reprompt and listen if in an asking state
-    event.handler.state = appStates.START_MODE;
+    event.handler.state = appStates.DEFAULT;
     
     var message = Say("_Unhandled");
     event.response.speak(message);

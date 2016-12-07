@@ -14,8 +14,7 @@ exports.handler = function(event, context, callback){
     alexa.appId = constants.appId;
     alexa.dynamoDBTableName = constants.dynamoDBTableName;
     alexa.registerHandlers(
-        handlers.startModeIntentHandlers,
-        handlers.playModeIntentHandlers,
+        handlers.defaultIntentHandlers,
         handlers.askShowIntentHandlers,
         handlers.remoteControllerHandlers,
         handlers.audioEventHandlers
