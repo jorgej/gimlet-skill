@@ -6,8 +6,8 @@ module.exports = function(key) {
     var args = Array.prototype.slice.call(arguments, 1);
 
     var speech = {
-        "Welcome":                "Welcome to the Gimlet skill. You can say some fun stuff if you want.",
-        "Welcome:ConfirmResume":  "Welcome back! Would you like to resume from where you left off?",
+        "Welcome":                "Welcome to the Gimlet skill. You can say all sorts of things to me.",
+        "Welcome:ConfirmResume":  `Welcome back! Would you like to continue the episode of ${args[0]} you were listening to?`,
         
         "PromptToAction":       "You can say some fun stuff if you want.",
 
@@ -25,7 +25,7 @@ module.exports = function(key) {
         "PlayingExclusive": `Here is an exclusive clip from ${args[0]}`,
 
         "MattLieberIs":     "Matt Lieber is a guy who Tomer would like to meet.",
-        "ShowList":         "Well, there's StartUp. And then that one with the Australian host. I love her accent. And um, the one with Ross?",
+        "ShowList":         "Well, there's StartUp. And then that science one with the Australian host. And um, the one with Ross from Friends?",
         "ShowListThenAsk":  "There's a bunch of them. Pick one.",
 
         "AskForShowTitle":       "What show would you like to listen to?",

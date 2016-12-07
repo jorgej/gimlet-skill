@@ -16,9 +16,10 @@ function launchRequest(event) {
     // we can assume we're in DEFAULT state
     const controller = PlaybackController(event);
     let speech;
-    if (controller.isTrackActive()) {
+    const track = controller.activeTrack();
+    if (track) {
         event.handler.state = appStates.CONFIRM_RESUME;
-        speech = Say("Welcome:ConfirmResume");
+        speech = Say("Welcome:ConfirmResume", track.showTitle);
     }
     else {
         // ensure we're in DEFAULT (should be true, but this will force us out of 
@@ -38,26 +39,33 @@ function help(event) {
 
     const state = event.handler.state;
     let speech;
+    let reprompt;
 
     if (state === appStates.DEFAULT) {
-        if (controller.isTrackActive()) {
+        if (controller.activeTrack()) {
             speech = Say("Help:Playback");
         }
         else {
             speech = Say("Help");
+            reprompt = Say("Welcome");
         }
     }
     else if (state === appStates.ASK_FOR_SHOW) {
         speech = Say("Help:AskForShow");
+        reprompt = Say("Help:AskForShow");
     }
     else if (state === appStates.CONFIRM_RESUME) {
         speech = Say("Help:ConfirmResume");
+        reprompt = Say("Help:ConfirmResume");
     }
     else {
         speech = Say("_Unknown");
     }
 
     event.response.speak(speech);
+    if (reprompt) {
+        event.response.listen(reprompt);
+    }
     event.emit(":responseReady");
 }
 
@@ -73,7 +81,6 @@ function playLatest(event) {
         );
     }
     else {
-        event.response.speak("Sorry, I don't know what show you're referring to.");
         event.response.speak(Say("AskForShowTitle"))
                 .listen(Say("RepromptForShowTitle"));
         event.attributes["intentAskingFor"] = intents.PlayLatest;
@@ -104,7 +111,7 @@ function playExclusive(event) {
     }
 }
 
-function playFav(event) {
+function playFavorite(event) {
     event.handler.state = constants.states.DEFAULT;
 
     const show = getShowFromSlotValue(event.event.request);    
@@ -150,7 +157,7 @@ function cancel(event) {
     event.handler.state = constants.states.DEFAULT;
 
     const controller = PlaybackController(event);
-    if (event.handler.state === appStates.DEFAULT && controller.isTrackActive()) {
+    if (event.handler.state === appStates.DEFAULT && controller.activeTrack()) {
         PlaybackController(event).stop();
     }
     else {
@@ -322,7 +329,7 @@ function unhandledAction(event) {
         event.response.speak(Say("UnknownShowTitle"))
                         .listen(Say("RepromptForShowTitle"));
     }
-    else if (state === appStates.CONFIRM_RESUME) {
+    else if (event.handler.state === appStates.CONFIRM_RESUME) {
         event.response.speak(Say("UnhandledConfirmResume"))
                       .listen(Say("UnhandledConfirmResume"));
     }
@@ -338,10 +345,11 @@ module.exports = {
 
     playLatest: playLatest,
     playExclusive: playExclusive,
-    playFav: playFav,
+    playFavorite: playFavorite,
     listShows: listShows,
     whoIsMatt: whoIsMatt,
-    
+    showTitleNamed: showTitleNamed,
+
     help: help,
     cancel: cancel,
     
@@ -384,7 +392,7 @@ function playShow(event, show, introSpeech, chooseFn) {
 
         // Alexa only plays HTTPS urls
         const url = entry.enclosure.url.replace('http://', 'https://');
-        const track = new Track(url, entry.title);
+        const track = new Track(url, entry.title, show.spokenTitle);
 
         if (introSpeech) {
             event.response.speak(introSpeech);

@@ -40,13 +40,14 @@ module.exports = function(event) {
             delete event.attributes["playbackState"];
         },
 
-        isTrackActive: function() {
+        activeTrack: function() {
             const playbackState = event.attributes['playbackState'];
-            return playbackState && !isFinished(playbackState);
-        },
-
-        hasTrack: function() {
-            return !!event.attributes['playbackState'];
+            if (playbackState && !isFinished(playbackState)) {
+                return playbackState.track;
+            }
+            else {
+                return undefined;
+            }
         },
 
         onPlaybackStarted: function() {
