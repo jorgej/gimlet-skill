@@ -14,5 +14,6 @@ rm constants.js.bak
 echo 'Compressing files...'
 zip -rq ../package.zip *
 cd ../..
+rm -rf _build/src
 
 echo 'Done. File is at `_build/package.zip`'
