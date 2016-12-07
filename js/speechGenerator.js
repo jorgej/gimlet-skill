@@ -6,7 +6,7 @@ module.exports = function(key) {
     var args = Array.prototype.slice.call(arguments, 1);
 
     var speech = {
-        "Welcome":                "Welcome to the Gimlet skill. You can say all sorts of things to me.",
+        "Welcome":                "Welcome to the Gimlet skill. What would you like to do?",
         "Welcome:ConfirmResume":  `Welcome back! Would you like to continue the episode of ${args[0]} you were listening to?`,
         
         "PromptForNewAction":     "What would you like to do?",
@@ -15,6 +15,10 @@ module.exports = function(key) {
         "Help:Playback":        "I get by with a little help from my friends.",
         "Help:ConfirmResume":   "Say 'Yes' to resume playing from where you left off, or say 'No' to do something else.",
         "Help:AskForShow":      "To continue, name the show you would like to listen to.",
+        
+        
+        "Welcome:NotAuthorized":    "Welcome to the Gimlet skill. To use it, you must be a Gimlet member. To sign into your account, check your Alexa app.",
+        "NotAuthorized":            "Sorry, but to use this skill, you must be a Gimlet member. To sign into your account, check your Alexa app.",
         
         "Goodbye":          "Ok see ya.",
 

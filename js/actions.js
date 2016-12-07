@@ -5,6 +5,7 @@ const constants = require("./constants");
 const shows = require("./shows");
 const PlaybackController = require("./playbackController");
 const Track = require("./track");
+const authHelper = require("./authHelper");
 const _ = require("lodash");
 
 const rss = require("rss-parser");
@@ -13,25 +14,28 @@ const appStates = constants.states;
 const intents = constants.intents;
 
 function launchRequest(event) {
-    // we can assume we're in DEFAULT state
-    const controller = PlaybackController(event);
-    let speech;
-    const track = controller.activeTrack();
-    if (track) {
-        event.handler.state = appStates.CONFIRM_RESUME;
-        speech = Say("Welcome:ConfirmResume", track.showTitle);
-    }
-    else {
-        // ensure we're in DEFAULT (should be true, but this will force us out of 
-        //  state transition holes in case the logic is broken and the user is we're stuck) 
-        event.handler.state = appStates.DEFAULT;
-        speech = Say("Welcome");
-        // TODO: keep session alive
-    }
+    // TODO: move this somewhere. auth flow here is too cluttered
+    requireAuth(event, Say("Welcome:NotAuthorized"), function() {
+        // we can assume we're in DEFAULT state
+        const controller = PlaybackController(event);
+        let speech;
+        const track = controller.activeTrack();
+        if (track) {
+            event.handler.state = appStates.CONFIRM_RESUME;
+            speech = Say("Welcome:ConfirmResume", track.showTitle);
+        }
+        else {
+            // ensure we're in DEFAULT (should be true, but this will force us out of 
+            //  state transition holes in case the logic is broken and the user is we're stuck) 
+            event.handler.state = appStates.DEFAULT;
+            speech = Say("Welcome");
+            // TODO: keep session alive
+        }
 
-    event.response.speak(speech)
-                  .listen(speech);
-    event.emit(":responseReady");
+        event.response.speak(speech)
+                    .listen(speech);
+        event.emit(":responseReady");
+    });
 }
 
 function help(event) {
@@ -70,66 +74,72 @@ function help(event) {
 }
 
 function playLatest(event) {
-    event.handler.state = constants.states.DEFAULT;
+    requireAuth(event, Say("NotAuthorized"), function() {
+        event.handler.state = constants.states.DEFAULT;
 
-    const show = getShowFromSlotValue(event.event.request);
-    if (show) {
-        playShow(event,
-            show,
-            Say("PlayingLatest", show.title),
-            (entries) => entries[0]
-        );
-    }
-    else {
-        event.response.speak(Say("AskForShowTitle"))
-                .listen(Say("RepromptForShowTitle"));
-        event.attributes["intentAskingFor"] = intents.PlayLatest;
-        event.handler.state = appStates.ASK_FOR_SHOW;
-        event.emit(":responseReady");
-    }
+        const show = getShowFromSlotValue(event.event.request);
+        if (show) {
+            playShow(event,
+                show,
+                Say("PlayingLatest", show.title),
+                (entries) => entries[0]
+            );
+        }
+        else {
+            event.response.speak(Say("AskForShowTitle"))
+                    .listen(Say("RepromptForShowTitle"));
+            event.attributes["intentAskingFor"] = intents.PlayLatest;
+            event.handler.state = appStates.ASK_FOR_SHOW;
+            event.emit(":responseReady");
+        }
+    });
 }
 
 function playExclusive(event) {
-    event.handler.state = constants.states.DEFAULT;
+    requireAuth(event, Say("NotAuthorized"), function() {
+        event.handler.state = constants.states.DEFAULT;
 
-    const show = getShowFromSlotValue(event.event.request);
-    if (show) {
-        playShow(event,
-            show,
-            Say("PlayingExclusive", show.title),
-            pickRandom
-        );
-    }
-    else {
-        event.response.speak("Sorry, I don't know what show you're referring to.");
-        event.response.speak(Say("AskForShowTitle"))
-                .listen(Say("RepromptForShowTitle"));
-        event.attributes["intentAskingFor"] = intents.PlayExclusive;
-        event.handler.state = appStates.ASK_FOR_SHOW;
-        
-        event.emit(":responseReady");
-    }
+        const show = getShowFromSlotValue(event.event.request);
+        if (show) {
+            playShow(event,
+                show,
+                Say("PlayingExclusive", show.title),
+                pickRandom
+            );
+        }
+        else {
+            event.response.speak("Sorry, I don't know what show you're referring to.");
+            event.response.speak(Say("AskForShowTitle"))
+                    .listen(Say("RepromptForShowTitle"));
+            event.attributes["intentAskingFor"] = intents.PlayExclusive;
+            event.handler.state = appStates.ASK_FOR_SHOW;
+            
+            event.emit(":responseReady");
+        }
+    });
 }
 
 function playFavorite(event) {
-    event.handler.state = constants.states.DEFAULT;
+    requireAuth(event, Say("NotAuthorized"), function() {
+        event.handler.state = constants.states.DEFAULT;
 
-    const show = getShowFromSlotValue(event.event.request);    
-    if (show) {
-        playShow(event,
-            show,
-            Say("PlayingFavorite", show.title),
-            pickRandom
-        );
-    }
-    else {
-        event.response.speak("Sorry, I don't know what show you're referring to.");
-        event.response.speak(Say("AskForShowTitle"))
-                .listen(Say("RepromptForShowTitle"));
-        event.attributes["intentAskingFor"] = intents.PlayFavorite;
-        event.handler.state = appStates.ASK_FOR_SHOW;
-        event.emit(":responseReady");
-    }
+        const show = getShowFromSlotValue(event.event.request);    
+        if (show) {
+            playShow(event,
+                show,
+                Say("PlayingFavorite", show.title),
+                pickRandom
+            );
+        }
+        else {
+            event.response.speak("Sorry, I don't know what show you're referring to.");
+            event.response.speak(Say("AskForShowTitle"))
+                    .listen(Say("RepromptForShowTitle"));
+            event.attributes["intentAskingFor"] = intents.PlayFavorite;
+            event.handler.state = appStates.ASK_FOR_SHOW;
+            event.emit(":responseReady");
+        }
+    });
 }
 
 function listShows(event) {
@@ -416,4 +426,16 @@ function getShowFromSlotValue(request) {
 
 function pickRandom(entries) {
     return entries[Math.floor(Math.random() * entries.length)];
+}
+
+function requireAuth(event, prompt, successCallback) {
+    authHelper.isSessionAuthenticated(event.event.session, function(auth) {
+        if (auth) {
+            successCallback();
+        }
+        else {
+            event.response.speak(prompt);//.linkAccountCard();
+            event.emit(":responseReady");
+        }
+    });
 }
