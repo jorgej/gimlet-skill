@@ -53,6 +53,25 @@ var askShowIntentHandlers = Alexa.CreateStateHandler(states.ASK_FOR_SHOW, {
     'SessionEndedRequest': function() { actions.sessionEnded(this) },
 });
 
+var confirmResumeIntentHandlers = Alexa.CreateStateHandler(states.CONFIRM_RESUME, {
+    'AMAZON.YesIntent': function() { actions.resumeConfirmed(this, true) },
+    'AMAZON.NoIntent': function() { actions.resumeConfirmed(this, false) },
+
+    'AMAZON.HelpIntent': function() { actions.helpDefault(this) },
+
+    // The following intents aren't a "proper" answer to a Yes/No question, but handling them lets the user implicitly say "No" with a followup action.
+    // 'PlayLatest': function() { actions.playLatest(this) },
+    // 'PlayFavorite': function() { actions.playFav(this) },
+    // 'PlayExclusive': function() { actions.playExclusive(this) },
+    // 'ListShows': function() { actions.listShows(this) },
+    // 'AMAZON.StartOverIntent': function() { actions.startOver(this) },
+
+    'AMAZON.StopIntent': function() { actions.cancel(this) }, // NOTE: In this case, treat this like a "cancel".
+    'AMAZON.CancelIntent': function() { actions.cancel(this) },
+    'SessionEndedRequest': function() { actions.sessionEnded(this) },
+    'Unhandled': function() { actions.unhandledAction(this) }
+});
+
 var remoteControllerHandlers = Alexa.CreateStateHandler(states.DEFAULT, {
     /*
         *  All Requests are received using a Remote Control. Calling corresponding handlers for each of them.
@@ -83,6 +102,7 @@ var audioEventHandlers = Alexa.CreateStateHandler(states.DEFAULT, {
 module.exports = {
     defaultIntentHandlers: defaultIntentHandlers,
     askShowIntentHandlers: askShowIntentHandlers,
+    confirmResumeIntentHandlers: confirmResumeIntentHandlers,
     remoteControllerHandlers: remoteControllerHandlers,
     audioEventHandlers: audioEventHandlers,
 };

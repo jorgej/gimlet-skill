@@ -36,6 +36,9 @@ module.exports = function(event) {
             }
             return false;
         },
+        clear: function() {
+            delete event.attributes["playbackState"];
+        },
 
         isTrackActive: function() {
             const playbackState = event.attributes['playbackState'];

@@ -16,8 +16,8 @@ function launchRequest(event) {
     const controller = PlaybackController(event);
     let speech;
     if (controller.isTrackActive()) {
-        speech = Say("Welcome:Playback");
-        controller.resume();
+        event.handler.state = appStates.CONFIRM_RESUME;
+        speech = Say("Welcome:ConfirmResume");
     }
     else {
         // ensure we're in DEFAULT (should be true, but this will force us out of 
@@ -27,7 +27,8 @@ function launchRequest(event) {
         // TODO: keep session alive
     }
 
-    event.response.speak(speech);
+    event.response.speak(speech)
+                  .listen(speech);
     event.emit(":responseReady");
 }
 
@@ -45,8 +46,11 @@ function help(event) {
             speech = Say("Help");
         }
     }
-    else if (state == appStates.ASK_FOR_SHOW) {
+    else if (state === appStates.ASK_FOR_SHOW) {
         speech = Say("Help:AskForShow");
+    }
+    else if (state === appStates.CONFIRM_RESUME) {
+        speech = Say("Help:ConfirmResume");
     }
     else {
         speech = Say("_Unknown");
@@ -57,6 +61,8 @@ function help(event) {
 }
 
 function playLatest(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     const show = getShowFromSlotValue(event.event.request);
     if (show) {
         playShow(event,
@@ -77,6 +83,8 @@ function playLatest(event) {
 }
 
 function playExclusive(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     const show = getShowFromSlotValue(event.event.request);
     if (show) {
         playShow(event,
@@ -97,6 +105,8 @@ function playExclusive(event) {
 }
 
 function playFav(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     const show = getShowFromSlotValue(event.event.request);    
     if (show) {
         playShow(event,
@@ -117,6 +127,8 @@ function playFav(event) {
 }
 
 function listShows(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     let speech = Say("ShowList"); 
     // TODO: revisit handling of this
     // if (event.handler.state === appStates.ASK_FOR_SHOW) {
@@ -131,11 +143,15 @@ function listShows(event) {
 }
 
 function whoIsMatt(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     event.response.speak(Say("MattLieberIs"));
     event.emit(":responseReady");
 }
 
 function cancel(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     const controller = PlaybackController(event);
     if (event.handler.state === appStates.DEFAULT && controller.isTrackActive()) {
         PlaybackController(event).stop();
@@ -171,31 +187,56 @@ function showTitleNamed(event) {
 }
 
 function pause(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     PlaybackController(event).stop();
     event.emit(":responseReady");
 }
 
 function stop(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     PlaybackController(event).stop();
     event.emit(":responseReady");
 }
 
 function resume(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     const controller = PlaybackController(event);
     const didResume = controller.resume();    
     if (!didResume) {
-        event.speak(Say("EmptyQueueHelp"));
+        event.response.speak(Say("EmptyQueueHelp"));
     }
     event.emit(":responseReady");
 }
 
 function startOver(event) {
+    event.handler.state = constants.states.DEFAULT;
+
     const controller = PlaybackController(event);
     const didRestart = controller.restart();    
     if (!didRestart) {
-        event.speak(Say("EmptyQueueHelp"));
+        event.response.speak(Say("EmptyQueueHelp"));
     }
     event.emit(":responseReady");
+}
+
+function resumeConfirmed(event, shouldResume) {
+    event.handler.state = appStates.DEFAULT;
+
+    if (shouldResume) {
+        resume(event);
+    }
+    else {
+        const controller = PlaybackController(event);
+        controller.clear();
+
+        const message = Say("PromptToAction");
+        event.response.speak(message)
+                      .listen(message);
+        event.emit(":responseReady");
+    }
 }
 
 function playbackOperationUnsupported(event, operationName) {
@@ -277,11 +318,18 @@ function unhandledAction(event) {
     //     intent: event.event.request.intent,
     // });
     
-    // TODO: need to reprompt and listen if in an asking state
-    event.handler.state = appStates.DEFAULT;
+    let message;
+
+    const state = event.handler.state;
+    if (state === appStates.CONFIRM_RESUME) {
+        message = Say("UnhandledConfirmResume");
+    }
+    else {
+        message = Say("_Unhandled");
+    }
     
-    var message = Say("_Unhandled");
-    event.response.speak(message);
+    event.response.speak(message)
+                  .listen(message);
     event.emit(':responseReady');
 }
 
@@ -302,6 +350,7 @@ module.exports = {
     resume: resume,
     playbackOperationUnsupported: playbackOperationUnsupported,
     startOver: startOver,
+    resumeConfirmed: resumeConfirmed,
     playbackPlay: playbackPlay,
     playbackPause: playbackPause,
 
