@@ -434,7 +434,7 @@ function requireAuth(event, prompt, successCallback) {
             successCallback();
         }
         else {
-            event.response.speak(prompt);//.linkAccountCard();
+            event.response.speak(prompt).linkAccountCard();
             event.emit(":responseReady");
         }
     });
