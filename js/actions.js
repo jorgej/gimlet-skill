@@ -1,12 +1,11 @@
 'use strict';
 
-const Say = require("./speechGenerator");
+const speaker = require("./speaker");
 const constants = require("./constants");
-const shows = require("./shows");
+const gimlet = require("./gimlet");
 const PlaybackController = require("./playbackController");
 const Track = require("./track");
 const authHelper = require("./authHelper");
-const _ = require("lodash");
 
 const rss = require("rss-parser");
 
@@ -15,7 +14,7 @@ const intents = constants.intents;
 
 function launchRequest(event) {
     // TODO: move this somewhere. auth flow here is too cluttered
-    requireAuth(event, Say("Welcome:NotAuthorized"), function() {
+    requireAuth(event, speaker.get("Welcome:NotAuthorized"), function() {
         // we can assume we're in DEFAULT state
         const controller = PlaybackController(event);
         let speech, reprompt;
@@ -23,19 +22,19 @@ function launchRequest(event) {
         const track = controller.activeTrack();
         if (track) {
             event.handler.state = appStates.CONFIRM_RESUME;
-            speech = Say("Welcome:ConfirmResume", track.showTitle);
+            speech = speaker.askToResume(track.show);
         }
         else {
             // ensure we're in DEFAULT (should be true, but this will force us out of 
             //  state transition holes in case the logic is broken and the user is we're stuck) 
             event.handler.state = appStates.DEFAULT;
             if (event.attributes['returningUser']) {
-                speech = Say("Welcome");
-                reprompt = Say("PromptForNewAction")
+                speech = speaker.get("Welcome");
+                reprompt = speaker.get("PromptForNewAction")
             }
             else {
-                speech = Say("Welcome:FirstTime");
-                reprompt = Say("PromptForNewAction")
+                speech = speaker.get("Welcome:FirstTime");
+                reprompt = speaker.get("PromptForNewAction")
                 event.attributes['returningUser'] = true;
             }
         }
@@ -55,23 +54,23 @@ function help(event) {
 
     if (state === appStates.DEFAULT) {
         if (controller.activeTrack()) {
-            speech = Say("Help:Playback");
+            speech = speaker.get("Help:Playback");
         }
         else {
-            speech = Say("Help");
-            reprompt = Say("Welcome");
+            speech = speaker.get("Help");
+            reprompt = speaker.get("Welcome");
         }
     }
     else if (state === appStates.ASK_FOR_SHOW) {
-        speech = Say("Help:AskForShow");
-        reprompt = Say("Help:AskForShow");
+        speech = speaker.get("Help:AskForShow");
+        reprompt = speaker.get("Help:AskForShow");
     }
     else if (state === appStates.CONFIRM_RESUME) {
-        speech = Say("Help:ConfirmResume");
-        reprompt = Say("Help:ConfirmResume");
+        speech = speaker.get("Help:ConfirmResume");
+        reprompt = speaker.get("Help:ConfirmResume");
     }
     else {
-        speech = Say("_Unknown");
+        speech = speaker.get("_Unknown");
     }
 
     event.response.speak(speech);
@@ -82,20 +81,16 @@ function help(event) {
 }
 
 function playLatest(event) {
-    requireAuth(event, Say("NotAuthorized"), function() {
+    requireAuth(event, speaker.get("NotAuthorized"), function() {
         event.handler.state = constants.states.DEFAULT;
 
         const show = getShowFromSlotValue(event.event.request);
         if (show) {
-            playShow(event,
-                show,
-                Say("PlayingLatest", show.title),
-                (entries) => entries[0]
-            );
+            playMostRecent(event, show);
         }
         else {
-            event.response.speak(Say("AskForShowTitle"))
-                    .listen(Say("RepromptForShowTitle"));
+            event.response.speak(speaker.get("AskForShowTitle"))
+                    .listen(speaker.get("RepromptForShowTitle"));
             event.attributes["intentAskingFor"] = intents.PlayLatest;
             event.handler.state = appStates.ASK_FOR_SHOW;
             event.emit(":responseReady");
@@ -104,21 +99,19 @@ function playLatest(event) {
 }
 
 function playExclusive(event) {
-    requireAuth(event, Say("NotAuthorized"), function() {
+    requireAuth(event, speaker.get("NotAuthorized"), function() {
         event.handler.state = constants.states.DEFAULT;
+
+        // TODO: figure out how to play show
 
         const show = getShowFromSlotValue(event.event.request);
         if (show) {
-            playShow(event,
-                show,
-                Say("PlayingExclusive", show.title),
-                pickRandom
-            );
+            playExclusive(event, show);
         }
         else {
             event.response.speak("Sorry, I don't know what show you're referring to.");
-            event.response.speak(Say("AskForShowTitle"))
-                    .listen(Say("RepromptForShowTitle"));
+            event.response.speak(speaker.get("AskForShowTitle"))
+                    .listen(speaker.get("RepromptForShowTitle"));
             event.attributes["intentAskingFor"] = intents.PlayExclusive;
             event.handler.state = appStates.ASK_FOR_SHOW;
             
@@ -128,21 +121,17 @@ function playExclusive(event) {
 }
 
 function playFavorite(event) {
-    requireAuth(event, Say("NotAuthorized"), function() {
+    requireAuth(event, speaker.get("NotAuthorized"), function() {
         event.handler.state = constants.states.DEFAULT;
 
         const show = getShowFromSlotValue(event.event.request);    
         if (show) {
-            playShow(event,
-                show,
-                Say("PlayingFavorite", show.title),
-                pickRandom
-            );
+            playFavorite(event, show);
         }
         else {
             event.response.speak("Sorry, I don't know what show you're referring to.");
-            event.response.speak(Say("AskForShowTitle"))
-                    .listen(Say("RepromptForShowTitle"));
+            event.response.speak(speaker.get("AskForShowTitle"))
+                    .listen(speaker.get("RepromptForShowTitle"));
             event.attributes["intentAskingFor"] = intents.PlayFavorite;
             event.handler.state = appStates.ASK_FOR_SHOW;
             event.emit(":responseReady");
@@ -151,14 +140,14 @@ function playFavorite(event) {
 }
 
 function listShows(event) {
-    let speech = Say("ShowList");
+    let speech = speaker.get("ShowList");
     
     if (event.handler.state === appStates.ASK_FOR_SHOW) {
-        event.response.speak(Say("ShowListThenAsk"))
-                      .listen(Say("RepromptForShowTitle"));
+        event.response.speak(speaker.get("ShowListThenAsk"))
+                      .listen(speaker.get("RepromptForShowTitle"));
     }
     else {
-        event.response.speak(Say("ShowList"));
+        event.response.speak(speaker.get("ShowList"));
     }
 
     event.emit(":responseReady");
@@ -167,7 +156,7 @@ function listShows(event) {
 function whoIsMatt(event) {
     event.handler.state = constants.states.DEFAULT;
 
-    event.response.speak(Say("MattLieberIs"));
+    event.response.speak(speaker.get("MattLieberIs"));
     event.emit(":responseReady");
 }
 
@@ -180,7 +169,7 @@ function cancel(event) {
     }
     else {
         event.handler.state = appStates.DEFAULT;
-        event.response.speak(Say("Goodbye"));
+        event.response.speak(speaker.get("Goodbye"));
     }
     event.emit(":responseReady");
 }
@@ -191,8 +180,8 @@ function showTitleNamed(event) {
         delete event.attributes["intentAskingFor"];
 
         if(!getShowFromSlotValue(event.event.request)) {
-            event.response.speak(Say("UnknownShowTitle"))
-                            .listen(Say("RepromptForShowTitle"));
+            event.response.speak(speaker.get("UnknownShowTitle"))
+                            .listen(speaker.get("RepromptForShowTitle"));
         }
         else {
             event.handler.state = appStates.DEFAULT;
@@ -238,7 +227,7 @@ function resume(event) {
     const controller = PlaybackController(event);
     const didResume = controller.resume();    
     if (!didResume) {
-        event.response.speak(Say("EmptyQueueHelp"));
+        event.response.speak(speaker.get("EmptyQueueHelp"));
     }
     event.emit(":responseReady");
 }
@@ -249,7 +238,7 @@ function startOver(event) {
     const controller = PlaybackController(event);
     const didRestart = controller.restart();    
     if (!didRestart) {
-        event.response.speak(Say("EmptyQueueHelp"));
+        event.response.speak(speaker.get("EmptyQueueHelp"));
     }
     event.emit(":responseReady");
 }
@@ -264,7 +253,7 @@ function resumeConfirmed(event, shouldResume) {
         const controller = PlaybackController(event);
         controller.clear();
 
-        const message = Say("PromptForNewAction");
+        const message = speaker.get("PromptForNewAction");
         event.response.speak(message)
                       .listen(message);
         event.emit(":responseReady");
@@ -272,7 +261,7 @@ function resumeConfirmed(event, shouldResume) {
 }
 
 function playbackOperationUnsupported(event, operationName) {
-    const speech = Say("UnsupportedOperation", operationName);
+    const speech = speaker.get("UnsupportedOperation", operationName);
     event.response.speak(speech);
     event.emit(":responseReady");
 }
@@ -344,15 +333,15 @@ function unhandledAction(event) {
         but we define no handler for it in the current application state.
     */
     if (event.handler.state === appStates.ASK_FOR_SHOW) {
-        event.response.speak(Say("UnknownShowTitle"))
-                        .listen(Say("RepromptForShowTitle"));
+        event.response.speak(speaker.get("UnknownShowTitle"))
+                        .listen(speaker.get("RepromptForShowTitle"));
     }
     else if (event.handler.state === appStates.CONFIRM_RESUME) {
-        event.response.speak(Say("UnhandledConfirmResume"))
-                      .listen(Say("UnhandledConfirmResume"));
+        event.response.speak(speaker.get("UnhandledConfirmResume"))
+                      .listen(speaker.get("UnhandledConfirmResume"));
     }
     else {
-        event.response.speak(Say("_Unhandled"));
+        event.response.speak(speaker.get("_Unhandled"));
     }
 
     event.emit(':responseReady');
@@ -395,30 +384,52 @@ module.exports = {
  * Helpers
  */
 
-function playShow(event, show, introSpeech, chooseFn) {
-    rss.parseURL(show.url, function(err, parsed) {
+function playMostRecent(event, show) {
+    const url = gimlet.feedUrl(show);
+    rss.parseURL(url, function(err, parsed) {
         if (err) {
             // TODO
         }
 
-        const entry = chooseFn(parsed.feed.entries);
+        const entry = parsed.feed.entries[0];
         if (!entry) {
             // TODO
         }
 
-        const controller = PlaybackController(event); 
-
         // Alexa only plays HTTPS urls
         const url = entry.enclosure.url.replace('http://', 'https://');
-        const track = new Track(url, entry.title, show.spokenTitle);
-
-        if (introSpeech) {
-            event.response.speak(introSpeech);
-        }
-        
-        controller.start(track);
-        event.emit(":responseReady");
+        const track = new Track(url, entry.title, show);
+        playTrack(event, track, speaker.introduceMostRecent(show));
     });
+}
+
+function playExclusive(event, show) {
+    // TODO
+    event.response.speak("Sorry, this feature is not yet implemented");
+}
+
+function playFavorite(event, show) {
+    const favs = gimlet.favorites(show) || [];
+
+    const url = favs[0] && favs[0].url;
+    if (!url) {
+        // TODO
+    }
+
+    // Alexa only plays HTTPS urls
+    const track = new Track(url, entry.title, show);
+    playTrack(event, track, speaker.introduceFavorite(show));
+}
+
+function playTrack(event, track, introSpeech) {
+    const controller = PlaybackController(event); 
+
+    if (introSpeech) {
+        event.response.speak(introSpeech);
+    }
+    
+    controller.start(track);
+    event.emit(":responseReady");
 }
 
 function getShowFromSlotValue(request) {
@@ -426,17 +437,14 @@ function getShowFromSlotValue(request) {
     if (slots) {
         const slot = slots["ShowTitle"];
         if (slot && slot.value) {
-            const targetVal = slot.value.toLowerCase();
-            return _.find(_.values(shows), s => _.includes(s.slotValues, targetVal));
+            return gimlet.showMatchingSlotValue(slot.value);
         }
     }
 }
 
-function pickRandom(entries) {
-    return entries[Math.floor(Math.random() * entries.length)];
-}
-
 function requireAuth(event, prompt, successCallback) {
+    successCallback();
+    return;
     authHelper.isSessionAuthenticated(event.event.session, function(auth) {
         if (auth) {
             successCallback();
