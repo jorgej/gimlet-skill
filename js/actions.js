@@ -18,7 +18,8 @@ function launchRequest(event) {
     requireAuth(event, Say("Welcome:NotAuthorized"), function() {
         // we can assume we're in DEFAULT state
         const controller = PlaybackController(event);
-        let speech;
+        let speech, reprompt;
+
         const track = controller.activeTrack();
         if (track) {
             event.handler.state = appStates.CONFIRM_RESUME;
@@ -28,12 +29,19 @@ function launchRequest(event) {
             // ensure we're in DEFAULT (should be true, but this will force us out of 
             //  state transition holes in case the logic is broken and the user is we're stuck) 
             event.handler.state = appStates.DEFAULT;
-            speech = Say("Welcome");
-            // TODO: keep session alive
+            if (event.attributes['returningUser']) {
+                speech = Say("Welcome");
+                reprompt = Say("PromptForNewAction")
+            }
+            else {
+                speech = Say("Welcome:FirstTime");
+                reprompt = Say("PromptForNewAction")
+                event.attributes['returningUser'] = true;
+            }
         }
 
         event.response.speak(speech)
-                    .listen(speech);
+                      .listen(reprompt || speech);
         event.emit(":responseReady");
     });
 }

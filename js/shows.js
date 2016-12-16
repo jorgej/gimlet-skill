@@ -3,7 +3,7 @@
 module.exports = {
     CrimeTown: new Show("crimetownshow", "Crime Town"),
     Heavyweight: new Show("heavyweightpodcast", "Heavyweight", ["heavyweight", "heavy weight", "heavyweights", "heavy weights"]),
-    HomecomeShow: new Show("homecomingshow", "Homecoming"),
+    Homecoming: new Show("homecomingshow", "Homecoming"),
     MysteryShow: new Show("mysteryshow", "Mystery Show"),
     ReplyAll: new Show("hearreplyall", "Reply All"),
     ScienceVs: new Show("sciencevs", "Science Vs", ["science vs", "science versus"]),
