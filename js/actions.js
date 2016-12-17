@@ -86,7 +86,7 @@ function playLatest(event) {
 
         const show = getShowFromSlotValue(event.event.request);
         if (show) {
-            playMostRecent(event, show);
+            startPlayingMostRecent(event, show);
         }
         else {
             event.response.speak(speaker.get("AskForShowTitle"))
@@ -106,7 +106,7 @@ function playExclusive(event) {
 
         const show = getShowFromSlotValue(event.event.request);
         if (show) {
-            playExclusive(event, show);
+            startPlayingExclusive(event, show);
         }
         else {
             event.response.speak("Sorry, I don't know what show you're referring to.");
@@ -126,7 +126,7 @@ function playFavorite(event) {
 
         const show = getShowFromSlotValue(event.event.request);    
         if (show) {
-            playFavorite(event, show);
+            startPlayingFavorite(event, show);
         }
         else {
             event.response.speak("Sorry, I don't know what show you're referring to.");
@@ -384,7 +384,7 @@ module.exports = {
  * Helpers
  */
 
-function playMostRecent(event, show) {
+function startPlayingMostRecent(event, show) {
     const url = gimlet.feedUrl(show);
     rss.parseURL(url, function(err, parsed) {
         if (err) {
@@ -403,22 +403,23 @@ function playMostRecent(event, show) {
     });
 }
 
-function playExclusive(event, show) {
+function startPlayingExclusive(event, show) {
     // TODO
     event.response.speak("Sorry, this feature is not yet implemented");
 }
 
-function playFavorite(event, show) {
+function startPlayingFavorite(event, show) {
     const favs = gimlet.favorites(show) || [];
 
-    const url = favs[0] && favs[0].url;
-    if (!url) {
+    // TODO: track waht user has already heard. random for now.
+    let fav = favs[Math.floor(Math.random() * favs.length)];
+    if (!fav) {
         // TODO
     }
 
     // Alexa only plays HTTPS urls
-    const track = new Track(url, entry.title, show);
-    playTrack(event, track, speaker.introduceFavorite(show));
+    const track = new Track(fav.url, fav.title, show);
+    playTrack(event, track, speaker.introduceFavorite(show, fav.title));
 }
 
 function playTrack(event, track, introSpeech) {

@@ -2,38 +2,6 @@
 
 const _ = require("lodash");
 
-module.exports = {
-    shows: shows,
-    
-    feedUrl: function(show) {
-        return feedMap[show.id];
-    },
-    
-    favorites: function(show) {
-        return favorites[show.id];
-    },
-
-    showMatchingSlotValue: function(slotValue) {
-        // first built a list of valid patterns we'll accept for each show
-        const showSlotPatterns = {};
-        
-        // by default, just use lowercase version of title
-        _.keys(shows).forEach(key => {
-            showSlotPatterns[key] = shows[key].title.toLowerCase();
-        });
-
-        // explicitly add some common aliases
-        showSlotPatterns.Heavyweight = ["heavyweight", "heavy weight", "heavyweights", "heavy weights"];
-        showSlotPatterns.ScienceVs = ["science vs", "science versus"];
-        showSlotPatterns.StartUp = ["startup", "start up"];
-
-        const targetVal = slotValue.toLowerCase();
-        return _.keys(shows).find(key => {
-            _.includes(showSlotPatterns[key], targetVal);
-        });
-    }
-};
-
 const shows = {
     CrimeTown: makeShow("Crime Town"),
     Heavyweight: makeShow("Heavyweight"),
@@ -62,19 +30,40 @@ const feedMap = {
     "undone": standardFeedUrl("undoneshow")
 };
 
-const favoritesMap = {
-    "crimetown": [],
-    "heavyweight": [],
-    "homecoming": [],
-    "mysteryshow": [],
-    "replyall": [],
-    "sciencevs": [],
-    "startup": [],
-    "sampler": [],
-    "surprisinglyawesome": [],
-    "twiceremoved": [],
-    "undone": []
-}
+const favoritesMap = require("./favorites");
+
+module.exports = {
+    shows: shows,
+    
+    feedUrl: function(show) {
+        return feedMap[show.id];
+    },
+    
+    favorites: function(show) {
+        return favoritesMap[show.id];
+    },
+
+    showMatchingSlotValue: function(slotValue) {
+        // first built a list of valid patterns we'll accept for each show
+        const showSlotPatterns = {};
+        
+        // by default, just use lowercase version of title
+        _.keys(shows).forEach(key => {
+            showSlotPatterns[key] = [shows[key].title.toLowerCase()];
+        });
+
+        // explicitly add some common aliases
+        showSlotPatterns.Heavyweight = ["heavyweight", "heavy weight", "heavyweights", "heavy weights"];
+        showSlotPatterns.ScienceVs = ["science vs", "science versus"];
+        showSlotPatterns.StartUp = ["startup", "start up"];
+
+        const targetVal = slotValue.toLowerCase();
+        const matchingKey = _.keys(shows).find(key => {
+            return _.includes(showSlotPatterns[key], targetVal);
+        });
+        return shows[matchingKey];
+    }
+};
 
 
 function makeShow(title) {
@@ -84,6 +73,8 @@ function makeShow(title) {
     }
 }
 
+
 function standardFeedUrl(showKey) {
-    return `http://feeds.gimletmedia.com/${id}`;
+    return `http://feeds.gimletmedia.com/${showKey}`;
 }
+

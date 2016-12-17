@@ -53,15 +53,16 @@ function getKeyedSpeech(key) {
 };
 
 const urlSuffixMap = {
-    "crimetown": "Crimetown",
-    "heavyweight": "Heavyweight",
-    "homecoming": "Homecoming",
-    "replyall": "Reply+All",
-    "sciencevs": "Science+Vs",
-    "startup": "StartUp",
-    "surprisinglyawesome": "Surprisingly+Awesome",
-    "twiceremoved": "Twice+Removed",
-    "undone": "Undone"
+    // Uncomment when these are live
+    // "crimetown": "Crimetown",
+    // "heavyweight": "Heavyweight",
+    // "homecoming": "Homecoming",
+    // "replyall": "Reply+All",
+    // "sciencevs": "Science+Vs",
+    // "startup": "StartUp",
+    // "surprisinglyawesome": "Surprisingly+Awesome",
+    // "twiceremoved": "Twice+Removed",
+    // "undone": "Undone"
 }
 
 function introduceMostRecent(show) {
@@ -73,8 +74,8 @@ function introduceMostRecent(show) {
     }
 }
 
-function introduceFavorite(show) {
-    return `Here is a staff favorite episode of ${show.title}`;
+function introduceFavorite(show, epTitle) {
+    return `Here is a staff favorite episode of ${show.title}. It's called ${epTitle}`;
 }
 
 function askToResume(show) {
