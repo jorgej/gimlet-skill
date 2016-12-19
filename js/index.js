@@ -17,6 +17,7 @@ exports.handler = function(event, context, callback){
         handlers.defaultIntentHandlers,
         handlers.askShowIntentHandlers,
         handlers.confirmIntentHandlers,
+        handlers.whichExclusiveHandlers,
         handlers.remoteControllerHandlers,
         handlers.audioEventHandlers
     );

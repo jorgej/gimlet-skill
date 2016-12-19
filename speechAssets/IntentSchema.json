@@ -25,6 +25,15 @@
       ]
     },
     {
+      "intent": "NumberIntent",
+      "slots": [
+        {
+          "name": "Number",
+          "type": "AMAZON.NUMBER"
+        }
+      ]
+    },
+    {
       "intent": "PlayFavorite",
       "slots": [
         {

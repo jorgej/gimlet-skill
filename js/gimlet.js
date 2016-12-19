@@ -32,8 +32,21 @@ const feedMap = {
 
 const favoritesMap = require("./favorites");
 
+const exclusives = [
+    {
+        url: "https://s3.amazonaws.com/amazon-alexa/Audio+Files/Exclusives/Exclusive+1.mp3"
+    },
+    {
+        url: "https://s3.amazonaws.com/amazon-alexa/Audio+Files/Exclusives/Exclusive+2.mp3"
+    },
+    {
+        url: "https://s3.amazonaws.com/amazon-alexa/Audio+Files/Exclusives/Exclusive+3.mp3"
+    }
+]
+
 module.exports = {
     shows: shows,
+    exclusives: exclusives,
     
     feedUrl: function(show) {
         return feedMap[show.id];

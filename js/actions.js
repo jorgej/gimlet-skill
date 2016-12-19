@@ -8,6 +8,7 @@ const Track = require("./track");
 const authHelper = require("./authHelper");
 
 const rss = require("rss-parser");
+const _ = require("lodash");
 
 const appStates = constants.states;
 const intents = constants.intents;
@@ -69,7 +70,7 @@ function help(event) {
             reprompt = speaker.get("Welcome");
         }
     }
-    else if (state === appStates.ASK_FOR_SHOW || state === appStates.QUESTION_CONFIRM) {
+    else if (isStateQuestion(state)) {
         speech = speaker.getQuestionSpeech(questionContext, 'help');
         reprompt = speaker.getQuestionSpeech(questionContext, 'reprompt');
     }
@@ -104,8 +105,11 @@ function playLatest(event) {
 
 function playExclusive(event) {
     requireAuth(event, speaker.get("NotAuthorized"), function() {
-        transitionToState(event, appStates.DEFAULT);
-        event.response.speak("Sorry, I can't handle that intent yet")
+        const context = constants.questions.ExclusiveNumber;
+        transitionToState(event, appStates.QUESTION_EXCLUSIVE_NUMBER, {questionContext: context});
+
+        event.response.speak(speaker.getQuestionSpeech(context, "original"))
+                        .listen(speaker.getQuestionSpeech(context, "reprompt"));
         event.emit(":responseReady");
     });
 }
@@ -198,6 +202,21 @@ function showTitleNamed(event) {
     }
 
     event.emit(":responseReady");
+}
+
+function exclusiveChosen(event) {
+    const number = getNumberFromSlotValue(event.event.request);
+    const exclusive = gimlet.exclusives[number-1];
+    if (exclusive) {
+        transitionToState(event, appStates.DEFAULT);
+                // Alexa only plays HTTPS urls
+        const track = new Track(exclusive.url, `Exclusive #${number}`);
+        playTrack(event, track, `Here is Exclusive #${number}`);
+    }
+    else {
+        // defer to unhandled
+        unhandledAction(event);
+    }
 }
 
 function pause(event) {
@@ -318,7 +337,7 @@ function unhandledAction(event) {
     /* This function is triggered whenever an intent is understood by Alexa, 
         but we define no handler for it in the current application state.
     */
-    if (event.handler.state === appStates.ASK_FOR_SHOW || event.handler.state === appStates.QUESTION_CONFIRM) {
+    if (isStateQuestion(event.handler.state)) {
         const questionContext = event.attributes['questionContext'];
         if (!questionContext) {
             // TODO: what to do if this is broken?
@@ -346,6 +365,7 @@ module.exports = {
     listShows: listShows,
     whoIsMatt: whoIsMatt,
     showTitleNamed: showTitleNamed,
+    exclusiveChosen: exclusiveChosen,
 
     help: help,
     cancel: cancel,
@@ -374,6 +394,11 @@ module.exports = {
  * Helpers
  */
 
+function isStateQuestion(state) {
+    return _.includes([appStates.ASK_FOR_SHOW, appStates.QUESTION_CONFIRM, appStates.QUESTION_EXCLUSIVE_NUMBER], 
+                        state);
+}
+
 function startPlayingMostRecent(event, show) {
     const url = gimlet.feedUrl(show);
     rss.parseURL(url, function(err, parsed) {
@@ -393,11 +418,6 @@ function startPlayingMostRecent(event, show) {
     });
 }
 
-function startPlayingExclusive(event, show) {
-    // TODO
-    event.response.speak("Sorry, this feature is not yet implemented");
-}
-
 function startPlayingFavorite(event, show) {
     const favs = gimlet.favorites(show) || [];
 
@@ -407,7 +427,6 @@ function startPlayingFavorite(event, show) {
             lastFavoriteIndex: {}   // map of show id: last played index
         }
     }
-
 
     // get the favorite index that was last played (default to infinity)
     const history = event.attributes['playbackHistory'];
@@ -452,6 +471,14 @@ function getShowFromSlotValue(request) {
         }
     }
 }
+
+function getNumberFromSlotValue(request) {
+    const slot = request.intent.slots["Number"];
+    if (slot && slot.value !== undefined) {
+        return Number(slot.value);
+    }
+}
+
 
 function requireAuth(event, prompt, successCallback) {
     successCallback();

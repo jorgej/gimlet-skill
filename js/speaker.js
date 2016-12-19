@@ -71,6 +71,12 @@ const questionSpeechPacks = {
         help: "Say 'Yes' to resume playing from where you left off, or say 'No' to do something else.",
         reprompt: "Say 'Yes' to resume playing from where you left off, or say 'No' to do something else.",
         unhandled: "Sorry, I didn't get that. Would you like to resume from where you left off?"
+    },
+    ExclusiveNumber: {
+        original: "I've got a 3 exclusives. Which one do you want do hear?",
+        help: "I have 3 pieces of exclusive content, if you'd like to hear one, say either 'Number 1', '2', or '3'.",
+        reprompt: "Which exclusive do you want to listen to? Say 1, 2, or 3.",
+        unhandled: "Sorry, I didn't get that. Which exclusive do you want to hear?"
     }
 }
 
@@ -101,7 +107,12 @@ function introduceFavorite(show, epTitle) {
 }
 
 function askToResume(show) {
-    return `Welcome back! Would you like to continue the episode of ${show.title} you were listening to?`;
+    if (show) {
+        return `Welcome back! Would you like to continue the episode of ${show.title} you were listening to?`;
+    }
+    else {
+        return "Welcome back! Would you like to continue where you left off?";
+    }
 }
 
 function audio(url) {

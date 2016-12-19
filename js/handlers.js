@@ -69,6 +69,16 @@ var confirmIntentHandlers = Alexa.CreateStateHandler(states.QUESTION_CONFIRM, {
     'Unhandled': function() { actions.unhandledAction(this) }
 });
 
+var whichExclusiveHandlers = Alexa.CreateStateHandler(states.QUESTION_EXCLUSIVE_NUMBER, {
+    'NumberIntent': function() { actions.exclusiveChosen(this, true) },
+
+    'AMAZON.HelpIntent': function() { actions.help(this) },
+    'AMAZON.StopIntent': function() { actions.cancel(this) }, // NOTE: In this case, treat this like a "cancel".
+    'AMAZON.CancelIntent': function() { actions.cancel(this) },
+    'SessionEndedRequest': function() { actions.sessionEnded(this) },
+    'Unhandled': function() { actions.unhandledAction(this) }
+});
+
 var remoteControllerHandlers = Alexa.CreateStateHandler(states.DEFAULT, {
     /*
         *  All Requests are received using a Remote Control. Calling corresponding handlers for each of them.
@@ -100,6 +110,7 @@ module.exports = {
     defaultIntentHandlers: defaultIntentHandlers,
     askShowIntentHandlers: askShowIntentHandlers,
     confirmIntentHandlers: confirmIntentHandlers,
+    whichExclusiveHandlers: whichExclusiveHandlers,
     remoteControllerHandlers: remoteControllerHandlers,
     audioEventHandlers: audioEventHandlers,
 };
