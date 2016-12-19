@@ -25,7 +25,6 @@ function launchRequest(event) {
                 questionContext: constants.questions.ConfirmResumePlayback
             });
             
-            event.handler.state = appStates.QUESTION_CONFIRM;
             speech = speaker.askToResume(track.show);
         }
         else {
