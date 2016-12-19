@@ -47,13 +47,13 @@ function getKeyedSpeech(key) {
 
 // types: 'original', 'help', 'reprompt', 'unhandled'
 function getQuestionSpeech(question, type) {
-    const package = questionSpeechPackages[question];
-    if (package) {
-        return package[type];
+    const pack = questionSpeechPacks[question];
+    if (pack) {
+        return pack[type];
     }
 }
 
-const questionSpeechPackages = {
+const questionSpeechPacks = {
     FavoriteShowTitle: {
         original: 'What show would you like to listen to?',
         help: 'What show would you like to listen to?',

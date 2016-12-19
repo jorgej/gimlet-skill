@@ -16,7 +16,7 @@ exports.handler = function(event, context, callback){
     alexa.registerHandlers(
         handlers.defaultIntentHandlers,
         handlers.askShowIntentHandlers,
-        handlers.confirmResumeIntentHandlers,
+        handlers.confirmIntentHandlers,
         handlers.remoteControllerHandlers,
         handlers.audioEventHandlers
     );
