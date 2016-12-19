@@ -394,13 +394,33 @@ function startPlayingExclusive(event, show) {
 function startPlayingFavorite(event, show) {
     const favs = gimlet.favorites(show) || [];
 
-    // TODO: track waht user has already heard. random for now.
-    let fav = favs[Math.floor(Math.random() * favs.length)];
+    // ensure attribute exists
+    if (!event.attributes['playbackHistory']) {
+        event.attributes['playbackHistory'] = { 
+            lastFavoriteIndex: {}   // map of show id: last played index
+        }
+    }
+
+
+    // get the favorite index that was last played (default to infinity)
+    const history = event.attributes['playbackHistory'];
+    let lastPlayedIndex = history.lastFavoriteIndex[show.id];
+    if (lastPlayedIndex === undefined) {
+        lastPlayedIndex = Infinity;
+    }
+
+    // next index is either 1 + last, or cycled back down to 0
+    const nextIndex = (lastPlayedIndex < favs.length-1) ? 
+                        lastPlayedIndex + 1 :
+                        0;
+    
+    let fav = favs[nextIndex];
     if (!fav) {
         // TODO
     }
 
-    // Alexa only plays HTTPS urls
+    history.lastFavoriteIndex[show.id] = nextIndex;
+
     const track = new Track(fav.url, fav.title, show);
     playTrack(event, track, speaker.introduceFavorite(show, fav.title));
 }
