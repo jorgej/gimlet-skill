@@ -146,7 +146,11 @@ function listShows(event) {
 function whoIsMatt(event) {
     transitionToState(event, appStates.DEFAULT);
 
-    event.response.speak(speaker.get("MattLieberIs"));
+    // indexes 1-30
+    let mattLieberIndex = Math.ceil(Math.random() * 30);
+
+    const speech = `<audio src="https://s3.amazonaws.com/amazon-alexa/Audio+Files/MLI/MLI+${mattLieberIndex}.mp3" />`;
+    event.response.speak(speech);
     event.emit(":responseReady");
 }
 
