@@ -9,12 +9,12 @@ module.exports = Object.freeze({
     states : {
         DEFAULT : '',
         ASK_FOR_SHOW : '_ASK_FOR_SHOW',
-        CONFIRM_RESUME : '_CONFIRM_RESUME'
+        QUESTION_CONFIRM : '_QUESTION_CONFIRM'
     },
 
-    intents : {
-        PlayLatest: 'PlayLatest',
-        PlayExclusive: 'PlayExclusive',
-        PlayFavorite: 'PlayFavorite',
+    questions : {
+        FavoriteShowTitle: 'AskForFavoriteShowTitle',
+        MostRecentShowTitle: 'AskForMostRecentShowTitle',
+        ConfirmResumePlayback: 'ConfirmResumePlayback',
     }
 });

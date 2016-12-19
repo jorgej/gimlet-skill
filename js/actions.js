@@ -21,13 +21,13 @@ function launchRequest(event) {
 
         const track = controller.activeTrack();
         if (track) {
-            event.handler.state = appStates.CONFIRM_RESUME;
+            event.handler.state = appStates.QUESTION_CONFIRM;
             speech = speaker.askToResume(track.show);
         }
         else {
             // ensure we're in DEFAULT (should be true, but this will force us out of 
             //  state transition holes in case the logic is broken and the user is we're stuck) 
-            event.handler.state = appStates.DEFAULT;
+            transitionToState(event, appStates.DEFAULT);
             if (event.attributes['returningUser']) {
                 speech = speaker.get("Welcome");
                 reprompt = speaker.get("PromptForNewAction")
@@ -52,6 +52,11 @@ function help(event) {
     let speech;
     let reprompt;
 
+    let questionContext = event.attributes['questionContext'];
+    if (!questionContext) {
+        // TODO: handle missing question context    
+    }
+
     if (state === appStates.DEFAULT) {
         if (controller.activeTrack()) {
             speech = speaker.get("Help:Playback");
@@ -61,13 +66,9 @@ function help(event) {
             reprompt = speaker.get("Welcome");
         }
     }
-    else if (state === appStates.ASK_FOR_SHOW) {
-        speech = speaker.get("Help:AskForShow");
-        reprompt = speaker.get("Help:AskForShow");
-    }
-    else if (state === appStates.CONFIRM_RESUME) {
-        speech = speaker.get("Help:ConfirmResume");
-        reprompt = speaker.get("Help:ConfirmResume");
+    else if (state === appStates.ASK_FOR_SHOW || state === appStates.QUESTION_CONFIRM) {
+        speech = speaker.getQuestionSpeech(questionContext, 'help');
+        reprompt = speaker.getQuestionSpeech(questionContext, 'reprompt');
     }
     else {
         speech = speaker.get("_Unknown");
@@ -82,17 +83,17 @@ function help(event) {
 
 function playLatest(event) {
     requireAuth(event, speaker.get("NotAuthorized"), function() {
-        event.handler.state = constants.states.DEFAULT;
-
         const show = getShowFromSlotValue(event.event.request);
         if (show) {
+            transitionToState(event, appStates.DEFAULT);
             startPlayingMostRecent(event, show);
         }
         else {
-            event.response.speak(speaker.get("AskForShowTitle"))
-                    .listen(speaker.get("RepromptForShowTitle"));
-            event.attributes["intentAskingFor"] = intents.PlayLatest;
-            event.handler.state = appStates.ASK_FOR_SHOW;
+            let context = constants.questions.FavoriteShowTitle;
+            transitionToState(event, appStates.ASK_FOR_SHOW, {questionContext: context});
+
+            event.response.speak(speaker.getQuestionSpeech(context, "original"))
+                          .listen(speaker.getQuestionSpeech(context, "reprompt"));
             event.emit(":responseReady");
         }
     });
@@ -100,40 +101,27 @@ function playLatest(event) {
 
 function playExclusive(event) {
     requireAuth(event, speaker.get("NotAuthorized"), function() {
-        event.handler.state = constants.states.DEFAULT;
-
-        // TODO: figure out how to play show
-
-        const show = getShowFromSlotValue(event.event.request);
-        if (show) {
-            startPlayingExclusive(event, show);
-        }
-        else {
-            event.response.speak("Sorry, I don't know what show you're referring to.");
-            event.response.speak(speaker.get("AskForShowTitle"))
-                    .listen(speaker.get("RepromptForShowTitle"));
-            event.attributes["intentAskingFor"] = intents.PlayExclusive;
-            event.handler.state = appStates.ASK_FOR_SHOW;
-            
-            event.emit(":responseReady");
-        }
+        transitionToState(event, appStates.DEFAULT);
+        event.response.speak("Sorry, I can't handle that intent yet")
+        event.emit(":responseReady");
     });
 }
 
 function playFavorite(event) {
     requireAuth(event, speaker.get("NotAuthorized"), function() {
-        event.handler.state = constants.states.DEFAULT;
 
         const show = getShowFromSlotValue(event.event.request);    
         if (show) {
+            transitionToState(event, appStates.DEFAULT);
             startPlayingFavorite(event, show);
         }
         else {
-            event.response.speak("Sorry, I don't know what show you're referring to.");
-            event.response.speak(speaker.get("AskForShowTitle"))
-                    .listen(speaker.get("RepromptForShowTitle"));
-            event.attributes["intentAskingFor"] = intents.PlayFavorite;
-            event.handler.state = appStates.ASK_FOR_SHOW;
+            let context = constants.questions.FavoriteShowTitle;
+            transitionToState(event, appStates.ASK_FOR_SHOW, {questionContext: context});
+
+            event.response.speak(speaker.getQuestionSpeech(context, "original"))
+                          .listen(speaker.getQuestionSpeech(context, "reprompt"));
+
             event.emit(":responseReady");
         }
     });
@@ -143,55 +131,53 @@ function listShows(event) {
     let speech = speaker.get("ShowList");
     
     if (event.handler.state === appStates.ASK_FOR_SHOW) {
-        event.response.speak(speaker.get("ShowListThenAsk"))
-                      .listen(speaker.get("RepromptForShowTitle"));
+        const context = event.attributes["questionContext"];
+        speech += " " + speaker.getQuestionSpeech(context, 'reprompt');
+        event.response.speak(speech + " " + speaker.getQuestionSpeech(context, 'reprompt'))
+                      .listen(speaker.getQuestionSpeech(context, 'reprompt'));
     }
     else {
-        event.response.speak(speaker.get("ShowList"));
+        event.response.speak(speech);
     }
 
     event.emit(":responseReady");
 }
 
 function whoIsMatt(event) {
-    event.handler.state = constants.states.DEFAULT;
+    transitionToState(event, appStates.DEFAULT);
 
     event.response.speak(speaker.get("MattLieberIs"));
     event.emit(":responseReady");
 }
 
 function cancel(event) {
-    event.handler.state = constants.states.DEFAULT;
+    transitionToState(event, appStates.DEFAULT);
 
     const controller = PlaybackController(event);
     if (event.handler.state === appStates.DEFAULT && controller.activeTrack()) {
         PlaybackController(event).stop();
     }
     else {
-        event.handler.state = appStates.DEFAULT;
         event.response.speak(speaker.get("Goodbye"));
     }
     event.emit(":responseReady");
 }
 
 function showTitleNamed(event) {
-    if (event.handler.state === appStates.ASK_FOR_SHOW) {
-        const triggeringIntent = event.attributes["intentAskingFor"];
-        delete event.attributes["intentAskingFor"];
-
+    if (event.handler.state === appStates.ASK_FOR_SHOW) {        
         if(!getShowFromSlotValue(event.event.request)) {
-            event.response.speak(speaker.get("UnknownShowTitle"))
-                            .listen(speaker.get("RepromptForShowTitle"));
+            // delegate to unhandled input handler for this state
+            unhandledAction(event);
         }
         else {
-            event.handler.state = appStates.DEFAULT;
-            if (triggeringIntent === intents.PlayFavorite) {
+            const questionContext = event.attributes["questionContext"];
+            
+            transitionToState(event, appStates.DEFAULT);
+
+            if (questionContext === constants.questions.FavoriteShowTitle) {
                 playFavorite(event);
             }
-            else if (triggeringIntent === intents.PlayExclusive) {
-                playExclusive(event);
-            }
-            else {  // should be PlayLatest
+            else { // should be MostRecentShowTitle question
                 playLatest(event);
             }
             return;
@@ -199,7 +185,7 @@ function showTitleNamed(event) {
     }
     else {
         // if the user just names a show on its own, take it to mean "play the latest ..."
-        event.handler.state = appStates.DEFAULT;
+        transitionToState(event, appStates.DEFAULT);
         playLatest(event);
         return;        
     }
@@ -208,21 +194,21 @@ function showTitleNamed(event) {
 }
 
 function pause(event) {
-    event.handler.state = constants.states.DEFAULT;
+    transitionToState(event, appStates.DEFAULT);
 
     PlaybackController(event).stop();
     event.emit(":responseReady");
 }
 
 function stop(event) {
-    event.handler.state = constants.states.DEFAULT;
+    transitionToState(event, appStates.DEFAULT);
 
     PlaybackController(event).stop();
     event.emit(":responseReady");
 }
 
 function resume(event) {
-    event.handler.state = constants.states.DEFAULT;
+    transitionToState(event, appStates.DEFAULT);
 
     const controller = PlaybackController(event);
     const didResume = controller.resume();    
@@ -233,7 +219,7 @@ function resume(event) {
 }
 
 function startOver(event) {
-    event.handler.state = constants.states.DEFAULT;
+    transitionToState(event, appStates.DEFAULT);
 
     const controller = PlaybackController(event);
     const didRestart = controller.restart();    
@@ -244,7 +230,7 @@ function startOver(event) {
 }
 
 function resumeConfirmed(event, shouldResume) {
-    event.handler.state = appStates.DEFAULT;
+    transitionToState(event, appStates.DEFAULT);
 
     if (shouldResume) {
         resume(event);
@@ -266,7 +252,6 @@ function playbackOperationUnsupported(event, operationName) {
     event.emit(":responseReady");
 }
 
-
 function playbackPlay(event) {
     PlaybackController(event).resume();
     event.emit(":responseReady");
@@ -283,14 +268,8 @@ function playbackPause(event) {
  */
 
 function sessionEnded(event) {
-    event.handler.state = appStates.DEFAULT;
+    transitionToState(event, appStates.DEFAULT);
     event.emit(":saveState", true);
-    // TODO: implement
-    // if (event.handler.state === appStates.ASK_FOR_SHOW) {
-    //     event.handler.state = appStates.DEFAULT;
-    //     delete event.attributes["intentAskingFor"];
-    //     event.emit(":saveState");
-    // }
 }
 
 // TODO: move logic in here into controller -- it can deal with the playback state all in its module
@@ -332,13 +311,17 @@ function unhandledAction(event) {
     /* This function is triggered whenever an intent is understood by Alexa, 
         but we define no handler for it in the current application state.
     */
-    if (event.handler.state === appStates.ASK_FOR_SHOW) {
-        event.response.speak(speaker.get("UnknownShowTitle"))
-                        .listen(speaker.get("RepromptForShowTitle"));
-    }
-    else if (event.handler.state === appStates.CONFIRM_RESUME) {
-        event.response.speak(speaker.get("UnhandledConfirmResume"))
-                      .listen(speaker.get("UnhandledConfirmResume"));
+    if (event.handler.state === appStates.ASK_FOR_SHOW || event.handler.state === appStates.QUESTION_CONFIRM) {
+        const questionContext = event.attributes['questionContext'];
+        if (!questionContext) {
+            // TODO: what to do if this is broken?
+        }
+        
+        const speech = speaker.getQuestionSpeech(questionContext, 'unhandled');
+        const reprompt = speaker.getQuestionSpeech(questionContext, 'reprompt');
+
+        event.response.speak(speech)
+                      .listen(reprompt);
     }
     else {
         event.response.speak(speaker.get("_Unhandled"));
@@ -455,4 +438,12 @@ function requireAuth(event, prompt, successCallback) {
             event.emit(":responseReady");
         }
     });
+}
+
+function transitionToState(event, state, associatedAttrs) {
+    event.handler.state = state;
+    Object.assign(event.attributes, associatedAttrs);
+    if (state === appStates.DEFAULT) {
+        delete event.attributes["questionContext"];
+    }
 }

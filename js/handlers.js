@@ -19,7 +19,7 @@ var defaultIntentHandlers = Alexa.CreateStateHandler(states.DEFAULT, {
     'PlayFavorite': function() { actions.playFavorite(this) },
     'PlayExclusive': function() { actions.playExclusive(this) },
 
-    'WhoIsMatt': function() {actions.whoIsMatt(this) },
+    'WhoIsMatt': function() { actions.whoIsMatt(this) },
     'ListShows': function() { actions.listShows(this) },
 
     'AMAZON.HelpIntent': function() { actions.help(this) },
@@ -43,36 +43,24 @@ var askShowIntentHandlers = Alexa.CreateStateHandler(states.ASK_FOR_SHOW, {
     'ShowTitleIntent': function() { actions.showTitleNamed(this) },
     'ListShows': function() { actions.listShows(this) },
     
-    // Currently disabled. Could be used as a "shortcut" to trigger an intent outside of the line of 
-    // questioning, but this has side-effect of triggering the default Play* intent when the user says 
-    // any junk 
-
-    // 'PlayLatest': function() { actions.playLatest(this) },
-    // 'PlayFavorite': function() { actions.playFavorite(this) },
-    // 'PlayExclusive': function() { actions.playExclusive(this) },
     'AMAZON.HelpIntent': function() { actions.help(this) },
+    
+    'AMAZON.StopIntent': function() { actions.cancel(this) },
     'AMAZON.CancelIntent': function() { actions.cancel(this) },
 
-    'AMAZON.ResumeIntent': function() { actions.resume(this) },
-    'AMAZON.StopIntent': function() { actions.stop(this) },
+    'Unhandled': function() { actions.unhandledAction(this) },
 
     'SessionEndedRequest': function() { actions.sessionEnded(this) },
-
-    'Unhandled': function() { actions.unhandledAction(this) }
 });
 
-var confirmResumeIntentHandlers = Alexa.CreateStateHandler(states.CONFIRM_RESUME, {
+var confirmIntentHandlers = Alexa.CreateStateHandler(states.QUESTION_CONFIRM, {
     'AMAZON.YesIntent': function() { actions.resumeConfirmed(this, true) },
     'AMAZON.NoIntent': function() { actions.resumeConfirmed(this, false) },
 
     'AMAZON.HelpIntent': function() { actions.help(this) },
 
-    // Currently disabled. Could be used as a "shortcut" to trigger an intent outside of the line of 
-    // questioning, but this has side-effect of triggering the default Play* intent when the user says 
-    // any junk 
-    // 'PlayLatest': function() { actions.playLatest(this) },
-    // 'PlayFavorite': function() { actions.playFavorite(this) },
-    // 'PlayExclusive': function() { actions.playExclusive(this) },
+    // TODO: include this?
+    // 'AMAZON.ResumeIntent': function() { actions.resume(this) },
     // 'AMAZON.StartOverIntent': function() { actions.startOver(this) },
 
     'AMAZON.StopIntent': function() { actions.cancel(this) }, // NOTE: In this case, treat this like a "cancel".
@@ -111,7 +99,7 @@ var audioEventHandlers = Alexa.CreateStateHandler(states.DEFAULT, {
 module.exports = {
     defaultIntentHandlers: defaultIntentHandlers,
     askShowIntentHandlers: askShowIntentHandlers,
-    confirmResumeIntentHandlers: confirmResumeIntentHandlers,
+    confirmIntentHandlers: confirmIntentHandlers,
     remoteControllerHandlers: remoteControllerHandlers,
     audioEventHandlers: audioEventHandlers,
 };
