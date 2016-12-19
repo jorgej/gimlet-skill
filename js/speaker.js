@@ -57,19 +57,19 @@ const questionSpeechPacks = {
     FavoriteShowTitle: {
         original: 'What show would you like to listen to?',
         help: 'What show would you like to listen to?',
-        reprompt: 'Reprompt: What show would you like to listen to?',
+        reprompt: 'What show would you like to listen to?',
         unhandled: "Sorry, I don't recognize that show. What show would you like to listen to?"
     },
     MostRecentShowTitle: {
         original: 'What show would you like to listen to?',
         help: 'What show would you like to listen to?',
-        reprompt: 'Reprompt: What show would you like to listen to?',
+        reprompt: 'What show would you like to listen to?',
         unhandled: "Sorry, I don't recognize that show. What show would you like to listen to?"
     },
     ConfirmResumePlayback: {
-        original: "Would you like to continue where you left off?",
+        original: "Would you like to continue where you left off?",     // not used
         help: "Say 'Yes' to resume playing from where you left off, or say 'No' to do something else.",
-        reprompt: "Reprompt: Say 'Yes' to resume playing from where you left off, or say 'No' to do something else.",
+        reprompt: "Say 'Yes' to resume playing from where you left off, or say 'No' to do something else.",
         unhandled: "Sorry, I didn't get that. Would you like to resume from where you left off?"
     }
 }

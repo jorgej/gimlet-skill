@@ -13,8 +13,8 @@ module.exports = Object.freeze({
     },
 
     questions : {
-        FavoriteShowTitle: 'AskForFavoriteShowTitle',
-        MostRecentShowTitle: 'AskForMostRecentShowTitle',
+        FavoriteShowTitle: 'FavoriteShowTitle',
+        MostRecentShowTitle: 'MostRecentShowTitle',
         ConfirmResumePlayback: 'ConfirmResumePlayback',
     }
 });

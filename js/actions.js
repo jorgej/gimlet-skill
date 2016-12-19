@@ -21,6 +21,10 @@ function launchRequest(event) {
 
         const track = controller.activeTrack();
         if (track) {
+            transitionToState(event, appStates.QUESTION_CONFIRM, {
+                questionContext: constants.questions.ConfirmResumePlayback
+            });
+            
             event.handler.state = appStates.QUESTION_CONFIRM;
             speech = speaker.askToResume(track.show);
         }
