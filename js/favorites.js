@@ -67,8 +67,8 @@ module.exports = {
             url: "https://traffic.megaphone.fm/GLT1536544782.mp3?updated=1474596491"
         },
         {
-            title: "Fracking",
-            url: "https://traffic.megaphone.fm/GLT2425248954.mp3?updated=1469657457"
+            title: "Guns",
+            url: "http://traffic.megaphone.fm/GLT3321712890.mp3"
         }
     ],
     "startup": [
