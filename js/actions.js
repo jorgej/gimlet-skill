@@ -140,7 +140,7 @@ function listShows(event) {
     if (event.handler.state === appStates.ASK_FOR_SHOW) {
         const context = event.attributes["questionContext"];
         speech += " " + speaker.getQuestionSpeech(context, 'reprompt');
-        event.response.speak(speech + " " + speaker.getQuestionSpeech(context, 'reprompt'))
+        event.response.speak(speech)
                       .listen(speaker.getQuestionSpeech(context, 'reprompt'));
     }
     else {
