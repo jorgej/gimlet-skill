@@ -424,3 +424,5 @@ ShowTitleIntent {ShowTitle}
 
 NumberIntent {Number}
 NumberIntent number {Number}
+NumberIntent exclusive number {Number}
+NumberIntent exclusive {Number}

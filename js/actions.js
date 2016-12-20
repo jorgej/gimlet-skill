@@ -15,7 +15,7 @@ const intents = constants.intents;
 
 function launchRequest(event) {
     // TODO: move this somewhere. auth flow here is too cluttered
-    requireAuth(event, speaker.get("Welcome:NotAuthorized"), function() {
+    requireAuth(event, speaker.get("LinkAccount"), function() {
         // we can assume we're in DEFAULT state
         const controller = PlaybackController(event);
         let speech, reprompt;
@@ -34,11 +34,11 @@ function launchRequest(event) {
             transitionToState(event, appStates.DEFAULT);
             if (event.attributes['returningUser']) {
                 speech = speaker.get("Welcome");
-                reprompt = speaker.get("PromptForNewAction")
+                reprompt = speaker.get("WhatToDo")
             }
             else {
-                speech = speaker.get("Welcome:FirstTime");
-                reprompt = speaker.get("PromptForNewAction")
+                speech = speaker.get("NewUserWelcome");
+                reprompt = speaker.get("WhatToDo")
                 event.attributes['returningUser'] = true;
             }
         }
@@ -86,7 +86,7 @@ function help(event) {
 }
 
 function playLatest(event) {
-    requireAuth(event, speaker.get("NotAuthorized"), function() {
+    requireAuth(event, speaker.get("LinkAccount"), function() {
         const show = getShowFromSlotValue(event.event.request);
         if (show) {
             transitionToState(event, appStates.DEFAULT);
@@ -104,7 +104,7 @@ function playLatest(event) {
 }
 
 function playExclusive(event) {
-    requireAuth(event, speaker.get("NotAuthorized"), function() {
+    requireAuth(event, speaker.get("LinkAccount"), function() {
         const context = constants.questions.ExclusiveNumber;
         transitionToState(event, appStates.QUESTION_EXCLUSIVE_NUMBER, {questionContext: context});
 
@@ -115,7 +115,7 @@ function playExclusive(event) {
 }
 
 function playFavorite(event) {
-    requireAuth(event, speaker.get("NotAuthorized"), function() {
+    requireAuth(event, speaker.get("LinkAccount"), function() {
 
         const show = getShowFromSlotValue(event.event.request);    
         if (show) {
@@ -239,7 +239,7 @@ function resume(event) {
     const controller = PlaybackController(event);
     const didResume = controller.resume();    
     if (!didResume) {
-        event.response.speak(speaker.get("EmptyQueueHelp"));
+        event.response.speak(speaker.get("EmptyQueueMessage"));
     }
     event.emit(":responseReady");
 }
@@ -250,7 +250,7 @@ function startOver(event) {
     const controller = PlaybackController(event);
     const didRestart = controller.restart();    
     if (!didRestart) {
-        event.response.speak(speaker.get("EmptyQueueHelp"));
+        event.response.speak(speaker.get("EmptyQueueMessage"));
     }
     event.emit(":responseReady");
 }
@@ -265,7 +265,7 @@ function resumeConfirmed(event, shouldResume) {
         const controller = PlaybackController(event);
         controller.clear();
 
-        const message = speaker.get("PromptForNewAction");
+        const message = speaker.get("WhatToDo");
         event.response.speak(message)
                       .listen(message);
         event.emit(":responseReady");

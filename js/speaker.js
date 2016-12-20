@@ -18,28 +18,28 @@ function getKeyedSpeech(key) {
     var args = Array.prototype.slice.call(arguments, 1);
 
     var speech = {
-        "Welcome":                "Welcome back! What would you like to do?",
-        "Welcome:FirstTime":       "Welcome to the Gimlet skill. What would you like to do?",
-        "Welcome:NotAuthorized":    "Welcome to the Gimlet skill. To use it, you must be a Gimlet member. To sign into your account, check your Alexa app.",
+        "Welcome":              audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Welcome.mp3"),
+        "NewUserWelcome":       audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/New+User+Welcome.mp3"),
 
-        "PromptForNewAction":     "What would you like to do?",
+        "WhatToDo":             audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/What+To+Do.mp3"),
 
-        "Help":                 "I get by with a little help from my friends.",
-        "Help:Playback":        "I get by with a little help from my friends.",
+        "Help":                 audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Help.mp3"),
+        "Help:Playback":        "I get by with a little help from my friends.", // *
         
-        "NotAuthorized":    "Sorry, but to use this skill, you must be a Gimlet member. To sign into your account, check your Alexa app.",
+        "LinkAccount":          audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Link+Account.mp3"),
         
-        "Goodbye":          "Ok see ya.",
+        "Goodbye":              audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Goodbye.mp3"),
 
-        "EmptyQueueHelp" :  "Sorry, you don't have any podcast in progress at the moment.",
+        "EmptyQueueMessage":    audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Empty+Queue+Message.mp3"),
 
-        "MattLieberIs":     "Matt Lieber is a guy who Tomer would like to meet.",
-        "ShowList":         "Well, there's StartUp. And then that science one with the Australian host. And um, the one with Ross from Friends?",
-        "ShowListThenAsk":  "Well, there's StartUp. And then that science one with the Australian host. And um, the one with Ross from Friends? Which one sounds good?",
+        "ShowList":             audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Show+List.mp3"),
 
-        "UnsupportedOperation": "Sorry, we do not support that operation.",
+        "ExclusivePreamble":    audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Exclusive+Preamble.mp3"),
+        "ExclusiveList":        audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Exclusive+List.mp3"),
 
-        "_Unhandled":       "Sorry, I don't know what to do about that.",
+        "UnsupportedOperation": audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Unsupported+Operation.mp3"),
+
+        "_Unhandled":           audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Did+Not+Understand.mp3")
     };
 
     return speech[key];
@@ -55,42 +55,48 @@ function getQuestionSpeech(question, type) {
 
 const questionSpeechPacks = {
     FavoriteShowTitle: {
-        original: 'What show would you like to listen to?',
-        help: 'What show would you like to listen to?',
-        reprompt: 'What show would you like to listen to?',
-        unhandled: "Sorry, I don't recognize that show. What show would you like to listen to?"
+        original: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Favorite+Query.mp3"),
+        help: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Favorite+Help.mp3"),
+        reprompt: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Favorite+Query.mp3"),    // *
+        unhandled: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Did+Not+Understand.mp3") +  // *
+                    audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Favorite+Query.mp3")
     },
     MostRecentShowTitle: {
-        original: 'What show would you like to listen to?',
-        help: 'What show would you like to listen to?',
-        reprompt: 'What show would you like to listen to?',
-        unhandled: "Sorry, I don't recognize that show. What show would you like to listen to?"
+        original: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Most+Recent+Query.mp3"),
+        help: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Most+Recent+Help.mp3"),
+        reprompt: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Most+Recent+Query.mp3"), // *
+        unhandled: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Did+Not+Understand.mp3") + // *
+                    audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Most+Recent+Query.mp3")
     },
     ConfirmResumePlayback: {
         original: "Would you like to continue where you left off?",     // not used
-        help: "Say 'Yes' to resume playing from where you left off, or say 'No' to do something else.",
-        reprompt: "Say 'Yes' to resume playing from where you left off, or say 'No' to do something else.",
-        unhandled: "Sorry, I didn't get that. Would you like to resume from where you left off?"
+        help: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Confirm+Resume+Help.mp3"),
+        reprompt: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Confirm+Resume+Help.mp3"),   // *
+        unhandled: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Did+Not+Understand.mp3") + // *
+                    audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Confirm+Resume+Help.mp3")
     },
     ExclusiveNumber: {
-        original: "I've got a 3 exclusives. Which one do you want do hear?",
-        help: "I have 3 pieces of exclusive content, if you'd like to hear one, say either 'Number 1', '2', or '3'.",
-        reprompt: "Which exclusive do you want to listen to? Say 1, 2, or 3.",
-        unhandled: "Sorry, I didn't get that. Which exclusive do you want to hear?"
+        original: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Which+Exclusive.mp3"),   // *
+        help: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Which+Exclusive+Help+1.mp3"),
+        reprompt: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Which+Exclusive.mp3"),   // *
+        unhandled: audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Did+Not+Understand.mp3") + // *
+                    audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Which+Exclusive.mp3")
     }
 }
 
 const urlSuffixMap = {
     // Uncomment when these are live
-    // "crimetown": "Crimetown",
-    // "heavyweight": "Heavyweight",
-    // "homecoming": "Homecoming",
-    // "replyall": "Reply+All",
-    // "sciencevs": "Science+Vs",
-    // "startup": "StartUp",
-    // "surprisinglyawesome": "Surprisingly+Awesome",
-    // "twiceremoved": "Twice+Removed",
-    // "undone": "Undone"
+    "crimetown": "Crimetown",
+    "heavyweight": "Heavyweight",
+    "homecoming": "Homecoming",
+    "mysteryshow": "Mystery+Show",
+    "replyall": "Reply+All",
+    "sampler": "Sampler",
+    "sciencevs": "Science+Vs",
+    "startup": "StartUp",
+    "surprisinglyawesome": "Surprisingly+Awesome",
+    "twiceremoved": "Twice+Removed",
+    "undone": "Undone"
 }
 
 function introduceMostRecent(show) {
@@ -103,16 +109,23 @@ function introduceMostRecent(show) {
 }
 
 function introduceFavorite(show, epTitle) {
-    return `Here is a staff favorite episode of ${show.title}. It's called ${epTitle}`;
+    if (urlSuffixMap[show.id]) {
+        return audio(standardFavoriteUrl(urlSuffixMap[show.id]));
+    }
+    else {
+        return `Here is "${epTitle}", a staff favorite episode of ${show.title}.`;
+    }
 }
 
 function askToResume(show) {
+    let url;
     if (show) {
-        return `Welcome back! Would you like to continue the episode of ${show.title} you were listening to?`;
+        url = `https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Confirm+Resume+${urlSuffixMap[show.id]}.mp3`
     }
     else {
-        return "Welcome back! Would you like to continue where you left off?";
+        url = "https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Confirm+Resume+Help.mp3";
     }
+    return audio(url);
 }
 
 function audio(url) {
@@ -120,5 +133,9 @@ function audio(url) {
 }
 
 function standardMostRecentUrl(urlSuffix) {
-    return `https://s3.amazonaws.com/amazon-alexa/Audio+Files/Most+recent+${urlSuffix}.mp3`
+    return `https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Most+Recent+${urlSuffix}.mp3`
+}
+
+function standardFavoriteUrl(urlSuffix) {
+    return `https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Favorite+${urlSuffix}.mp3`
 }
