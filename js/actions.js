@@ -108,7 +108,11 @@ function playExclusive(event) {
         const context = constants.questions.ExclusiveNumber;
         transitionToState(event, appStates.QUESTION_EXCLUSIVE_NUMBER, {questionContext: context});
 
-        event.response.speak(speaker.getQuestionSpeech(context, "original"))
+        const excList = speaker.get("ExclusivePreamble") + 
+                        speaker.get("ExclusiveList");
+        const prompt = speaker.getQuestionSpeech(context, "original")
+
+        event.response.speak(excList + prompt)
                         .listen(speaker.getQuestionSpeech(context, "reprompt"));
         event.emit(":responseReady");
     });
@@ -350,7 +354,8 @@ function unhandledAction(event) {
                       .listen(reprompt);
     }
     else {
-        event.response.speak(speaker.get("_Unhandled"));
+        event.response.speak(speaker.get("_Unhandled"))
+                      .listen(speaker.get("WhatToDo"));
     }
 
     event.emit(':responseReady');
