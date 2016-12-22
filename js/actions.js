@@ -481,8 +481,6 @@ function getNumberFromSlotValue(request) {
 
 
 function requireAuth(event, prompt, successCallback) {
-    successCallback();
-    return;
     authHelper.isSessionAuthenticated(event.event.session, function(auth) {
         if (auth) {
             successCallback();
