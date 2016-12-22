@@ -8,7 +8,7 @@ cp -r js _build/src
 cd _build/src
 
 echo 'Inserting production skill ID...'
-sed -i '.bak' 's/fb7cbf45-1f45-4307-b2ce-b36bc871625f/a16e1bcb-690b-470d-97a8-061251c559e0/g' constants.js
+sed -i '.bak' 's/fb7cbf45-1f45-4307-b2ce-b36bc871625f/e9cc574a-1216-4126-a4ea-03f11c25e104/g' constants.js
 rm constants.js.bak
 
 echo 'Compressing files...'
