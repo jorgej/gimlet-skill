@@ -13,16 +13,16 @@ const _ = require("lodash");
 const appStates = constants.states;
 const intents = constants.intents;
 
-function launchRequest(event) {
+function launchRequest(event, response, attributes, handlerContext) {
     // TODO: move this somewhere. auth flow here is too cluttered
-    requireAuth(event, speaker.get("LinkAccount"), function() {
+    requireAuth(handlerContext, speaker.get("LinkAccount"), function() {
         // we can assume we're in DEFAULT state
-        const controller = PlaybackController(event);
+        const controller = PlaybackController(handlerContext);
         let speech, reprompt;
 
         const track = controller.activeTrack();
         if (track) {
-            transitionToState(event, appStates.QUESTION_CONFIRM, {
+            transitionToState(handlerContext, appStates.QUESTION_CONFIRM, {
                 questionContext: constants.questions.ConfirmResumePlayback
             });
             
@@ -31,32 +31,32 @@ function launchRequest(event) {
         else {
             // ensure we're in DEFAULT (should be true, but this will force us out of 
             //  state transition holes in case the logic is broken and the user is we're stuck) 
-            transitionToState(event, appStates.DEFAULT);
-            if (event.attributes['returningUser']) {
+            transitionToState(handlerContext, appStates.DEFAULT);
+            if (attributes['returningUser']) {
                 speech = speaker.get("Welcome");
                 reprompt = speaker.get("WhatToDo")
             }
             else {
                 speech = speaker.get("NewUserWelcome");
                 reprompt = speaker.get("WhatToDo")
-                event.attributes['returningUser'] = true;
+                attributes['returningUser'] = true;
             }
         }
 
-        event.response.speak(speech)
-                      .listen(reprompt || speech);
-        event.emit(":responseReady");
+        response.speak(speech)
+                .listen(reprompt || speech);
+        handlerContext.emit(":responseReady");
     });
 }
 
-function help(event) {
-    const controller = PlaybackController(event);
+function help(event, response, attributes, handlerContext) {
+    const controller = PlaybackController(handlerContext);
 
-    const state = event.handler.state;
+    const state = handlerContext.handler.state;
     let speech;
     let reprompt;
 
-    let questionContext = event.attributes['questionContext'];
+    let questionContext = attributes['questionContext'];
     if (!questionContext) {
         // TODO: handle missing question context    
     }
@@ -78,218 +78,217 @@ function help(event) {
         speech = speaker.get("_Unknown");
     }
 
-    event.response.speak(speech);
+    response.speak(speech);
     if (reprompt) {
-        event.response.listen(reprompt);
+        response.listen(reprompt);
     }
-    event.emit(":responseReady");
+    handlerContext.emit(":responseReady");
 }
 
-function playLatest(event) {
-    requireAuth(event, speaker.get("LinkAccount"), function() {
-        const show = getShowFromSlotValue(event.event.request);
+function playLatest(event, response, attributes, handlerContext) {
+    requireAuth(handlerContext, speaker.get("LinkAccount"), function() {
+        const show = getShowFromSlotValue(event.request);
         if (show) {
-            transitionToState(event, appStates.DEFAULT);
-            startPlayingMostRecent(event, show);
+            transitionToState(handlerContext, appStates.DEFAULT);
+            startPlayingMostRecent(handlerContext, show);
         }
         else {
             let context = constants.questions.FavoriteShowTitle;
-            transitionToState(event, appStates.ASK_FOR_SHOW, {questionContext: context});
+            transitionToState(handlerContext, appStates.ASK_FOR_SHOW, {questionContext: context});
 
-            event.response.speak(speaker.getQuestionSpeech(context, "original"))
-                          .listen(speaker.getQuestionSpeech(context, "reprompt"));
-            event.emit(":responseReady");
+            response.speak(speaker.getQuestionSpeech(context, "original"))
+                    .listen(speaker.getQuestionSpeech(context, "reprompt"));
+            handlerContext.emit(":responseReady");
         }
     });
 }
 
-function playExclusive(event) {
-    requireAuth(event, speaker.get("LinkAccount"), function() {
+function playExclusive(event, response, attributes, handlerContext) {
+    requireAuth(handlerContext, speaker.get("LinkAccount"), function() {
         const context = constants.questions.ExclusiveNumber;
-        transitionToState(event, appStates.QUESTION_EXCLUSIVE_NUMBER, {questionContext: context});
+        transitionToState(handlerContext, appStates.QUESTION_EXCLUSIVE_NUMBER, {questionContext: context});
 
         const excList = speaker.get("ExclusivePreamble") + 
                         speaker.get("ExclusiveList");
         const prompt = speaker.getQuestionSpeech(context, "original")
 
-        event.response.speak(excList + prompt)
-                        .listen(speaker.getQuestionSpeech(context, "reprompt"));
-        event.emit(":responseReady");
+        response.speak(excList + prompt)
+                .listen(speaker.getQuestionSpeech(context, "reprompt"));
+        handlerContext.emit(":responseReady");
     });
 }
 
-function playFavorite(event) {
-    requireAuth(event, speaker.get("LinkAccount"), function() {
+function playFavorite(event, response, attributes, handlerContext) {
+    requireAuth(handlerContext, speaker.get("LinkAccount"), function() {
 
-        const show = getShowFromSlotValue(event.event.request);    
+        const show = getShowFromSlotValue(event.request);    
         if (show) {
-            transitionToState(event, appStates.DEFAULT);
-            startPlayingFavorite(event, show);
+            transitionToState(handlerContext, appStates.DEFAULT);
+            startPlayingFavorite(handlerContext, show);
         }
         else {
             let context = constants.questions.FavoriteShowTitle;
-            transitionToState(event, appStates.ASK_FOR_SHOW, {questionContext: context});
+            transitionToState(handlerContext, appStates.ASK_FOR_SHOW, {questionContext: context});
 
-            event.response.speak(speaker.getQuestionSpeech(context, "original"))
-                          .listen(speaker.getQuestionSpeech(context, "reprompt"));
+            response.speak(speaker.getQuestionSpeech(context, "original"))
+                    .listen(speaker.getQuestionSpeech(context, "reprompt"));
 
-            event.emit(":responseReady");
+            handlerContext.emit(":responseReady");
         }
     });
 }
 
-function listShows(event) {
+function listShows(event, response, attributes, handlerContext) {
     let speech = speaker.get("ShowList");
     
-    if (event.handler.state === appStates.ASK_FOR_SHOW) {
-        const context = event.attributes["questionContext"];
+    if (handlerContext.handler.state === appStates.ASK_FOR_SHOW) {
+        const context = attributes["questionContext"];
         speech += " " + speaker.getQuestionSpeech(context, 'reprompt');
-        event.response.speak(speech)
-                      .listen(speaker.getQuestionSpeech(context, 'reprompt'));
+        response.speak(speech)
+                .listen(speaker.getQuestionSpeech(context, 'reprompt'));
     }
     else {
-        event.response.speak(speech);
+        response.speak(speech);
     }
 
-    event.emit(":responseReady");
+    handlerContext.emit(":responseReady");
 }
 
-function whoIsMatt(event) {
-    transitionToState(event, appStates.DEFAULT);
+function whoIsMatt(event, response, attributes, handlerContext) {
+    transitionToState(handlerContext, appStates.DEFAULT);
 
     // indexes 1-30
     let mattLieberIndex = Math.ceil(Math.random() * 30);
 
     const speech = `<audio src="https://s3.amazonaws.com/amazon-alexa/Audio+Files/MLI/MLI+${mattLieberIndex}.mp3" />`;
-    event.response.speak(speech);
-    event.emit(":responseReady");
+    response.speak(speech);
+    handlerContext.emit(":responseReady");
 }
 
-function cancel(event) {
-    transitionToState(event, appStates.DEFAULT);
+function cancel(event, response, attributes, handlerContext) {
+    transitionToState(handlerContext, appStates.DEFAULT);
 
-    const controller = PlaybackController(event);
-    if (event.handler.state === appStates.DEFAULT && controller.activeTrack()) {
-        PlaybackController(event).stop();
+    const controller = PlaybackController(handlerContext);
+    if (handlerContext.handler.state === appStates.DEFAULT && controller.activeTrack()) {
+        PlaybackController(handlerContext).stop();
     }
     else {
-        event.response.speak(speaker.get("Goodbye"));
+        response.speak(speaker.get("Goodbye"));
     }
-    event.emit(":responseReady");
+    handlerContext.emit(":responseReady");
 }
 
-function showTitleNamed(event) {
-    if (event.handler.state === appStates.ASK_FOR_SHOW) {        
-        if(!getShowFromSlotValue(event.event.request)) {
+function showTitleNamed(event, response, attributes, handlerContext) {
+    if (handlerContext.handler.state === appStates.ASK_FOR_SHOW) {        
+        if(!getShowFromSlotValue(event.request)) {
             // delegate to unhandled input handler for this state
-            unhandledAction(event);
+            unhandledAction(event, response, attributes, handlerContext);
         }
         else {
-            const questionContext = event.attributes["questionContext"];
+            const questionContext = attributes["questionContext"];
             
-            transitionToState(event, appStates.DEFAULT);
+            transitionToState(handlerContext, appStates.DEFAULT);
 
             if (questionContext === constants.questions.FavoriteShowTitle) {
-                playFavorite(event);
+                playFavorite(event, response, attributes, handlerContext);
             }
             else { // should be MostRecentShowTitle question
-                playLatest(event);
+                playLatest(event, response, attributes, handlerContext);
             }
             return;
         }
     }
     else {
         // if the user just names a show on its own, take it to mean "play the latest ..."
-        transitionToState(event, appStates.DEFAULT);
+        transitionToState(handlerContext, appStates.DEFAULT);
         playLatest(event);
         return;        
     }
 
-    event.emit(":responseReady");
+    handlerContext.emit(":responseReady");
 }
 
-function exclusiveChosen(event) {
-    const number = getNumberFromSlotValue(event.event.request);
+function exclusiveChosen(event, response, attributes, handlerContext) {
+    const number = getNumberFromSlotValue(event.request);
     const exclusive = gimlet.exclusives[number-1];
     if (exclusive) {
-        transitionToState(event, appStates.DEFAULT);
+        transitionToState(handlerContext, appStates.DEFAULT);
                 // Alexa only plays HTTPS urls
         const track = new Track(exclusive.url, `Exclusive #${number}`);
-        playTrack(event, track, `Here is Exclusive #${number}`);
+        playTrack(handlerContext, track, `Here is Exclusive #${number}`);
     }
     else {
         // defer to unhandled
-        unhandledAction(event);
+        unhandledAction(event, response, attributes, handlerContext);
     }
 }
 
-function pause(event) {
-    transitionToState(event, appStates.DEFAULT);
+function pause(event, response, attributes, handlerContext) {
+    transitionToState(handlerContext, appStates.DEFAULT);
 
-    PlaybackController(event).stop();
-    event.emit(":responseReady");
+    PlaybackController(handlerContext).stop();
+    handlerContext.emit(":responseReady");
 }
 
-function stop(event) {
-    transitionToState(event, appStates.DEFAULT);
+function stop(event, response, attributes, handlerContext) {
+    transitionToState(handlerContext, appStates.DEFAULT);
 
-    PlaybackController(event).stop();
-    event.emit(":responseReady");
+    PlaybackController(handlerContext).stop();
+    handlerContext.emit(":responseReady");
 }
 
-function resume(event) {
-    transitionToState(event, appStates.DEFAULT);
+function resume(event, response, attributes, handlerContext) {
+    transitionToState(handlerContext, appStates.DEFAULT);
 
-    const controller = PlaybackController(event);
+    const controller = PlaybackController(handlerContext);
     const didResume = controller.resume();    
     if (!didResume) {
-        event.response.speak(speaker.get("EmptyQueueMessage"));
+        response.speak(speaker.get("EmptyQueueMessage"));
     }
-    event.emit(":responseReady");
+    handlerContext.emit(":responseReady");
 }
 
-function startOver(event) {
-    transitionToState(event, appStates.DEFAULT);
+function startOver(event, response, attributes, handlerContext) {
+    transitionToState(handlerContext, appStates.DEFAULT);
 
-    const controller = PlaybackController(event);
+    const controller = PlaybackController(handlerContext);
     const didRestart = controller.restart();    
     if (!didRestart) {
-        event.response.speak(speaker.get("EmptyQueueMessage"));
+        response.speak(speaker.get("EmptyQueueMessage"));
     }
-    event.emit(":responseReady");
+    handlerContext.emit(":responseReady");
 }
 
-function resumeConfirmed(event, shouldResume) {
-    transitionToState(event, appStates.DEFAULT);
-
-    if (shouldResume) {
-        resume(event);
-    }
-    else {
-        const controller = PlaybackController(event);
-        controller.clear();
-
-        const message = speaker.get("WhatToDo");
-        event.response.speak(message)
-                      .listen(message);
-        event.emit(":responseReady");
-    }
+function resumeConfirmationYes(event, response, attributes, handlerContext) {
+    transitionToState(handlerContext, appStates.DEFAULT);
+    resume(event, response, attributes, handlerContext);
 }
 
-function playbackOperationUnsupported(event, operationName) {
-    const speech = speaker.get("UnsupportedOperation", operationName);
-    event.response.speak(speech);
-    event.emit(":responseReady");
+function resumeConfirmationNo(event, response, attributes, handlerContext) {
+    transitionToState(handlerContext, appStates.DEFAULT);
+    const controller = PlaybackController(handlerContext);
+    controller.clear();
+
+    const message = speaker.get("WhatToDo");
+    response.speak(message)
+            .listen(message);
+    handlerContext.emit(":responseReady");
 }
 
-function playbackPlay(event) {
-    PlaybackController(event).resume();
-    event.emit(":responseReady");
+function playbackOperationUnsupported(event, response, attributes, handlerContext) {
+    const speech = speaker.get("UnsupportedOperation");
+    response.speak(speech);
+    handlerContext.emit(":responseReady");
 }
 
-function playbackPause(event) {
-    PlaybackController(event).stop();
-    event.emit(":responseReady");
+function playbackPlay(event, response, attributes, handlerContext) {
+    PlaybackController(handlerContext).resume();
+    handlerContext.emit(":responseReady");
+}
+
+function playbackPause(event, response, attributes, handlerContext) {
+    PlaybackController(handlerContext).stop();
+    handlerContext.emit(":responseReady");
 }
 
 
@@ -297,52 +296,52 @@ function playbackPause(event) {
  * Lifecycle events
  */
 
-function sessionEnded(event) {
-    transitionToState(event, appStates.DEFAULT);
-    event.emit(":saveState", true);
+function sessionEnded(event, response, attributes, handlerContext) {
+    transitionToState(handlerContext, appStates.DEFAULT);
+    handlerContext.emit(":saveState", true);
 }
 
 // TODO: move logic in here into controller -- it can deal with the playback state all in its module
 
-function playbackStarted(event) {
-    event.context.succeed(true);
+function playbackStarted(event, response, attributes, handlerContext) {
+    handlerContext.context.succeed(true);
 }
 
-function playbackStopped(event) {
-    const offset = event.event.request.offsetInMilliseconds;
+function playbackStopped(event, response, attributes, handlerContext) {
+    const offset = event.request.offsetInMilliseconds;
     // TODO: handle offset not being available
-    PlaybackController(event).onPlaybackStopped(offset);
-    event.emit(':saveState', true);
+    PlaybackController(handlerContext).onPlaybackStopped(offset);
+    handlerContext.emit(':saveState', true);
 }
 
-function playbackNearlyFinished(event) {
-    event.context.succeed(true);
+function playbackNearlyFinished(event, response, attributes, handlerContext) {
+    handlerContext.context.succeed(true);
 }
 
-function playbackFinished(event) {
-    PlaybackController(event).onPlaybackFinished();
-    event.emit(':saveState', true);
+function playbackFinished(event, response, attributes, handlerContext) {
+    PlaybackController(handlerContext).onPlaybackFinished();
+    handlerContext.emit(':saveState', true);
 }
 
-function playbackFailed(event) {
-    event.context.succeed(true);
+function playbackFailed(event, response, attributes, handlerContext) {
+    handlerContext.context.succeed(true);
 }
 
 /**
  * Misc. handlers
  */
 
-// For error details: https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/custom-audioplayer-interface-reference#systemexceptionencountered-request
-function systemException(event, err) {
+// Not used currently. For error details: https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/custom-audioplayer-interface-reference#systemexceptionencountered-request
+function systemException(event, response, attributes, handlerContext) {
 
 }
 
-function unhandledAction(event) {
+function unhandledAction(event, response, attributes, handlerContext) {
     /* This function is triggered whenever an intent is understood by Alexa, 
         but we define no handler for it in the current application state.
     */
-    if (isStateQuestion(event.handler.state)) {
-        const questionContext = event.attributes['questionContext'];
+    if (isStateQuestion(handlerContext.handler.state)) {
+        const questionContext = attributes['questionContext'];
         if (!questionContext) {
             // TODO: what to do if this is broken?
         }
@@ -350,15 +349,15 @@ function unhandledAction(event) {
         const speech = speaker.getQuestionSpeech(questionContext, 'unhandled');
         const reprompt = speaker.getQuestionSpeech(questionContext, 'reprompt');
 
-        event.response.speak(speech)
-                      .listen(reprompt);
+        response.speak(speech)
+                .listen(reprompt);
     }
     else {
-        event.response.speak(speaker.get("_Unhandled"))
-                      .listen(speaker.get("WhatToDo"));
+        response.speak(speaker.get("_Unhandled"))
+                .listen(speaker.get("WhatToDo"));
     }
 
-    event.emit(':responseReady');
+    handlerContext.emit(':responseReady');
 }
 
 module.exports = {
@@ -380,7 +379,8 @@ module.exports = {
     resume: resume,
     playbackOperationUnsupported: playbackOperationUnsupported,
     startOver: startOver,
-    resumeConfirmed: resumeConfirmed,
+    resumeConfirmationYes: resumeConfirmationYes,
+    resumeConfirmationNo: resumeConfirmationNo,
     playbackPlay: playbackPlay,
     playbackPause: playbackPause,
 
@@ -391,7 +391,6 @@ module.exports = {
     playbackFinished: playbackFinished,
     playbackFailed: playbackFailed,
 
-    systemException: systemException,
     unhandledAction: unhandledAction,
 };
 
@@ -404,7 +403,7 @@ function isStateQuestion(state) {
                         state);
 }
 
-function startPlayingMostRecent(event, show) {
+function startPlayingMostRecent(handlerContext, show) {
     const url = gimlet.feedUrl(show);
     rss.parseURL(url, function(err, parsed) {
         if (err) {
@@ -419,11 +418,11 @@ function startPlayingMostRecent(event, show) {
         // Alexa only plays HTTPS urls
         const url = entry.enclosure.url.replace('http://', 'https://');
         const track = new Track(url, entry.title, show);
-        playTrack(event, track, speaker.introduceMostRecent(show));
+        playTrack(handlerContext, track, speaker.introduceMostRecent(show));
     });
 }
 
-function startPlayingFavorite(event, show) {
+function startPlayingFavorite(handlerContext, show) {
     const favs = gimlet.favorites(show) || [];
 
     // ensure attribute exists
@@ -453,18 +452,18 @@ function startPlayingFavorite(event, show) {
     history.lastFavoriteIndex[show.id] = nextIndex;
 
     const track = new Track(fav.url, fav.title, show);
-    playTrack(event, track, speaker.introduceFavorite(show, fav.title));
+    playTrack(handlerContext, track, speaker.introduceFavorite(show, fav.title));
 }
 
-function playTrack(event, track, introSpeech) {
-    const controller = PlaybackController(event); 
+function playTrack(handlerContext, track, introSpeech) {
+    const controller = PlaybackController(handlerContext); 
 
     if (introSpeech) {
-        event.response.speak(introSpeech);
+        handlerContext.response.speak(introSpeech);
     }
     
     controller.start(track);
-    event.emit(":responseReady");
+    handlerContext.emit(":responseReady");
 }
 
 function getShowFromSlotValue(request) {
@@ -484,23 +483,25 @@ function getNumberFromSlotValue(request) {
     }
 }
 
-
-function requireAuth(event, prompt, successCallback) {
-    authHelper.isSessionAuthenticated(event.event.session, function(auth) {
+// TODO: make into middleware
+function requireAuth(handlerContext, prompt, successCallback) {
+    authHelper.isSessionAuthenticated(handlerContext.event.session, function(auth) {
+        successCallback();
+        return;
         if (auth) {
             successCallback();
         }
         else {
-            event.response.speak(prompt).linkAccountCard();
-            event.emit(":responseReady");
+            handlerContext.response.speak(prompt).linkAccountCard();
+            handlerContext.emit(":responseReady");
         }
     });
 }
 
-function transitionToState(event, state, associatedAttrs) {
-    event.handler.state = state;
-    Object.assign(event.attributes, associatedAttrs);
+function transitionToState(handlerContext, state, associatedAttrs) {
+    handlerContext.handler.state = state;
+    Object.assign(handlerContext.attributes, associatedAttrs);
     if (state === appStates.DEFAULT) {
-        delete event.attributes["questionContext"];
+        delete handlerContext.attributes["questionContext"];
     }
 }

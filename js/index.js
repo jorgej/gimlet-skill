@@ -1,26 +1,24 @@
 'use strict';
 
-var Alexa = require('alexa-sdk');
+var AlexaPlus = require('./alexaplus');
 var constants = require('./constants');
-
 const handlers = require('./handlers');
+var routers = require('./routers');
 
 // TODO: should this just be in dev?
 var AWS = require('aws-sdk');
 AWS.config.update({region: 'us-east-1'});
 
 exports.handler = function(event, context, callback){
-    var alexa = Alexa.handler(event, context);
-    alexa.appId = constants.appId;
-    alexa.dynamoDBTableName = constants.dynamoDBTableName;
-    alexa.registerHandlers(
-        handlers.defaultIntentHandlers,
-        handlers.askShowIntentHandlers,
-        handlers.confirmIntentHandlers,
-        handlers.whichExclusiveHandlers,
-        handlers.remoteControllerHandlers,
-        handlers.audioEventHandlers
-    );
+    var alexaPlus = AlexaPlus.client(event, context);
+
+    // in addition to all this stuff, it creates a state instance
+
+    alexaPlus.appId = constants.appId;
+    alexaPlus.dynamoDBTableName = constants.dynamoDBTableName;
+
+    // routers returns an array, so we use apply to pass that on
+    alexaPlus.registerRouters.apply(alexaPlus, routers);
 
     // Needed for interactions triggered from the Service Simulator 
     // if (!event.context) {
@@ -38,9 +36,9 @@ exports.handler = function(event, context, callback){
     // }
 
     if (!event.context || event.context.System.device.supportedInterfaces.AudioPlayer === undefined) {
-        alexa.emit(':tell', 'Sorry, this skill is not supported on this device');
+        alexaPlus.emit(':tell', 'Sorry, this skill is not supported on this device');
     }
     else {
-        alexa.execute();
+        alexaPlus.execute();
     }
 };

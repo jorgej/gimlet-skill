@@ -8,8 +8,15 @@ const PlaybackState = require("./playbackState");
 
 module.exports = function(event) {
     return {
-        start: function(track) {
-            event.attributes['playbackState'] = new PlaybackState(track);
+        start: function(track, offset) {
+            let state;
+            if (offset) {
+                state = new PlaybackState(track, offset);
+            }
+            else {
+                state = new PlaybackState(track);
+            }
+            event.attributes['playbackState'] = state;
             this.resume();
         },
         stop: function() {
@@ -51,6 +58,11 @@ module.exports = function(event) {
         },
 
         onPlaybackStarted: function() {
+            const playbackHistory = utils.getPlaybackHistory(event);
+            if(!playbackHistory.serialProgress[show.id]) {
+                playbackHistory.serialProgress[show.id] = {episode: 1, offset: 0};
+            }
+
             // nothing to do with pb state
         },
         onPlaybackStopped: function(offset) {
