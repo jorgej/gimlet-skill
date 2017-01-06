@@ -486,8 +486,6 @@ function getNumberFromSlotValue(request) {
 // TODO: make into middleware
 function requireAuth(handlerContext, prompt, successCallback) {
     authHelper.isSessionAuthenticated(handlerContext.event.session, function(auth) {
-        successCallback();
-        return;
         if (auth) {
             successCallback();
         }
