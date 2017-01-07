@@ -58,11 +58,6 @@ module.exports = function(event) {
         },
 
         onPlaybackStarted: function() {
-            const playbackHistory = utils.getPlaybackHistory(event);
-            if(!playbackHistory.serialProgress[show.id]) {
-                playbackHistory.serialProgress[show.id] = {episode: 1, offset: 0};
-            }
-
             // nothing to do with pb state
         },
         onPlaybackStopped: function(offset) {
