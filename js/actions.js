@@ -17,7 +17,7 @@ function launchRequest(event, response, attributes, handlerContext) {
     // TODO: move this somewhere. auth flow here is too cluttered
     requireAuth(handlerContext, speaker.get("LinkAccount"), function() {
         // we can assume we're in DEFAULT state
-        const controller = PlaybackController(handlerContext);
+        const controller = PlaybackController(response, attributes);
         let speech, reprompt;
 
         const track = controller.activeTrack();
@@ -50,7 +50,7 @@ function launchRequest(event, response, attributes, handlerContext) {
 }
 
 function help(event, response, attributes, handlerContext) {
-    const controller = PlaybackController(handlerContext);
+    const controller = PlaybackController(response, attributes);
 
     const state = handlerContext.handler.state;
     let speech;
@@ -90,7 +90,7 @@ function playLatest(event, response, attributes, handlerContext) {
         const show = getShowFromSlotValue(event.request);
         if (show) {
             transitionToState(handlerContext, appStates.DEFAULT);
-            startPlayingMostRecent(handlerContext, show);
+            startPlayingMostRecent(show, response, attributes, handlerContext);
         }
         else {
             let context = constants.questions.FavoriteShowTitle;
@@ -124,7 +124,7 @@ function playFavorite(event, response, attributes, handlerContext) {
         const show = getShowFromSlotValue(event.request);    
         if (show) {
             transitionToState(handlerContext, appStates.DEFAULT);
-            startPlayingFavorite(handlerContext, show);
+            startPlayingFavorite(show, response, attributes, handlerContext);
         }
         else {
             let context = constants.questions.FavoriteShowTitle;
@@ -168,9 +168,9 @@ function whoIsMatt(event, response, attributes, handlerContext) {
 function cancel(event, response, attributes, handlerContext) {
     transitionToState(handlerContext, appStates.DEFAULT);
 
-    const controller = PlaybackController(handlerContext);
+    const controller = PlaybackController(response, attributes);
     if (handlerContext.handler.state === appStates.DEFAULT && controller.activeTrack()) {
-        PlaybackController(handlerContext).stop();
+        controller.stop();
     }
     else {
         response.speak(speaker.get("Goodbye"));
@@ -201,7 +201,7 @@ function showTitleNamed(event, response, attributes, handlerContext) {
     else {
         // if the user just names a show on its own, take it to mean "play the latest ..."
         transitionToState(handlerContext, appStates.DEFAULT);
-        playLatest(event);
+        playLatest(event, response, attributes, handlerContext);
         return;        
     }
 
@@ -214,8 +214,13 @@ function exclusiveChosen(event, response, attributes, handlerContext) {
     if (exclusive) {
         transitionToState(handlerContext, appStates.DEFAULT);
                 // Alexa only plays HTTPS urls
+        response.speak(`Here is Exclusive #${number}`);
+
+        const controller = PlaybackController(response, attributes);
         const track = new Track(exclusive.url, `Exclusive #${number}`);
-        playTrack(handlerContext, track, `Here is Exclusive #${number}`);
+        // TODO: replace with host mp3
+        controller.start(track);
+        handlerContext.emit(":responseReady");
     }
     else {
         // defer to unhandled
@@ -226,21 +231,21 @@ function exclusiveChosen(event, response, attributes, handlerContext) {
 function pause(event, response, attributes, handlerContext) {
     transitionToState(handlerContext, appStates.DEFAULT);
 
-    PlaybackController(handlerContext).stop();
+    PlaybackController(response, attributes).stop();
     handlerContext.emit(":responseReady");
 }
 
 function stop(event, response, attributes, handlerContext) {
     transitionToState(handlerContext, appStates.DEFAULT);
 
-    PlaybackController(handlerContext).stop();
+    PlaybackController(response, attributes).stop();
     handlerContext.emit(":responseReady");
 }
 
 function resume(event, response, attributes, handlerContext) {
     transitionToState(handlerContext, appStates.DEFAULT);
 
-    const controller = PlaybackController(handlerContext);
+    const controller = PlaybackController(response, attributes);
     const didResume = controller.resume();    
     if (!didResume) {
         response.speak(speaker.get("EmptyQueueMessage"));
@@ -251,7 +256,7 @@ function resume(event, response, attributes, handlerContext) {
 function startOver(event, response, attributes, handlerContext) {
     transitionToState(handlerContext, appStates.DEFAULT);
 
-    const controller = PlaybackController(handlerContext);
+    const controller = PlaybackController(response, attributes);
     const didRestart = controller.restart();    
     if (!didRestart) {
         response.speak(speaker.get("EmptyQueueMessage"));
@@ -266,7 +271,7 @@ function resumeConfirmationYes(event, response, attributes, handlerContext) {
 
 function resumeConfirmationNo(event, response, attributes, handlerContext) {
     transitionToState(handlerContext, appStates.DEFAULT);
-    const controller = PlaybackController(handlerContext);
+    const controller = PlaybackController(response, attributes);
     controller.clear();
 
     const message = speaker.get("WhatToDo");
@@ -282,12 +287,12 @@ function playbackOperationUnsupported(event, response, attributes, handlerContex
 }
 
 function playbackPlay(event, response, attributes, handlerContext) {
-    PlaybackController(handlerContext).resume();
+    PlaybackController(response, attributes).resume();
     handlerContext.emit(":responseReady");
 }
 
 function playbackPause(event, response, attributes, handlerContext) {
-    PlaybackController(handlerContext).stop();
+    PlaybackController(response, attributes).stop();
     handlerContext.emit(":responseReady");
 }
 
@@ -310,7 +315,7 @@ function playbackStarted(event, response, attributes, handlerContext) {
 function playbackStopped(event, response, attributes, handlerContext) {
     const offset = event.request.offsetInMilliseconds;
     // TODO: handle offset not being available
-    PlaybackController(handlerContext).onPlaybackStopped(offset);
+    PlaybackController(response, attributes).onPlaybackStopped(offset);
     handlerContext.emit(':saveState', true);
 }
 
@@ -319,7 +324,7 @@ function playbackNearlyFinished(event, response, attributes, handlerContext) {
 }
 
 function playbackFinished(event, response, attributes, handlerContext) {
-    PlaybackController(handlerContext).onPlaybackFinished();
+    PlaybackController(response, attributes).onPlaybackFinished();
     handlerContext.emit(':saveState', true);
 }
 
@@ -403,7 +408,7 @@ function isStateQuestion(state) {
                         state);
 }
 
-function startPlayingMostRecent(handlerContext, show) {
+function startPlayingMostRecent(show, response, attributes, handlerContext) {
     const url = gimlet.feedUrl(show);
     rss.parseURL(url, function(err, parsed) {
         if (err) {
@@ -417,23 +422,29 @@ function startPlayingMostRecent(handlerContext, show) {
 
         // Alexa only plays HTTPS urls
         const url = entry.enclosure.url.replace('http://', 'https://');
+        const intro = speaker.introduceMostRecent(show);
+        response.speak(intro);
+        
+        const controller = PlaybackController(response, attributes);
         const track = new Track(url, entry.title, show);
-        playTrack(handlerContext, track, speaker.introduceMostRecent(show));
+        controller.start(track);
+
+        handlerContext.emit(":responseReady");
     });
 }
 
-function startPlayingFavorite(handlerContext, show) {
+function startPlayingFavorite(show, response, attributes, handlerContext) {
     const favs = gimlet.favorites(show) || [];
 
     // ensure attribute exists
-    if (!event.attributes['playbackHistory']) {
-        event.attributes['playbackHistory'] = { 
+    if (!attributes['playbackHistory']) {
+        attributes['playbackHistory'] = { 
             lastFavoriteIndex: {}   // map of show id: last played index
         }
     }
 
     // get the favorite index that was last played (default to infinity)
-    const history = event.attributes['playbackHistory'];
+    const history = attributes['playbackHistory'];
     let lastPlayedIndex = history.lastFavoriteIndex[show.id];
     if (lastPlayedIndex === undefined) {
         lastPlayedIndex = Infinity;
@@ -451,18 +462,13 @@ function startPlayingFavorite(handlerContext, show) {
 
     history.lastFavoriteIndex[show.id] = nextIndex;
 
-    const track = new Track(fav.url, fav.title, show);
-    playTrack(handlerContext, track, speaker.introduceFavorite(show, fav.title));
-}
-
-function playTrack(handlerContext, track, introSpeech) {
-    const controller = PlaybackController(handlerContext); 
-
-    if (introSpeech) {
-        handlerContext.response.speak(introSpeech);
-    }
+    const intro = speaker.introduceFavorite(show, fav.title);
+    response.speak(intro);
     
+    const controller = PlaybackController(response, attributes);
+    const track = new Track(fav.url, fav.title, show);
     controller.start(track);
+
     handlerContext.emit(":responseReady");
 }
 

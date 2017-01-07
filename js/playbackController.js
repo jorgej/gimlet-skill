@@ -6,7 +6,7 @@ const PlaybackState = require("./playbackState");
 
 // TODO: Note that session must be saved after these calls for them to work. how can we enforce this?
 
-module.exports = function(event) {
+module.exports = function(response, attributes) {
     return {
         start: function(track, offset) {
             let state;
@@ -16,17 +16,17 @@ module.exports = function(event) {
             else {
                 state = new PlaybackState(track);
             }
-            event.attributes['playbackState'] = state;
+            attributes['playbackState'] = state;
             this.resume();
         },
         stop: function() {
-            event.response.audioPlayerStop();
+            response.audioPlayerStop();
         },
         resume: function() {
-            const playbackState = event.attributes['playbackState'];
+            const playbackState = attributes['playbackState'];
             // TODO: support mark/isFinished methods again
             if (playbackState && !isFinished(playbackState)) {
-                event.response.audioPlayerPlay("REPLACE_ALL", 
+                response.audioPlayerPlay("REPLACE_ALL", 
                     playbackState.track.url, 
                     playbackState.track.url,
                     null, 
@@ -36,7 +36,7 @@ module.exports = function(event) {
             return false;
         },
         restart: function() {
-            const playbackState = event.attributes['playbackState'];
+            const playbackState = attributes['playbackState'];
             if (playbackState) {
                 this.start(playbackState.track);
                 return true;
@@ -44,11 +44,11 @@ module.exports = function(event) {
             return false;
         },
         clear: function() {
-            delete event.attributes["playbackState"];
+            delete attributes["playbackState"];
         },
 
         activeTrack: function() {
-            const playbackState = event.attributes['playbackState'];
+            const playbackState = attributes['playbackState'];
             if (playbackState && !isFinished(playbackState)) {
                 return playbackState.track;
             }
@@ -61,13 +61,13 @@ module.exports = function(event) {
             // nothing to do with pb state
         },
         onPlaybackStopped: function(offset) {
-            const playbackState = event.attributes['playbackState'];
+            const playbackState = attributes['playbackState'];
             if (playbackState) {
                 playbackState.offset = offset;
             }
         },
         onPlaybackFinished: function() {
-            const playbackState = event.attributes["playbackState"];
+            const playbackState = attributes["playbackState"];
             if (playbackState) {
                 markFinished(playbackState);
             }
