@@ -49,13 +49,31 @@ function registerRouters() {
 
 function extractRequestArgs() {
     // object context should be a "handleContext" defined in the Alexa SDK. See alexa.js for more.
+    const handlerContext = this;
+
+    // extend capabilities of ResponseBuilder to emit ending events itself
+    Object.assign(handlerContext.response, {
+        send: function() {
+            handlerContext.emit(":responseReady");
+            return this;
+        },
+        exit: function(saveState) {
+            // ends execution instead of sending alexa response
+            if (saveState) {
+                handlerContext.emit(":saveState", true);
+            }
+            else {
+                handlerContext.context.succeed(true);
+            }
+        }
+    });
 
     // TODO: add new response methods, transform attributes into full state store object
     return [
-        this.event,
-        this.response,
-        this.attributes
-    ]
+        handlerContext.event,
+        handlerContext.response,
+        handlerContext.attributes
+    ];
 }
 
 module.exports = {

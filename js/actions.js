@@ -15,7 +15,7 @@ const intents = constants.intents;
 
 function launchRequest(event, response, attributes, handlerContext) {
     // TODO: move this somewhere. auth flow here is too cluttered
-    requireAuth(handlerContext, speaker.get("LinkAccount"), function() {
+    requireAuth(event, response, speaker.get("LinkAccount"), function() {
         // we can assume we're in DEFAULT state
         const controller = PlaybackController(response, attributes);
         let speech, reprompt;
@@ -44,8 +44,8 @@ function launchRequest(event, response, attributes, handlerContext) {
         }
 
         response.speak(speech)
-                .listen(reprompt || speech);
-        handlerContext.emit(":responseReady");
+                .listen(reprompt || speech)
+                .send();
     });
 }
 
@@ -82,29 +82,29 @@ function help(event, response, attributes, handlerContext) {
     if (reprompt) {
         response.listen(reprompt);
     }
-    handlerContext.emit(":responseReady");
+    response.send();
 }
 
 function playLatest(event, response, attributes, handlerContext) {
-    requireAuth(handlerContext, speaker.get("LinkAccount"), function() {
+    requireAuth(event, response, speaker.get("LinkAccount"), function() {
         const show = getShowFromSlotValue(event.request);
         if (show) {
             transitionToState(handlerContext, appStates.DEFAULT);
-            startPlayingMostRecent(show, response, attributes, handlerContext);
+            startPlayingMostRecent(show, response, attributes);
         }
         else {
             let context = constants.questions.FavoriteShowTitle;
             transitionToState(handlerContext, appStates.ASK_FOR_SHOW, {questionContext: context});
 
             response.speak(speaker.getQuestionSpeech(context, "original"))
-                    .listen(speaker.getQuestionSpeech(context, "reprompt"));
-            handlerContext.emit(":responseReady");
+                    .listen(speaker.getQuestionSpeech(context, "reprompt"))
+                    .send();
         }
     });
 }
 
 function playExclusive(event, response, attributes, handlerContext) {
-    requireAuth(handlerContext, speaker.get("LinkAccount"), function() {
+    requireAuth(event, response, speaker.get("LinkAccount"), function() {
         const context = constants.questions.ExclusiveNumber;
         transitionToState(handlerContext, appStates.QUESTION_EXCLUSIVE_NUMBER, {questionContext: context});
 
@@ -113,27 +113,26 @@ function playExclusive(event, response, attributes, handlerContext) {
         const prompt = speaker.getQuestionSpeech(context, "original")
 
         response.speak(excList + prompt)
-                .listen(speaker.getQuestionSpeech(context, "reprompt"));
-        handlerContext.emit(":responseReady");
+                .listen(speaker.getQuestionSpeech(context, "reprompt"))
+                .send();
     });
 }
 
 function playFavorite(event, response, attributes, handlerContext) {
-    requireAuth(handlerContext, speaker.get("LinkAccount"), function() {
+    requireAuth(event, response, speaker.get("LinkAccount"), function() {
 
         const show = getShowFromSlotValue(event.request);    
         if (show) {
             transitionToState(handlerContext, appStates.DEFAULT);
-            startPlayingFavorite(show, response, attributes, handlerContext);
+            startPlayingFavorite(show, response, attributes);
         }
         else {
             let context = constants.questions.FavoriteShowTitle;
             transitionToState(handlerContext, appStates.ASK_FOR_SHOW, {questionContext: context});
 
             response.speak(speaker.getQuestionSpeech(context, "original"))
-                    .listen(speaker.getQuestionSpeech(context, "reprompt"));
-
-            handlerContext.emit(":responseReady");
+                    .listen(speaker.getQuestionSpeech(context, "reprompt"))
+                    .send();
         }
     });
 }
@@ -151,7 +150,7 @@ function listShows(event, response, attributes, handlerContext) {
         response.speak(speech);
     }
 
-    handlerContext.emit(":responseReady");
+    response.send();
 }
 
 function whoIsMatt(event, response, attributes, handlerContext) {
@@ -161,8 +160,7 @@ function whoIsMatt(event, response, attributes, handlerContext) {
     let mattLieberIndex = Math.ceil(Math.random() * 30);
 
     const speech = `<audio src="https://s3.amazonaws.com/amazon-alexa/Audio+Files/MLI/MLI+${mattLieberIndex}.mp3" />`;
-    response.speak(speech);
-    handlerContext.emit(":responseReady");
+    response.speak(speech).send();
 }
 
 function cancel(event, response, attributes, handlerContext) {
@@ -175,7 +173,7 @@ function cancel(event, response, attributes, handlerContext) {
     else {
         response.speak(speaker.get("Goodbye"));
     }
-    handlerContext.emit(":responseReady");
+    response.send();
 }
 
 function showTitleNamed(event, response, attributes, handlerContext) {
@@ -195,17 +193,16 @@ function showTitleNamed(event, response, attributes, handlerContext) {
             else { // should be MostRecentShowTitle question
                 playLatest(event, response, attributes, handlerContext);
             }
-            return;
         }
     }
     else {
         // if the user just names a show on its own, take it to mean "play the latest ..."
         transitionToState(handlerContext, appStates.DEFAULT);
         playLatest(event, response, attributes, handlerContext);
-        return;        
     }
 
-    handlerContext.emit(":responseReady");
+    // TODO: refactor to end request here, way too easy to miss sending for a new branch
+    // note: all branches above send response
 }
 
 function exclusiveChosen(event, response, attributes, handlerContext) {
@@ -220,7 +217,7 @@ function exclusiveChosen(event, response, attributes, handlerContext) {
         const track = new Track(exclusive.url, `Exclusive #${number}`);
         // TODO: replace with host mp3
         controller.start(track);
-        handlerContext.emit(":responseReady");
+        response.send();
     }
     else {
         // defer to unhandled
@@ -232,14 +229,14 @@ function pause(event, response, attributes, handlerContext) {
     transitionToState(handlerContext, appStates.DEFAULT);
 
     PlaybackController(response, attributes).stop();
-    handlerContext.emit(":responseReady");
+    response.send();
 }
 
 function stop(event, response, attributes, handlerContext) {
     transitionToState(handlerContext, appStates.DEFAULT);
 
     PlaybackController(response, attributes).stop();
-    handlerContext.emit(":responseReady");
+    response.send();
 }
 
 function resume(event, response, attributes, handlerContext) {
@@ -250,7 +247,7 @@ function resume(event, response, attributes, handlerContext) {
     if (!didResume) {
         response.speak(speaker.get("EmptyQueueMessage"));
     }
-    handlerContext.emit(":responseReady");
+    response.send();
 }
 
 function startOver(event, response, attributes, handlerContext) {
@@ -261,7 +258,7 @@ function startOver(event, response, attributes, handlerContext) {
     if (!didRestart) {
         response.speak(speaker.get("EmptyQueueMessage"));
     }
-    handlerContext.emit(":responseReady");
+    response.send();
 }
 
 function resumeConfirmationYes(event, response, attributes, handlerContext) {
@@ -276,24 +273,24 @@ function resumeConfirmationNo(event, response, attributes, handlerContext) {
 
     const message = speaker.get("WhatToDo");
     response.speak(message)
-            .listen(message);
-    handlerContext.emit(":responseReady");
+            .listen(message)
+            .send();
 }
 
-function playbackOperationUnsupported(event, response, attributes, handlerContext) {
+function playbackOperationUnsupported(event, response, attributes) {
     const speech = speaker.get("UnsupportedOperation");
-    response.speak(speech);
-    handlerContext.emit(":responseReady");
+    response.speak(speech)
+            .send();
 }
 
-function playbackPlay(event, response, attributes, handlerContext) {
+function playbackPlay(event, response, attributes) {
     PlaybackController(response, attributes).resume();
-    handlerContext.emit(":responseReady");
+    response.send();
 }
 
-function playbackPause(event, response, attributes, handlerContext) {
+function playbackPause(event, response, attributes) {
     PlaybackController(response, attributes).stop();
-    handlerContext.emit(":responseReady");
+    response.send();
 }
 
 
@@ -303,33 +300,33 @@ function playbackPause(event, response, attributes, handlerContext) {
 
 function sessionEnded(event, response, attributes, handlerContext) {
     transitionToState(handlerContext, appStates.DEFAULT);
-    handlerContext.emit(":saveState", true);
+    response.exit(true);
 }
 
 // TODO: move logic in here into controller -- it can deal with the playback state all in its module
 
-function playbackStarted(event, response, attributes, handlerContext) {
-    handlerContext.context.succeed(true);
+function playbackStarted(event, response) {
+    response.exit(false);
 }
 
-function playbackStopped(event, response, attributes, handlerContext) {
+function playbackStopped(event, response, attributes) {
     const offset = event.request.offsetInMilliseconds;
     // TODO: handle offset not being available
     PlaybackController(response, attributes).onPlaybackStopped(offset);
-    handlerContext.emit(':saveState', true);
+    response.exit(true);
 }
 
-function playbackNearlyFinished(event, response, attributes, handlerContext) {
-    handlerContext.context.succeed(true);
+function playbackNearlyFinished(event, response) {
+    response.exit(false);;
 }
 
-function playbackFinished(event, response, attributes, handlerContext) {
+function playbackFinished(event, response, attributes) {
     PlaybackController(response, attributes).onPlaybackFinished();
-    handlerContext.emit(':saveState', true);
+    response.exit(true);
 }
 
-function playbackFailed(event, response, attributes, handlerContext) {
-    handlerContext.context.succeed(true);
+function playbackFailed(event, response) {
+    response.exit(false);;
 }
 
 /**
@@ -362,7 +359,7 @@ function unhandledAction(event, response, attributes, handlerContext) {
                 .listen(speaker.get("WhatToDo"));
     }
 
-    handlerContext.emit(':responseReady');
+    response.send();
 }
 
 module.exports = {
@@ -408,7 +405,7 @@ function isStateQuestion(state) {
                         state);
 }
 
-function startPlayingMostRecent(show, response, attributes, handlerContext) {
+function startPlayingMostRecent(show, response, attributes) {
     const url = gimlet.feedUrl(show);
     rss.parseURL(url, function(err, parsed) {
         if (err) {
@@ -429,11 +426,11 @@ function startPlayingMostRecent(show, response, attributes, handlerContext) {
         const track = new Track(url, entry.title, show);
         controller.start(track);
 
-        handlerContext.emit(":responseReady");
+        response.send();
     });
 }
 
-function startPlayingFavorite(show, response, attributes, handlerContext) {
+function startPlayingFavorite(show, response, attributes) {
     const favs = gimlet.favorites(show) || [];
 
     // ensure attribute exists
@@ -469,7 +466,7 @@ function startPlayingFavorite(show, response, attributes, handlerContext) {
     const track = new Track(fav.url, fav.title, show);
     controller.start(track);
 
-    handlerContext.emit(":responseReady");
+    response.send();
 }
 
 function getShowFromSlotValue(request) {
@@ -490,14 +487,15 @@ function getNumberFromSlotValue(request) {
 }
 
 // TODO: make into middleware
-function requireAuth(handlerContext, prompt, successCallback) {
-    authHelper.isSessionAuthenticated(handlerContext.event.session, function(auth) {
+function requireAuth(event, response, prompt, successCallback) {
+    authHelper.isSessionAuthenticated(event.session, function(auth) {
         if (auth) {
             successCallback();
         }
         else {
-            handlerContext.response.speak(prompt).linkAccountCard();
-            handlerContext.emit(":responseReady");
+            response.speak(prompt)
+                    .linkAccountCard()
+                    .send();
         }
     });
 }

@@ -83,15 +83,13 @@ var remoteControllerHandlers = alexaPlus.createRouter(states.DEFAULT, {
         */
     'PlayCommandIssued': actions.resume,
     'PauseCommandIssued': actions.pause,
-    'NextCommandIssued': function() {
+    'NextCommandIssued': function(event, response) {
         // don't want to react at all to this command
-        // TODO: check this works as intended
-        this.context.succeed(true);
+        response.exit(false);
     },
     'PreviousCommandIssued': function() {
         // don't want to react at all to this command
-        // TODO: check this works as intended
-        this.context.succeed(true);
+        response.exit(false);
     }
 });
 
