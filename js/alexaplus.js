@@ -38,8 +38,8 @@ function registerRouters() {
             const requestHandler = router.requestHandlers[eventName];
             alexaSDKEventHandlers[eventName] = function() {
                 // here, "this" is the "handlerContext" defined in alexa.js
-                [event, response, attributes] = extractRequestArgs.apply(this);
-                requestHandler(event, response, attributes, this);
+                [event, response, model] = extractRequestArgs.apply(this);
+                requestHandler(event, response, model, this);
             };
         }
 
@@ -68,13 +68,32 @@ function extractRequestArgs() {
         }
     });
 
+    const model = new StateModel(handlerContext.attributes);
+
     // TODO: add new response methods, transform attributes into full state store object
     return [
         handlerContext.event,
         handlerContext.response,
-        handlerContext.attributes
+        model
     ];
 }
+
+function StateManager(rawAttrs) {
+    this.underlyingAttributes = rawAttrs;
+
+    this.get = function(key) {
+        return this.underlyingAttributes[key];
+    }
+
+    this.set = function(key, val) {
+        this.underlyingAttributes[key] = val;
+    }
+
+    this.del = function(key) {
+        delete this.underlyingAttributes[key];
+    }
+}
+
 
 module.exports = {
     client: alexaClient,

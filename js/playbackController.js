@@ -6,7 +6,7 @@ const PlaybackState = require("./playbackState");
 
 // TODO: Note that session must be saved after these calls for them to work. how can we enforce this?
 
-module.exports = function(response, attributes) {
+module.exports = function(response, model) {
     return {
         start: function(track, offset) {
             let state;
@@ -16,14 +16,14 @@ module.exports = function(response, attributes) {
             else {
                 state = new PlaybackState(track);
             }
-            attributes['playbackState'] = state;
+            model.set('playbackState', state);
             this.resume();
         },
         stop: function() {
             response.audioPlayerStop();
         },
         resume: function() {
-            const playbackState = attributes['playbackState'];
+            const playbackState = model.get('playbackState');
             // TODO: support mark/isFinished methods again
             if (playbackState && !isFinished(playbackState)) {
                 response.audioPlayerPlay("REPLACE_ALL", 
@@ -36,7 +36,7 @@ module.exports = function(response, attributes) {
             return false;
         },
         restart: function() {
-            const playbackState = attributes['playbackState'];
+            const playbackState = model.get('playbackState');
             if (playbackState) {
                 this.start(playbackState.track);
                 return true;
@@ -44,11 +44,11 @@ module.exports = function(response, attributes) {
             return false;
         },
         clear: function() {
-            delete attributes["playbackState"];
+            model.del("playbackState");
         },
 
         activeTrack: function() {
-            const playbackState = attributes['playbackState'];
+            const playbackState = model.get('playbackState');
             if (playbackState && !isFinished(playbackState)) {
                 return playbackState.track;
             }
@@ -61,13 +61,13 @@ module.exports = function(response, attributes) {
             // nothing to do with pb state
         },
         onPlaybackStopped: function(offset) {
-            const playbackState = attributes['playbackState'];
+            const playbackState = model.get('playbackState');
             if (playbackState) {
                 playbackState.offset = offset;
             }
         },
         onPlaybackFinished: function() {
-            const playbackState = attributes["playbackState"];
+            const playbackState = model.get('playbackState');
             if (playbackState) {
                 markFinished(playbackState);
             }
