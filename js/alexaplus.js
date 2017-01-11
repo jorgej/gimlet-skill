@@ -1,4 +1,5 @@
 const Alexa = require('alexa-sdk');
+const Model = require('./model');
 
 function alexaClient(event, context, callback) {
     const underlyingHandler = Alexa.handler(event, context, callback);
@@ -68,32 +69,12 @@ function extractRequestArgs() {
         }
     });
 
-    const model = new StateModel(handlerContext.attributes);
-
-    // TODO: add new response methods, transform attributes into full state store object
     return [
         handlerContext.event,
         handlerContext.response,
-        model
+        new Model(handlerContext.attributes)
     ];
 }
-
-function StateManager(rawAttrs) {
-    this.underlyingAttributes = rawAttrs;
-
-    this.get = function(key) {
-        return this.underlyingAttributes[key];
-    }
-
-    this.set = function(key, val) {
-        this.underlyingAttributes[key] = val;
-    }
-
-    this.del = function(key) {
-        delete this.underlyingAttributes[key];
-    }
-}
-
 
 module.exports = {
     client: alexaClient,

@@ -2,7 +2,6 @@
 
 var AlexaPlus = require('./alexaplus');
 var constants = require('./constants');
-const handlers = require('./handlers');
 var routers = require('./routers');
 
 // TODO: should this just be in dev?
