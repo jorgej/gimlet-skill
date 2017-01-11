@@ -20,19 +20,19 @@ module.exports = {
     shows: shows,
     
     getFeedMap: function(callback) {
-        readJSONSourceFile('feeds.json', callback);
+        fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/feeds.json', callback);
     },
 
     getFavoritesMap: function(callback) {
-        readJSONSourceFile('favorites.json', callback);
+        fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/favorites.json', callback);
     },
 
     getExclusives: function(callback) {
-        readJSONSourceFile('exclusives.json', callback);
+        fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/exclusives.json', callback);
     },
 
     getMLIs: function(callback) {
-        readJSONSourceFile('mattlieberis.json', callback);
+        fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/mattlieberis.json', callback);
     },
 
     showMatchingSlotValue: function(slotValue) {
@@ -57,16 +57,14 @@ module.exports = {
     }
 };
 
-function readJSONSourceFile(filename, callback) {
-    const fs = require("fs");
-    const path = require("path");
-
-    filename = path.join(__dirname, 'sources', filename);
-    fs.readFile(filename, 'utf8', function (err, data) {
-        if (err) {
+function fetchJSONData(url, callback) {
+    const request = require("request");
+    request(url, (err, response, body)=> {
+        if (!err && response.statusCode === 200) {
+            callback(JSON.parse(body));
+        } else {
             callback(undefined, err);
         }
-        callback(JSON.parse(data));
     });
 }
 
