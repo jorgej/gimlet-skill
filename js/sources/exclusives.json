@@ -1,0 +1,17 @@
+[
+    {
+        "title": "Exclusive 1",
+        "intro": "",
+        "content": "https://s3.amazonaws.com/amazon-alexa/Audio+Files/Exclusives/Exclusive+1.mp3"
+    },
+    {
+        "title": "Exclusive 2",
+        "intro": "",
+        "content": "https://s3.amazonaws.com/amazon-alexa/Audio+Files/Exclusives/Exclusive+2.mp3"
+    },
+    {
+        "title": "Exclusive 3",
+        "intro": "",
+        "content": "https://s3.amazonaws.com/amazon-alexa/Audio+Files/Exclusives/Exclusive+3.mp3"
+    }
+]

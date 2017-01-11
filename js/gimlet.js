@@ -16,44 +16,23 @@ const shows = {
     Undone: makeShow("Undone")
 };
 
-const feedMap = {
-    "crimetown": standardFeedUrl("crimetownshow"),
-    "heavyweight": standardFeedUrl("heavyweightpodcast"),
-    "homecoming": standardFeedUrl("homecomingshow"),
-    "mysteryshow": standardFeedUrl("mysteryshow"),
-    "replyall": standardFeedUrl("hearreplyall"),
-    "sciencevs": standardFeedUrl("sciencevs"),
-    "startup": "https://feeds.feedburner.com/hearstartup",
-    "sampler": standardFeedUrl("samplershow"),
-    "surprisinglyawesome": standardFeedUrl("surprisinglyawesome"),
-    "twiceremoved": standardFeedUrl("twiceremovedshow"),
-    "undone": standardFeedUrl("undoneshow")
-};
-
-const favoritesMap = require("./favorites");
-
-const exclusives = [
-    {
-        url: "https://s3.amazonaws.com/amazon-alexa/Audio+Files/Exclusives/Exclusive+1.mp3"
-    },
-    {
-        url: "https://s3.amazonaws.com/amazon-alexa/Audio+Files/Exclusives/Exclusive+2.mp3"
-    },
-    {
-        url: "https://s3.amazonaws.com/amazon-alexa/Audio+Files/Exclusives/Exclusive+3.mp3"
-    }
-]
-
 module.exports = {
     shows: shows,
-    exclusives: exclusives,
     
-    feedUrl: function(show) {
-        return feedMap[show.id];
+    getFeedMap: function(callback) {
+        readJSONSourceFile('feeds.json', callback);
     },
-    
-    favorites: function(show) {
-        return favoritesMap[show.id];
+
+    getFavoritesMap: function(callback) {
+        readJSONSourceFile('favorites.json', callback);
+    },
+
+    getExclusives: function(callback) {
+        readJSONSourceFile('exclusives.json', callback);
+    },
+
+    getMLIs: function(callback) {
+        readJSONSourceFile('mattlieberis.json', callback);
     },
 
     showMatchingSlotValue: function(slotValue) {
@@ -78,6 +57,18 @@ module.exports = {
     }
 };
 
+function readJSONSourceFile(filename, callback) {
+    const fs = require("fs");
+    const path = require("path");
+
+    filename = path.join(__dirname, 'sources', filename);
+    fs.readFile(filename, 'utf8', function (err, data) {
+        if (err) {
+            callback(undefined, err);
+        }
+        callback(JSON.parse(data));
+    });
+}
 
 function makeShow(title) {
     return {
@@ -85,9 +76,3 @@ function makeShow(title) {
         title: title
     }
 }
-
-
-function standardFeedUrl(showKey) {
-    return `http://feeds.gimletmedia.com/${showKey}`;
-}
-

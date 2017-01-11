@@ -104,16 +104,18 @@ function introduceMostRecent(show) {
         return audio(standardMostRecentUrl(urlSuffixMap[show.id]));
     }
     else {
-        return `Here is the latest episode of ${show.title}`;
+        // TODO: handle erroneous arg
+        return "";
     }
 }
 
-function introduceFavorite(show, epTitle) {
+function introduceFavorite(show) {
     if (urlSuffixMap[show.id]) {
         return audio(standardFavoriteUrl(urlSuffixMap[show.id]));
     }
     else {
-        return `Here is "${epTitle}", a staff favorite episode of ${show.title}.`;
+        // TODO: handle erroneous arg
+        return "";
     }
 }
 

@@ -9,6 +9,7 @@ const authHelper = require("./authHelper");
 
 const rss = require("rss-parser");
 const _ = require("lodash");
+const fs = require("fs");
 
 const appStates = constants.states;
 
@@ -145,11 +146,20 @@ function listShows(event, response, model) {
 function whoIsMatt(event, response, model) {
     model.exitQuestionMode();
 
-    // indexes 1-30
-    let mattLieberIndex = Math.ceil(Math.random() * 30);
+    gimlet.getMLIs(function(urls, err) {
+        if (err || urls.length == 0) {
+            // TODO
+            response.speak("Sorry, there was a problem.").send();
+            return;
+        }
 
-    const speech = `<audio src="https://s3.amazonaws.com/amazon-alexa/Audio+Files/MLI/MLI+${mattLieberIndex}.mp3" />`;
-    response.speak(speech).send();
+        // pick random urls
+        let mattLieberIndex = Math.floor(Math.random() * urls.length);
+        const url = urls[mattLieberIndex];
+
+        const content = `<audio src="${url}" />`;
+        response.speak(content).send();
+    });
 }
 
 function cancel(event, response, model, handlerContext) {
@@ -195,22 +205,35 @@ function showTitleNamed(event, response, model) {
 
 function exclusiveChosen(event, response, model) {
     const number = getNumberFromSlotValue(event.request);
-    const exclusive = gimlet.exclusives[number-1];
-    if (exclusive) {
-        model.exitQuestionMode();
-                // Alexa only plays HTTPS urls
-        response.speak(`Here is Exclusive #${number}`);
 
-        const controller = PlaybackController(response, model);
-        const track = new Track(exclusive.url, `Exclusive #${number}`);
-        // TODO: replace with host mp3
-        controller.start(track);
-        response.send();
-    }
-    else {
-        // defer to unhandled
-        unhandledAction.apply(this, arguments);
-    }
+    gimlet.getExclusives(function(exclusives, err) {
+        if (err || !exclusives) {
+            // TODO
+            response.speak("Sorry, there was a problem.").send();
+            return;
+        }
+
+        const exclusive = exclusives[number-1];
+        if (exclusive) {
+            model.exitQuestionMode();
+                    // Alexa only plays HTTPS urls
+
+            if(exclusive.intro) {
+                response.speak(`<audio src="${exclusive.intro}" />`);
+            }
+
+            const controller = PlaybackController(response, model);
+            const title = exclusive.title || `Exclusive #${number}`;
+            const track = new Track(exclusive.content, title);
+            // TODO: replace with host mp3
+            controller.start(track);
+            response.send();
+        }
+        else {
+            // defer index out of range to unhandled
+            unhandledAction.apply(this, arguments);
+        }
+    });
 }
 
 function pause(event, response, model) {
@@ -385,67 +408,100 @@ module.exports = {
  */
 
 function startPlayingMostRecent(show, response, model) {
-    const url = gimlet.feedUrl(show);
-    rss.parseURL(url, function(err, parsed) {
+    gimlet.getFeedMap(function(feedMap, err) {
         if (err) {
             // TODO
+            response.speak("Sorry, there was a problem.").send();
+            return;
         }
 
-        const entry = parsed.feed.entries[0];
-        if (!entry) {
+        const url = feedMap[show.id];
+        if (!url) {
             // TODO
+            response.speak("Sorry, there was a problem.").send();
+            return;
         }
 
-        // Alexa only plays HTTPS urls
-        const url = entry.enclosure.url.replace('http://', 'https://');
-        const intro = speaker.introduceMostRecent(show);
-        response.speak(intro);
-        
-        const controller = PlaybackController(response, model);
-        const track = new Track(url, entry.title, show);
-        controller.start(track);
+        rss.parseURL(url, function(err, parsed) {
+            if (err) {
+                // TODO
+                response.speak("Sorry, there was a problem.").send();
+                return;
+            }
 
-        response.send();
+            const entry = parsed.feed.entries[0];
+            if (!entry) {
+                // TODO
+                response.speak("Sorry, there was a problem.").send();
+                return;
+            }
+
+            // Alexa only plays HTTPS urls
+            const url = entry.enclosure.url.replace('http://', 'https://');
+            const intro = speaker.introduceMostRecent(show);
+            response.speak(intro);
+            
+            const controller = PlaybackController(response, model);
+            const track = new Track(url, entry.title, show);
+            controller.start(track);
+
+            response.send();
+        });
     });
 }
 
 function startPlayingFavorite(show, response, model) {
-    const favs = gimlet.favorites(show) || [];
+    gimlet.getFavoritesMap(function(favoritesMap, err) {
+        if (err || !favoritesMap) {
+            // TODO
+            response.speak("Sorry, there was a problem.").send();
+            return;
+        }
 
-    // ensure attribute exists
-    if (!model.getAttr('playbackHistory')) {
-        model.setAttr('playbackHistory', { 
-            lastFavoriteIndex: {}   // map of show id: last played index
-        });
-    }
+        const favs = favoritesMap[show.id];
+        if (!favs) {
+            // TODO
+            response.speak("Sorry, there was a problem.").send();
+            return;
+        }
 
-    // get the favorite index that was last played (default to infinity)
-    const history = model.getAttr('playbackHistory');
-    let lastPlayedIndex = history.lastFavoriteIndex[show.id];
-    if (lastPlayedIndex === undefined) {
-        lastPlayedIndex = Infinity;
-    }
+        // ensure attribute exists
+        if (!model.getAttr('playbackHistory')) {
+            model.setAttr('playbackHistory', { 
+                lastFavoriteIndex: {}   // map of show id: last played index
+            });
+        }
 
-    // next index is either 1 + last, or cycled back down to 0
-    const nextIndex = (lastPlayedIndex < favs.length-1) ? 
-                        lastPlayedIndex + 1 :
-                        0;
-    
-    let fav = favs[nextIndex];
-    if (!fav) {
-        // TODO
-    }
+        // get the favorite index that was last played (default to infinity)
+        const history = model.getAttr('playbackHistory');
+        let lastPlayedIndex = history.lastFavoriteIndex[show.id];
+        if (lastPlayedIndex === undefined) {
+            lastPlayedIndex = Infinity;
+        }
 
-    history.lastFavoriteIndex[show.id] = nextIndex;
+        // next index is either 1 + last, or cycled back down to 0
+        const nextIndex = (lastPlayedIndex < favs.length-1) ? 
+                            lastPlayedIndex + 1 :
+                            0;
+        
+        let fav = favs[nextIndex];
+        if (!fav) {
+            // TODO
+        }
 
-    const intro = speaker.introduceFavorite(show, fav.title);
-    response.speak(intro);
-    
-    const controller = PlaybackController(response, model);
-    const track = new Track(fav.url, fav.title, show);
-    controller.start(track);
+        history.lastFavoriteIndex[show.id] = nextIndex;
 
-    response.send();
+        const intro = speaker.introduceFavorite(show);
+        response.speak(intro);
+        
+        const controller = PlaybackController(response, model);
+
+        const title = fav.title || "";
+        const track = new Track(fav.content, title, show);
+        controller.start(track);
+
+        response.send();
+    });
 }
 
 function getShowFromSlotValue(request) {

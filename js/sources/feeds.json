@@ -1,0 +1,13 @@
+{ 
+    "crimetown": "http://feeds.gimletmedia.com/crimetownshow",
+    "heavyweight": "http://feeds.gimletmedia.com/heavyweightpodcast",
+    "homecoming": "http://feeds.gimletmedia.com/homecomingshow",
+    "mysteryshow": "http://feeds.gimletmedia.com/mysteryshow",
+    "replyall": "http://feeds.gimletmedia.com/hearreplyall",
+    "sciencevs": "http://feeds.gimletmedia.com/sciencevs",
+    "startup": "https://feeds.feedburner.com/hearstartup",
+    "sampler": "http://feeds.gimletmedia.com/samplershow",
+    "surprisinglyawesome": "http://feeds.gimletmedia.com/surprisinglyawesome",
+    "twiceremoved": "http://feeds.gimletmedia.com/twiceremovedshow",
+    "undone": "http://feeds.gimletmedia.com/undoneshow" 
+}
