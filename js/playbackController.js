@@ -16,14 +16,14 @@ module.exports = function(response, model) {
             else {
                 state = new PlaybackState(track);
             }
-            model.set('playbackState', state);
+            model.setAttr('playbackState', state);
             this.resume();
         },
         stop: function() {
             response.audioPlayerStop();
         },
         resume: function() {
-            const playbackState = model.get('playbackState');
+            const playbackState = model.getAttr('playbackState');
             // TODO: support mark/isFinished methods again
             if (playbackState && !isFinished(playbackState)) {
                 response.audioPlayerPlay("REPLACE_ALL", 
@@ -36,7 +36,7 @@ module.exports = function(response, model) {
             return false;
         },
         restart: function() {
-            const playbackState = model.get('playbackState');
+            const playbackState = model.getAttr('playbackState');
             if (playbackState) {
                 this.start(playbackState.track);
                 return true;
@@ -44,11 +44,11 @@ module.exports = function(response, model) {
             return false;
         },
         clear: function() {
-            model.del("playbackState");
+            model.clearAttr("playbackState");
         },
 
         activeTrack: function() {
-            const playbackState = model.get('playbackState');
+            const playbackState = model.getAttr('playbackState');
             if (playbackState && !isFinished(playbackState)) {
                 return playbackState.track;
             }
@@ -61,13 +61,13 @@ module.exports = function(response, model) {
             // nothing to do with pb state
         },
         onPlaybackStopped: function(offset) {
-            const playbackState = model.get('playbackState');
+            const playbackState = model.getAttr('playbackState');
             if (playbackState) {
                 playbackState.offset = offset;
             }
         },
         onPlaybackFinished: function() {
-            const playbackState = model.get('playbackState');
+            const playbackState = model.getAttr('playbackState');
             if (playbackState) {
                 markFinished(playbackState);
             }

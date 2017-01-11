@@ -1,5 +1,5 @@
 const Alexa = require('alexa-sdk');
-const Model = require('./model');
+const RequestModel = require('./model');
 
 function alexaClient(event, context, callback) {
     const underlyingHandler = Alexa.handler(event, context, callback);
@@ -72,7 +72,7 @@ function extractRequestArgs() {
     return [
         handlerContext.event,
         handlerContext.response,
-        new Model(handlerContext.attributes)
+        new RequestModel(handlerContext)
     ];
 }
 

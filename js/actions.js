@@ -11,9 +11,8 @@ const rss = require("rss-parser");
 const _ = require("lodash");
 
 const appStates = constants.states;
-const intents = constants.intents;
 
-function launchRequest(event, response, model, handlerContext) {
+function launchRequest(event, response, model) {
     // TODO: move this somewhere. auth flow here is too cluttered
     requireAuth(event, response, speaker.get("LinkAccount"), function() {
         // we can assume we're in DEFAULT state
@@ -22,23 +21,21 @@ function launchRequest(event, response, model, handlerContext) {
 
         const track = controller.activeTrack();
         if (track) {
-            transitionToState(handlerContext, appStates.QUESTION_CONFIRM, model);
-            setQuestionContext(constants.questions.ConfirmResumePlayback, model);
-            
+            model.enterQuestionMode(constants.questions.ConfirmResumePlayback);
             speech = speaker.askToResume(track.show);
         }
         else {
             // ensure we're in DEFAULT (should be true, but this will force us out of 
             //  state transition holes in case the logic is broken and the user is we're stuck) 
-            transitionToState(handlerContext, appStates.DEFAULT, model);
-            if (model.get('returningUser')) {
+            model.exitQuestionMode();
+            if (model.getAttr('returningUser')) {
                 speech = speaker.get("Welcome");
                 reprompt = speaker.get("WhatToDo")
             }
             else {
                 speech = speaker.get("NewUserWelcome");
                 reprompt = speaker.get("WhatToDo")
-                model.set('returningUser', true);
+                model.setAttr('returningUser', true);
             }
         }
 
@@ -48,33 +45,25 @@ function launchRequest(event, response, model, handlerContext) {
     });
 }
 
-function help(event, response, model, handlerContext) {
+function help(event, response, model) {
     const controller = PlaybackController(response, model);
 
-    const state = handlerContext.handler.state;
     let speech;
     let reprompt;
 
-    let questionContext = model.get('questionContext');
-    if (!questionContext) {
-        // TODO: handle missing question context    
-    }
-
-    if (state === appStates.DEFAULT) {
+    let activeQuestion = model.getActiveQuestion();
+    if (!activeQuestion) {
         if (controller.activeTrack()) {
             speech = speaker.get("Help:Playback");
         }
         else {
             speech = speaker.get("Help");
-            reprompt = speaker.get("Welcome");
+            reprompt = speaker.get("WhatToDo");
         }
     }
-    else if (isStateQuestion(state)) {
-        speech = speaker.getQuestionSpeech(questionContext, 'help');
-        reprompt = speaker.getQuestionSpeech(questionContext, 'reprompt');
-    }
     else {
-        speech = speaker.get("_Unknown");
+        speech = speaker.getQuestionSpeech(activeQuestion, 'help');
+        reprompt = speaker.getQuestionSpeech(activeQuestion, 'reprompt');
     }
 
     response.speak(speech);
@@ -84,69 +73,67 @@ function help(event, response, model, handlerContext) {
     response.send();
 }
 
-function playLatest(event, response, model, handlerContext) {
+function playLatest(event, response, model) {
     requireAuth(event, response, speaker.get("LinkAccount"), function() {
         const show = getShowFromSlotValue(event.request);
         if (show) {
-            transitionToState(handlerContext, appStates.DEFAULT, model);
+            model.exitQuestionMode();
             startPlayingMostRecent(show, response, model);
         }
         else {
-            let qContext = constants.questions.FavoriteShowTitle;
-            transitionToState(handlerContext, appStates.ASK_FOR_SHOW, model);
-            setQuestionContext(qContext, model);
+            let activeQuestion = constants.questions.FavoriteShowTitle;
+            model.enterQuestionMode(activeQuestion);
 
-            response.speak(speaker.getQuestionSpeech(qContext, "original"))
-                    .listen(speaker.getQuestionSpeech(qContext, "reprompt"))
+            response.speak(speaker.getQuestionSpeech(activeQuestion, "original"))
+                    .listen(speaker.getQuestionSpeech(activeQuestion, "reprompt"))
                     .send();
         }
     });
 }
 
-function playExclusive(event, response, model, handlerContext) {
+function playExclusive(event, response, model) {
     requireAuth(event, response, speaker.get("LinkAccount"), function() {
-        const qContext = constants.questions.ExclusiveNumber;
-        transitionToState(handlerContext, appStates.QUESTION_EXCLUSIVE_NUMBER, model);
-        setQuestionContext(qContext, model);
+        const activeQuestion = constants.questions.ExclusiveNumber;
+        model.enterQuestionMode(activeQuestion);
 
         const excList = speaker.get("ExclusivePreamble") + 
                         speaker.get("ExclusiveList");
-        const prompt = speaker.getQuestionSpeech(qContext, "original")
+        const prompt = speaker.getQuestionSpeech(activeQuestion, "original")
 
         response.speak(excList + prompt)
-                .listen(speaker.getQuestionSpeech(qContext, "reprompt"))
+                .listen(speaker.getQuestionSpeech(activeQuestion, "reprompt"))
                 .send();
     });
 }
 
-function playFavorite(event, response, model, handlerContext) {
+function playFavorite(event, response, model) {
     requireAuth(event, response, speaker.get("LinkAccount"), function() {
 
         const show = getShowFromSlotValue(event.request);    
         if (show) {
-            transitionToState(handlerContext, appStates.DEFAULT, model);
+            model.exitQuestionMode();
             startPlayingFavorite(show, response, model);
         }
         else {
-            let qContext = constants.questions.FavoriteShowTitle;
-            transitionToState(handlerContext, appStates.ASK_FOR_SHOW, model);
-            setQuestionContext(qContext, model);
+            let activeQuestion = constants.questions.FavoriteShowTitle;
+            model.enterQuestionMode(activeQuestion);
 
-            response.speak(speaker.getQuestionSpeech(qContext, "original"))
-                    .listen(speaker.getQuestionSpeech(qContext, "reprompt"))
+            response.speak(speaker.getQuestionSpeech(activeQuestion, "original"))
+                    .listen(speaker.getQuestionSpeech(activeQuestion, "reprompt"))
                     .send();
         }
     });
 }
 
-function listShows(event, response, model, handlerContext) {
+function listShows(event, response, model) {
     let speech = speaker.get("ShowList");
+
+    const activeQuestion = model.getActiveQuestion();
     
-    if (handlerContext.handler.state === appStates.ASK_FOR_SHOW) {
-        const context = model.get("questionContext");
-        speech += " " + speaker.getQuestionSpeech(context, 'reprompt');
+    if (isQuestionAskingForShowTitle(activeQuestion)) {
+        speech += " " + speaker.getQuestionSpeech(activeQuestion, 'reprompt');
         response.speak(speech)
-                .listen(speaker.getQuestionSpeech(context, 'reprompt'));
+                .listen(speaker.getQuestionSpeech(activeQuestion, 'reprompt'));
     }
     else {
         response.speak(speech);
@@ -155,8 +142,8 @@ function listShows(event, response, model, handlerContext) {
     response.send();
 }
 
-function whoIsMatt(event, response, model, handlerContext) {
-    transitionToState(handlerContext, appStates.DEFAULT, model);
+function whoIsMatt(event, response, model) {
+    model.exitQuestionMode();
 
     // indexes 1-30
     let mattLieberIndex = Math.ceil(Math.random() * 30);
@@ -166,7 +153,7 @@ function whoIsMatt(event, response, model, handlerContext) {
 }
 
 function cancel(event, response, model, handlerContext) {
-    transitionToState(handlerContext, appStates.DEFAULT, model);
+    model.exitQuestionMode();
 
     const controller = PlaybackController(response, model);
     if (handlerContext.handler.state === appStates.DEFAULT && controller.activeTrack()) {
@@ -178,40 +165,39 @@ function cancel(event, response, model, handlerContext) {
     response.send();
 }
 
-function showTitleNamed(event, response, model, handlerContext) {
-    if (handlerContext.handler.state === appStates.ASK_FOR_SHOW) {        
+function showTitleNamed(event, response, model) {
+    const activeQuestion = model.getActiveQuestion();
+    if (isQuestionAskingForShowTitle(activeQuestion)) {
         if(!getShowFromSlotValue(event.request)) {
             // delegate to unhandled input handler for this state
-            unhandledAction(event, response, model, handlerContext);
+            unhandledAction.apply(this, arguments);
         }
         else {
-            const questionContext = model.get("questionContext");
-            
-            transitionToState(handlerContext, appStates.DEFAULT, model);
+            model.exitQuestionMode();
 
-            if (questionContext === constants.questions.FavoriteShowTitle) {
-                playFavorite(event, response, model, handlerContext);
+            if (activeQuestion === constants.questions.FavoriteShowTitle) {
+                playFavorite.apply(this, arguments);
             }
             else { // should be MostRecentShowTitle question
-                playLatest(event, response, model, handlerContext);
+                playLatest.apply(this, arguments);
             }
         }
     }
     else {
         // if the user just names a show on its own, take it to mean "play the latest ..."
-        transitionToState(handlerContext, appStates.DEFAULT, model);
-        playLatest(event, response, model, handlerContext);
+        model.exitQuestionMode();
+        playLatest.apply(this, arguments);
     }
 
     // TODO: refactor to end request here, way too easy to miss sending for a new branch
     // note: all branches above send response
 }
 
-function exclusiveChosen(event, response, model, handlerContext) {
+function exclusiveChosen(event, response, model) {
     const number = getNumberFromSlotValue(event.request);
     const exclusive = gimlet.exclusives[number-1];
     if (exclusive) {
-        transitionToState(handlerContext, appStates.DEFAULT, model);
+        model.exitQuestionMode();
                 // Alexa only plays HTTPS urls
         response.speak(`Here is Exclusive #${number}`);
 
@@ -223,26 +209,26 @@ function exclusiveChosen(event, response, model, handlerContext) {
     }
     else {
         // defer to unhandled
-        unhandledAction(event, response, model, handlerContext);
+        unhandledAction.apply(this, arguments);
     }
 }
 
-function pause(event, response, model, handlerContext) {
-    transitionToState(handlerContext, appStates.DEFAULT, model);
+function pause(event, response, model) {
+    model.exitQuestionMode();
 
     PlaybackController(response, model).stop();
     response.send();
 }
 
-function stop(event, response, model, handlerContext) {
-    transitionToState(handlerContext, appStates.DEFAULT, model);
+function stop(event, response, model) {
+    model.exitQuestionMode();
 
     PlaybackController(response, model).stop();
     response.send();
 }
 
-function resume(event, response, model, handlerContext) {
-    transitionToState(handlerContext, appStates.DEFAULT, model);
+function resume(event, response, model) {
+    model.exitQuestionMode();
 
     const controller = PlaybackController(response, model);
     const didResume = controller.resume();    
@@ -252,8 +238,8 @@ function resume(event, response, model, handlerContext) {
     response.send();
 }
 
-function startOver(event, response, model, handlerContext) {
-    transitionToState(handlerContext, appStates.DEFAULT, model);
+function startOver(event, response, model) {
+    model.exitQuestionMode();
 
     const controller = PlaybackController(response, model);
     const didRestart = controller.restart();    
@@ -263,13 +249,13 @@ function startOver(event, response, model, handlerContext) {
     response.send();
 }
 
-function resumeConfirmationYes(event, response, model, handlerContext) {
-    transitionToState(handlerContext, appStates.DEFAULT, model);
-    resume(event, response, model, handlerContext);
+function resumeConfirmationYes(event, response, model) {
+    model.exitQuestionMode();
+    resume.apply(this, arguments);
 }
 
-function resumeConfirmationNo(event, response, model, handlerContext) {
-    transitionToState(handlerContext, appStates.DEFAULT, model);
+function resumeConfirmationNo(event, response, model) {
+    model.exitQuestionMode();
     const controller = PlaybackController(response, model);
     controller.clear();
 
@@ -300,8 +286,8 @@ function playbackPause(event, response, model) {
  * Lifecycle events
  */
 
-function sessionEnded(event, response, model, handlerContext) {
-    transitionToState(handlerContext, appStates.DEFAULT, model);
+function sessionEnded(event, response, model) {
+    model.exitQuestionMode();
     response.exit(true);
 }
 
@@ -340,18 +326,14 @@ function systemException(event, response, model, handlerContext) {
 
 }
 
-function unhandledAction(event, response, model, handlerContext) {
+function unhandledAction(event, response, model) {
     /* This function is triggered whenever an intent is understood by Alexa, 
         but we define no handler for it in the current application state.
     */
-    if (isStateQuestion(handlerContext.handler.state)) {
-        const questionContext = model.get('questionContext');
-        if (!questionContext) {
-            // TODO: what to do if this is broken?
-        }
-        
-        const speech = speaker.getQuestionSpeech(questionContext, 'unhandled');
-        const reprompt = speaker.getQuestionSpeech(questionContext, 'reprompt');
+    const activeQuestion = model.getActiveQuestion();
+    if (activeQuestion) {
+        const speech = speaker.getQuestionSpeech(activeQuestion, 'unhandled');
+        const reprompt = speaker.getQuestionSpeech(activeQuestion, 'reprompt');
 
         response.speak(speech)
                 .listen(reprompt);
@@ -402,11 +384,6 @@ module.exports = {
  * Helpers
  */
 
-function isStateQuestion(state) {
-    return _.includes([appStates.ASK_FOR_SHOW, appStates.QUESTION_CONFIRM, appStates.QUESTION_EXCLUSIVE_NUMBER], 
-                        state);
-}
-
 function startPlayingMostRecent(show, response, model) {
     const url = gimlet.feedUrl(show);
     rss.parseURL(url, function(err, parsed) {
@@ -436,14 +413,14 @@ function startPlayingFavorite(show, response, model) {
     const favs = gimlet.favorites(show) || [];
 
     // ensure attribute exists
-    if (!model.get('playbackHistory')) {
-        model.set('playbackHistory', { 
+    if (!model.getAttr('playbackHistory')) {
+        model.setAttr('playbackHistory', { 
             lastFavoriteIndex: {}   // map of show id: last played index
         });
     }
 
     // get the favorite index that was last played (default to infinity)
-    const history = model.get('playbackHistory');
+    const history = model.getAttr('playbackHistory');
     let lastPlayedIndex = history.lastFavoriteIndex[show.id];
     if (lastPlayedIndex === undefined) {
         lastPlayedIndex = Infinity;
@@ -481,6 +458,11 @@ function getShowFromSlotValue(request) {
     }
 }
 
+function isQuestionAskingForShowTitle(question) {
+    return question === constants.questions.FavoriteShowTitle ||
+           question === constants.questions.MostRecentShowTitle;
+}
+
 function getNumberFromSlotValue(request) {
     const slot = request.intent.slots["Number"];
     if (slot && slot.value !== undefined) {
@@ -500,20 +482,4 @@ function requireAuth(event, response, prompt, successCallback) {
                     .send();
         }
     });
-}
-
-function transitionToState(handlerContext, state, model) {
-    handlerContext.handler.state = state;
-
-    if (state === appStates.DEFAULT) {
-        clearQuestionContext(model);
-    }
-}
-
-function setQuestionContext(context, model) {
-    model.set("questionContext", context);
-}
-
-function clearQuestionContext(model) {
-    model.del("questionContext");
 }
