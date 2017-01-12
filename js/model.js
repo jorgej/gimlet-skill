@@ -6,6 +6,7 @@ const appStates = constants.states;
 function RequestModel(handlerContext) {
     this.underlyingHandlerContext = handlerContext;
 
+    // Question mode methods
     this.enterQuestionMode = function(questionId) {
         setActiveQuestion.call(this, questionId);
         if (questionId === questions.ConfirmResumePlayback) {
@@ -22,9 +23,53 @@ function RequestModel(handlerContext) {
         clearActiveQuestion.call(this);
         this.underlyingHandlerContext.handler.state = appStates.DEFAULT;
     }
-
     this.getActiveQuestion = function() {
         return this.underlyingHandlerContext.attributes["activeQ"];
+    }
+
+    // Playback operations
+    this.getPlaybackState = function() {
+        const pbDataStr = this.underlyingHandlerContext.attributes["pb"];
+        if (pbDataStr) {
+            let pbData = JSON.parse(pbDataStr);
+            return pbData;
+        }
+        else {
+            return {};
+        }
+    }
+
+    this.isPlaybackIdle = function() {
+        const pbDataStr = this.underlyingHandlerContext.attributes["pb"];
+        if (pbDataStr) {
+            let pbData = JSON.parse(pbDataStr);
+            return pbData.offset === undefined || pbData.offset === Infinity;
+        }
+        return true;
+    }
+
+    this.setPlaybackState = function(track, offset=0) {
+        // concat track and offset properties
+        const pbData = {
+            track: track,
+            offset: offset
+        };
+        this.underlyingHandlerContext.attributes["pb"] = JSON.stringify(pbData);
+    }
+    this.updateOffset = function(offset) {
+        const pbDataStr = this.underlyingHandlerContext.attributes["pb"];
+        if (pbDataStr) {
+            let pbData = JSON.parse(pbDataStr);
+            this.setPlaybackState(pbData.track, offset);
+        }
+    }
+
+    this.markTrackFinished = function() {
+        this.updateOffset(Infinity);
+    } 
+
+    this.clearPlaybackState = function() {
+        delete this.underlyingHandlerContext.attributes["pb"];
     }
 
     this.getAttr = function(key) {

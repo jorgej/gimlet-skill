@@ -1,7 +1,7 @@
 'use strict';
 
-module.exports = function(url, title, show) {
+module.exports = function(url, title, showId) {
     this.url = url;
     this.title = title;
-    this.show = show;
+    this.showId = showId;
 }

@@ -3,7 +3,6 @@
 const speaker = require("./speaker");
 const constants = require("./constants");
 const gimlet = require("./gimlet");
-const PlaybackController = require("./playbackController");
 const Track = require("./track");
 const authHelper = require("./authHelper");
 
@@ -17,13 +16,14 @@ function launchRequest(event, response, model) {
     // TODO: move this somewhere. auth flow here is too cluttered
     requireAuth(event, response, speaker.get("LinkAccount"), function() {
         // we can assume we're in DEFAULT state
-        const controller = PlaybackController(response, model);
         let speech, reprompt;
 
-        const track = controller.activeTrack();
-        if (track) {
+        const currentTrack = model.getPlaybackState().track;
+        if (currentTrack && !model.isPlaybackIdle()) {
+            // if there's a track already enqueued, and it's not idle 
+            //  (i.e. hasn't completed), we ask if the user want to continue playback
             model.enterQuestionMode(constants.questions.ConfirmResumePlayback);
-            speech = speaker.askToResume(track.show);
+            speech = speaker.askToResume(currentTrack.showId);
         }
         else {
             // ensure we're in DEFAULT (should be true, but this will force us out of 
@@ -47,19 +47,17 @@ function launchRequest(event, response, model) {
 }
 
 function help(event, response, model) {
-    const controller = PlaybackController(response, model);
-
     let speech;
     let reprompt;
 
     let activeQuestion = model.getActiveQuestion();
     if (!activeQuestion) {
-        if (controller.activeTrack()) {
-            speech = speaker.get("Help:Playback");
-        }
-        else {
+        if (model.isPlaybackIdle()) {
             speech = speaker.get("Help");
             reprompt = speaker.get("WhatToDo");
+        }
+        else {
+            speech = speaker.get("Help:Playback");
         }
     }
     else {
@@ -162,12 +160,16 @@ function whoIsMatt(event, response, model) {
     });
 }
 
-function cancel(event, response, model, handlerContext) {
+function cancel(event, response, model) {
+    // if we're not actively asking the user a question, and playback isn't idle, then
+    //  the audio player might be running. In that case, we need to silently stop it.
+    const audioPlayerMayHaveFocus = !model.getActiveQuestion() && !model.isPlaybackIdle()
+
+    // cut off any lingering question session
     model.exitQuestionMode();
 
-    const controller = PlaybackController(response, model);
-    if (handlerContext.handler.state === appStates.DEFAULT && controller.activeTrack()) {
-        controller.stop();
+    if (audioPlayerMayHaveFocus) {
+        response.audioPlayerStop();
     }
     else {
         response.speak(speaker.get("Goodbye"));
@@ -216,17 +218,10 @@ function exclusiveChosen(event, response, model) {
         const exclusive = exclusives[number-1];
         if (exclusive) {
             model.exitQuestionMode();
-                    // Alexa only plays HTTPS urls
 
-            if(exclusive.intro) {
-                response.speak(`<audio src="${exclusive.intro}" />`);
-            }
-
-            const controller = PlaybackController(response, model);
             const title = exclusive.title || `Exclusive #${number}`;
             const track = new Track(exclusive.content, title);
-            // TODO: replace with host mp3
-            controller.start(track);
+            startPlayback(response, model, track, 0, exclusive.intro);
             response.send();
         }
         else {
@@ -238,25 +233,20 @@ function exclusiveChosen(event, response, model) {
 
 function pause(event, response, model) {
     model.exitQuestionMode();
-
-    PlaybackController(response, model).stop();
-    response.send();
+    response.audioPlayerStop().send();
 }
 
 function stop(event, response, model) {
     model.exitQuestionMode();
-
-    PlaybackController(response, model).stop();
-    response.send();
+    response.audioPlayerStop().send();
 }
 
 function resume(event, response, model) {
     model.exitQuestionMode();
 
-    const controller = PlaybackController(response, model);
-    const didResume = controller.resume();    
-    if (!didResume) {
-        response.speak(speaker.get("EmptyQueueMessage"));
+    if (!model.isPlaybackIdle()) {
+        const pbState = model.getPlaybackState();
+        startPlayback(response, model, pbState.track, pbState.offset);
     }
     response.send();
 }
@@ -264,9 +254,12 @@ function resume(event, response, model) {
 function startOver(event, response, model) {
     model.exitQuestionMode();
 
-    const controller = PlaybackController(response, model);
-    const didRestart = controller.restart();    
-    if (!didRestart) {
+    const pbState = model.getPlaybackState();
+    if (pbState.track) {
+        // if our player has a track (even if it's idle, after having finished the track), we'll restart it
+        startPlayback(response, model, pbState.track);
+    }
+    else {
         response.speak(speaker.get("EmptyQueueMessage"));
     }
     response.send();
@@ -279,8 +272,7 @@ function resumeConfirmationYes(event, response, model) {
 
 function resumeConfirmationNo(event, response, model) {
     model.exitQuestionMode();
-    const controller = PlaybackController(response, model);
-    controller.clear();
+    model.clearPlaybackState();
 
     const message = speaker.get("WhatToDo");
     response.speak(message)
@@ -294,17 +286,6 @@ function playbackOperationUnsupported(event, response, model) {
             .send();
 }
 
-function playbackPlay(event, response, model) {
-    PlaybackController(response, model).resume();
-    response.send();
-}
-
-function playbackPause(event, response, model) {
-    PlaybackController(response, model).stop();
-    response.send();
-}
-
-
 /**
  * Lifecycle events
  */
@@ -314,25 +295,25 @@ function sessionEnded(event, response, model) {
     response.exit(true);
 }
 
-// TODO: move logic in here into controller -- it can deal with the playback state all in its module
-
 function playbackStarted(event, response) {
     response.exit(false);
 }
 
 function playbackStopped(event, response, model) {
     const offset = event.request.offsetInMilliseconds;
-    // TODO: handle offset not being available
-    PlaybackController(response, model).onPlaybackStopped(offset);
+    
+    if (offset !== undefined) {
+        model.updateOffset(offset);
+    }
     response.exit(true);
 }
 
 function playbackNearlyFinished(event, response) {
-    response.exit(false);;
+    response.exit(false);
 }
 
 function playbackFinished(event, response, model) {
-    PlaybackController(response, model).onPlaybackFinished();
+    model.markTrackFinished();
     response.exit(true);
 }
 
@@ -390,8 +371,6 @@ module.exports = {
     startOver: startOver,
     resumeConfirmationYes: resumeConfirmationYes,
     resumeConfirmationNo: resumeConfirmationNo,
-    playbackPlay: playbackPlay,
-    playbackPause: playbackPause,
 
     sessionEnded: sessionEnded,
     playbackStarted: playbackStarted,
@@ -436,14 +415,12 @@ function startPlayingMostRecent(show, response, model) {
                 return;
             }
 
-            // Alexa only plays HTTPS urls
+            // Alexa only plays HTTPS urls, feeds give us HTTP ones
             const url = entry.enclosure.url.replace('http://', 'https://');
             const intro = speaker.introduceMostRecent(show);
-            response.speak(intro);
-            
-            const controller = PlaybackController(response, model);
             const track = new Track(url, entry.title, show);
-            controller.start(track);
+
+            startPlayback(response, model, track, 0, intro);
 
             response.send();
         });
@@ -492,14 +469,10 @@ function startPlayingFavorite(show, response, model) {
         history.lastFavoriteIndex[show.id] = nextIndex;
 
         const intro = speaker.introduceFavorite(show);
-        response.speak(intro);
-        
-        const controller = PlaybackController(response, model);
-
         const title = fav.title || "";
         const track = new Track(fav.content, title, show);
-        controller.start(track);
-
+        
+        startPlayback(response, model, track, 0, intro);
         response.send();
     });
 }
@@ -524,6 +497,24 @@ function getNumberFromSlotValue(request) {
     if (slot && slot.value !== undefined) {
         return Number(slot.value);
     }
+}
+
+function startPlayback(response, model, track, offset, intro) {
+    if (intro) {
+        response.speak(intro);
+    }
+
+    offset = offset || 0;
+    model.setPlaybackState(track, offset);
+    response.audioPlayerPlay("REPLACE_ALL", 
+        track.url, 
+        track.url,
+        null, 
+        offset);
+}
+
+function urlToSSML(url) {
+    return `<audio src="${url}" />`;
 }
 
 // TODO: make into middleware
