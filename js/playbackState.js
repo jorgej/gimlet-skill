@@ -25,7 +25,8 @@ function PlaybackState(url, token, offsetInMilliseconds) {
 
 PlaybackState.fromString = function(str) {
     try {
-        return JSON.parse(str);
+        const data = JSON.parse(str);
+        return new PlaybackState(data.url, data.token, data.offset);
     }
     catch (e) {
         return {};
