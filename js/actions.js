@@ -5,6 +5,7 @@ const constants = require("./constants");
 const gimlet = require("./gimlet");
 const Track = require("./track");
 const authHelper = require("./authHelper");
+const PlaybackState = require("./playbackState");
 
 const rss = require("rss-parser");
 const _ = require("lodash");
@@ -155,7 +156,7 @@ function whoIsMatt(event, response, model) {
         let mattLieberIndex = Math.floor(Math.random() * urls.length);
         const url = urls[mattLieberIndex];
 
-        const content = `<audio src="${url}" />`;
+        const content = urlToSSML(url);
         response.speak(content).send();
     });
 }
@@ -219,9 +220,17 @@ function exclusiveChosen(event, response, model) {
         if (exclusive) {
             model.exitQuestionMode();
 
+            const contentUrl = exclusive.content;
+
+            beginPlayback(response, 
+                model, 
+                contentUrl,
+                makeToken(TOKEN_TYPE.EXCLUSIVE, show.id)
+            );
+
+            // TODO: send card
             const title = exclusive.title || `Exclusive #${number}`;
-            const track = new Track(exclusive.content, title);
-            startPlayback(response, model, track, 0, exclusive.intro);
+
             response.send();
         }
         else {
@@ -243,23 +252,15 @@ function stop(event, response, model) {
 
 function resume(event, response, model) {
     model.exitQuestionMode();
-
-    if (!model.isPlaybackIdle()) {
-        const pbState = model.getPlaybackState();
-        startPlayback(response, model, pbState.track, pbState.offset);
-    }
+    resumePlayback(response, model);
     response.send();
 }
 
 function startOver(event, response, model) {
     model.exitQuestionMode();
 
-    const pbState = model.getPlaybackState();
-    if (pbState.track) {
-        // if our player has a track (even if it's idle, after having finished the track), we'll restart it
-        startPlayback(response, model, pbState.track);
-    }
-    else {
+    const didRestart = restartPlayback(response, model);
+    if (!didRestart) {
         response.speak(speaker.get("EmptyQueueMessage"));
     }
     response.send();
@@ -295,25 +296,38 @@ function sessionEnded(event, response, model) {
     response.exit(true);
 }
 
-function playbackStarted(event, response) {
-    response.exit(false);
+function playbackStarted(event, response, model) {
+    // if this track is a favorite, we want to note it in the user's history
+    // TODO: history
+    response.exit(true);
 }
 
 function playbackStopped(event, response, model) {
     const offset = event.request.offsetInMilliseconds;
-    
-    if (offset !== undefined) {
-        model.updateOffset(offset);
+    const pbState = model.getPlaybackState();
+    if (pbState.isValid() && offset !== undefined) {
+        pbState.offset = offset;
+        model.setPlaybackState(pbState);
     }
     response.exit(true);
 }
 
-function playbackNearlyFinished(event, response) {
+function playbackNearlyFinished(event, response, model) {
+    // nothing to do here -- we don't support queuing in this version
     response.exit(false);
 }
 
 function playbackFinished(event, response, model) {
-    model.markTrackFinished();
+    // mark playback as finished for the current track, but don't clear it in case 
+    //  the user wants to issue a restart/previous/next command
+    const pbState = model.getPlaybackState();
+    if (pbState.isValid()) {
+        pbState.markFinished();
+        model.setPlaybackState(pbState);
+    }
+
+    // if this track is from a serial episode, we want to note it in the user's history
+    // TODO: history
     response.exit(true);
 }
 
@@ -387,43 +401,38 @@ module.exports = {
  */
 
 function startPlayingMostRecent(show, response, model) {
-    gimlet.getFeedMap(function(feedMap, err) {
+    getFeedEntries(show.id, function(entries, err) {
         if (err) {
             // TODO
             response.speak("Sorry, there was a problem.").send();
             return;
         }
 
-        const url = feedMap[show.id];
-        if (!url) {
+        const entry = entries[entries.length-1];
+        if (!entry) {
             // TODO
             response.speak("Sorry, there was a problem.").send();
             return;
         }
 
-        rss.parseURL(url, function(err, parsed) {
-            if (err) {
-                // TODO
-                response.speak("Sorry, there was a problem.").send();
-                return;
-            }
+        // Alexa only plays HTTPS urls, feeds give us HTTP ones
+        const contentUrl = entry.enclosure.url.replace('http://', 'https://');
+        
+        beginPlayback(response,
+            model,
+            contentUrl,
+            makeToken(TOKEN_TYPE.LATEST, show.id)
+        );
 
-            const entry = parsed.feed.entries[0];
-            if (!entry) {
-                // TODO
-                response.speak("Sorry, there was a problem.").send();
-                return;
-            }
+        const intro = speaker.introduceMostRecent(show);
+        response.speak(intro)
 
-            // Alexa only plays HTTPS urls, feeds give us HTTP ones
-            const url = entry.enclosure.url.replace('http://', 'https://');
-            const intro = speaker.introduceMostRecent(show);
-            const track = new Track(url, entry.title, show);
+        // TODO: send card?
 
-            startPlayback(response, model, track, 0, intro);
+        response.send();
+    });
+}
 
-            response.send();
-        });
     });
 }
 
@@ -467,12 +476,20 @@ function startPlayingFavorite(show, response, model) {
         }
 
         history.lastFavoriteIndex[show.id] = nextIndex;
+        const contentUrl = fav.content;
+        
+        beginPlayback(response, 
+            model,
+            contentUrl,
+            makeToken(TOKEN_TYPE.FAVORITE, show.id, nextIndex)
+        );
 
         const intro = speaker.introduceFavorite(show);
+        response.speak(intro);
+
+        // TODO: send card?
         const title = fav.title || "";
-        const track = new Track(fav.content, title, show);
-        
-        startPlayback(response, model, track, 0, intro);
+
         response.send();
     });
 }
@@ -499,20 +516,6 @@ function getNumberFromSlotValue(request) {
     }
 }
 
-function startPlayback(response, model, track, offset, intro) {
-    if (intro) {
-        response.speak(intro);
-    }
-
-    offset = offset || 0;
-    model.setPlaybackState(track, offset);
-    response.audioPlayerPlay("REPLACE_ALL", 
-        track.url, 
-        track.url,
-        null, 
-        offset);
-}
-
 function urlToSSML(url) {
     return `<audio src="${url}" />`;
 }
@@ -530,3 +533,83 @@ function requireAuth(event, response, prompt, successCallback) {
         }
     });
 }
+
+const TOKEN_TYPE = {
+    SERIAL: 'SERIAL',
+    FAVORITE: 'FAVORITE',
+    LATEST: 'LATEST',
+    EXCLUSIVE: 'EXCLUSIVE'
+}
+
+function makeToken(type, showId, index) {
+    return JSON.stringify({
+        type: type,
+        showId: showId,
+        index: index
+    });
+}
+
+// returns obj with properties: 'type', 'showId', 'index'
+function parseToken(str) {
+    try {
+        return JSON.parse(str);
+    }
+    catch(e){
+        return {};
+    }
+
+}
+
+
+function isSerial(showId) {
+    return showId === 'homecoming' || showId === 'crimetown';
+}
+
+// callback arguments: ([entry], err)
+function getFeedEntries(showId, callback) {
+    gimlet.getFeedMap(function(feedMap, err) {
+        if (err || !feedMap[show.id]) {
+            callback(entry, new Error("Problem getting feed URL"));
+            return;
+        }
+        
+        const url = feedMap[show.id];
+
+        rss.parseURL(url, function(err, parsed) {
+            if (err) {
+                callback(entry, new Error("Problem fetching RSS feed"));
+                return;
+            }
+
+            const entries = parsed.feed.entries;
+            entries.reverse();
+
+            callback(entries, undefined);
+        });
+    });
+}
+
+function beginPlayback(response, model, url, token) {
+    model.setPlaybackState(new PlaybackState(url, token, 0));
+    resumePlayback(response, model);
+}
+
+function restartPlayback(response, model) {
+    const pbState = model.getPlaybackState();
+    if (pbState.isValid()) {
+        pbState.offset = 0;
+        model.setPlaybackState(pbState);
+        return resumePlayback(response, model);
+    }
+    return false;
+}
+
+function resumePlayback(response, model) {
+    const pbState = model.getPlaybackState();
+    if (pbState.isValid() && !pbState.isFinished()) {
+        response.audioPlayerPlay('REPLACE_ALL', pbState.url, pbState.token, null, pbState.offset);
+        return true;
+    }
+    return false;
+}
+

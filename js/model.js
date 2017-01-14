@@ -3,6 +3,8 @@ const constants = require('./constants');
 const questions = constants.questions;
 const appStates = constants.states;
 
+const PlaybackState = require('./playbackState');
+
 function RequestModel(handlerContext) {
     this.underlyingHandlerContext = handlerContext;
 
@@ -28,45 +30,25 @@ function RequestModel(handlerContext) {
     }
 
     // Playback operations
+    this.setPlaybackState = function(pbState) {
+        this.underlyingHandlerContext.attributes["pb"] = pbState.toString();
+    }
+
     this.getPlaybackState = function() {
-        const pbDataStr = this.underlyingHandlerContext.attributes["pb"];
-        if (pbDataStr) {
-            let pbData = JSON.parse(pbDataStr);
-            return pbData;
-        }
-        else {
-            return {};
-        }
+        return PlaybackState.fromString(this.underlyingHandlerContext.attributes["pb"]);
     }
 
-    this.isPlaybackIdle = function() {
-        const pbDataStr = this.underlyingHandlerContext.attributes["pb"];
-        if (pbDataStr) {
-            let pbData = JSON.parse(pbDataStr);
-            return pbData.offset === undefined || pbData.offset === Infinity;
-        }
-        return true;
+    this.clearPlaybackState = function() {
+        delete this.underlyingHandlerContext.attributes["pb"];
     }
 
-    this.setPlaybackState = function(track, offset=0) {
-        // concat track and offset properties
-        const pbData = {
-            track: track,
-            offset: offset
-        };
-        this.underlyingHandlerContext.attributes["pb"] = JSON.stringify(pbData);
-    }
-    this.updateOffset = function(offset) {
-        const pbDataStr = this.underlyingHandlerContext.attributes["pb"];
-        if (pbDataStr) {
-            let pbData = JSON.parse(pbDataStr);
-            this.setPlaybackState(pbData.track, offset);
-        }
+    this.getLastPlayedFavorite = function(showId) {
+        getFavoritesHistory.call(this)[showId];
     }
 
-    this.markTrackFinished = function() {
-        this.updateOffset(Infinity);
-    } 
+    this.saveLastPlayedFavorite = function(showId, indexPlayed) {
+        getFavoritesHistory.call(this)[showId] = indexPlayed;
+    }
 
     this.clearPlaybackState = function() {
         delete this.underlyingHandlerContext.attributes["pb"];
