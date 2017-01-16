@@ -3,9 +3,10 @@
 const speaker = require("./speaker");
 const constants = require("./constants");
 const gimlet = require("./gimlet");
-const Track = require("./track");
 const authHelper = require("./authHelper");
+
 const PlaybackState = require("./playbackState");
+const ContentToken = require("./token");
 
 const rss = require("rss-parser");
 const _ = require("lodash");
@@ -78,7 +79,12 @@ function playLatest(event, response, model) {
         const show = getShowFromSlotValue(event.request);
         if (show) {
             model.exitQuestionMode();
-            startPlayingMostRecent(show, response, model);
+            if (isSerial(show)) {
+                startPlayingSerial(show, response, model);
+            }
+            else {
+                startPlayingMostRecent(show, response, model);
+            }
         }
         else {
             let activeQuestion = constants.questions.FavoriteShowTitle;
@@ -225,7 +231,7 @@ function exclusiveChosen(event, response, model) {
             beginPlayback(response, 
                 model, 
                 contentUrl,
-                makeToken(TOKEN_TYPE.EXCLUSIVE, show.id)
+                ContentToken.createExclusive().toString()
             );
 
             // TODO: send card
@@ -298,8 +304,12 @@ function sessionEnded(event, response, model) {
 
 function playbackStarted(event, response, model) {
     // if this track is a favorite, we want to note it in the user's history
-    // TODO: history
-    response.exit(true);
+    const token = ContentToken.fromString(event.request.token);
+    if (token.isValidFavoriteToken()) {
+        model.setLatestFavoriteStart(token.showId, token.index);
+        response.exit(true);
+    }
+    response.exit(false);
 }
 
 function playbackStopped(event, response, model) {
@@ -327,8 +337,11 @@ function playbackFinished(event, response, model) {
     }
 
     // if this track is from a serial episode, we want to note it in the user's history
-    // TODO: history
-    response.exit(true);
+    const token = ContentToken.fromString(event.request.token);
+    if (token.isValidSerialToken()) {
+        model.setLatestSerialFinished(token.showId, token.index);
+        response.exit(true);
+    }
 }
 
 function playbackFailed(event, response) {
@@ -421,7 +434,7 @@ function startPlayingMostRecent(show, response, model) {
         beginPlayback(response,
             model,
             contentUrl,
-            makeToken(TOKEN_TYPE.LATEST, show.id)
+            ContentToken.createLatest(show.id).toString()
         );
 
         const intro = speaker.introduceMostRecent(show);
@@ -433,6 +446,42 @@ function startPlayingMostRecent(show, response, model) {
     });
 }
 
+function startPlayingSerial(show, response, model) {
+    getFeedEntries(show.id, function(entries, err) {
+        if (err) {
+            // TODO
+            response.speak("Sorry, there was a problem.").send();
+            return;
+        }
+        else if (!entries.length) {
+            // TODO
+            response.speak("Sorry, there was a problem.").send();
+            return;
+        }
+
+        const lastFinishedIndex = model.getLatestSerialFinished(show.id);
+        if (lastFinishedIndex === undefined) {
+            lastFinishedIndex = -1;
+        }
+
+        // add one to the last index, cycling back to 0 at the end of the feed
+        const nextIndex = (lastFinishedIndex + 1) % entries.length;
+        const entry = entries[nextIndex];
+
+        // TODO: include introduction?
+
+        // Alexa only plays HTTPS urls, feeds give us HTTP ones
+        const contentUrl = entry.enclosure.url.replace('http://', 'https://');
+
+        beginPlayback(response,
+            model,
+            contentUrl,
+            ContentToken.createSerial(show.id, nextIndex).toString()
+        );
+
+        // TODO: send card?
+
+        response.send();
     });
 }
 
@@ -451,37 +500,25 @@ function startPlayingFavorite(show, response, model) {
             return;
         }
 
-        // ensure attribute exists
-        if (!model.getAttr('playbackHistory')) {
-            model.setAttr('playbackHistory', { 
-                lastFavoriteIndex: {}   // map of show id: last played index
-            });
-        }
-
-        // get the favorite index that was last played (default to infinity)
-        const history = model.getAttr('playbackHistory');
-        let lastPlayedIndex = history.lastFavoriteIndex[show.id];
+        // get the favorite index that was last played (default to -1)
+        const lastPlayedIndex = model.getLatestFavoriteStart(show.id);
         if (lastPlayedIndex === undefined) {
-            lastPlayedIndex = Infinity;
+            lastPlayedIndex = -1;
         }
 
         // next index is either 1 + last, or cycled back down to 0
-        const nextIndex = (lastPlayedIndex < favs.length-1) ? 
-                            lastPlayedIndex + 1 :
-                            0;
-        
+        const nextIndex = (lastPlayedIndex + 1) % favs.length;
+
         let fav = favs[nextIndex];
         if (!fav) {
             // TODO
         }
-
-        history.lastFavoriteIndex[show.id] = nextIndex;
         const contentUrl = fav.content;
         
         beginPlayback(response, 
             model,
             contentUrl,
-            makeToken(TOKEN_TYPE.FAVORITE, show.id, nextIndex)
+            ContentToken.createFavorite(show.id, nextIndex)
         );
 
         const intro = speaker.introduceFavorite(show);
@@ -534,35 +571,8 @@ function requireAuth(event, response, prompt, successCallback) {
     });
 }
 
-const TOKEN_TYPE = {
-    SERIAL: 'SERIAL',
-    FAVORITE: 'FAVORITE',
-    LATEST: 'LATEST',
-    EXCLUSIVE: 'EXCLUSIVE'
-}
-
-function makeToken(type, showId, index) {
-    return JSON.stringify({
-        type: type,
-        showId: showId,
-        index: index
-    });
-}
-
-// returns obj with properties: 'type', 'showId', 'index'
-function parseToken(str) {
-    try {
-        return JSON.parse(str);
-    }
-    catch(e){
-        return {};
-    }
-
-}
-
-
-function isSerial(showId) {
-    return showId === 'homecoming' || showId === 'crimetown';
+function isSerial(show) {
+    return show.id === 'homecoming' || show.id === 'crimetown';
 }
 
 // callback arguments: ([entry], err)

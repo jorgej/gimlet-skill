@@ -79,8 +79,8 @@ var whichExclusiveHandlers = alexaPlus.createRouter(states.QUESTION_EXCLUSIVE_NU
 
 var remoteControllerHandlers = alexaPlus.createRouter(states.DEFAULT, {
     /*
-        *  All Requests are received using a Remote Control. Calling corresponding handlers for each of them.
-        */
+    *  All Requests are received using a Remote Control. Calling corresponding handlers for each of them.
+    */
     'PlayCommandIssued': actions.resume,
     'PauseCommandIssued': actions.pause,
     'NextCommandIssued': function(event, response) {

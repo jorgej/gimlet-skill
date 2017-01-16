@@ -42,16 +42,19 @@ function RequestModel(handlerContext) {
         delete this.underlyingHandlerContext.attributes["pb"];
     }
 
-    this.getLastPlayedFavorite = function(showId) {
-        getFavoritesHistory.call(this)[showId];
+
+    this.setLatestFavoriteStart = function(showId, indexPlayed) {
+        getHistory.call(this).favs[showId] = indexPlayed;
+    }
+    this.getLatestFavoriteStart = function(showId) {
+        return getHistory.call(this).favs[showId];
     }
 
-    this.saveLastPlayedFavorite = function(showId, indexPlayed) {
-        getFavoritesHistory.call(this)[showId] = indexPlayed;
+    this.setLatestSerialFinished = function(showId, indexPlayed) {
+        getHistory.call(this).serials[showId] = indexPlayed;
     }
-
-    this.clearPlaybackState = function() {
-        delete this.underlyingHandlerContext.attributes["pb"];
+    this.getLatestSerialFinished = function(showId) {
+        return getHistory.call(this).serials[showId];
     }
 
     this.getAttr = function(key) {
@@ -75,6 +78,16 @@ function setActiveQuestion(questionId) {
 
 function clearActiveQuestion() {
     delete this.underlyingHandlerContext.attributes["activeQ"];
+}
+
+function getHistory() {
+    if (!this.underlyingHandlerContext.attributes["history"]) {
+        this.underlyingHandlerContext.attributes["history"] = {
+            "favs": {},
+            "serials": {}
+        }
+    }
+    return this.underlyingHandlerContext.attributes["history"];
 }
 
 module.exports = RequestModel;
