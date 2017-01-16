@@ -50,18 +50,25 @@ function help(event, response, model) {
     let reprompt;
 
     let activeQuestion = model.getActiveQuestion();
-    if (!activeQuestion) {
-        if (model.isPlaybackIdle()) {
-            speech = speaker.get("Help");
-            reprompt = speaker.get("WhatToDo");
-        }
-        else {
-            speech = speaker.get("Help:Playback");
-        }
-    }
-    else {
+    if (activeQuestion) {
         speech = speaker.getQuestionSpeech(activeQuestion, 'help');
         reprompt = speaker.getQuestionSpeech(activeQuestion, 'reprompt');
+        // ensure the help counter is reset -- it's n/a for question help messages
+        model.clearAttr("helpCtr");
+    }
+    else {
+        const helpCount = model.getAttr("helpCtr");
+        if (helpCount > 2) {
+            speech = "Help level 3";
+        }
+        else if (helpCount === 2) {
+            speech = "Help level 2";
+        }
+        else {
+            speech = speaker.get("Help");
+        }
+
+        reprompt = speaker.get("WhatToDo");
     }
 
     response.speak(speech);
@@ -400,6 +407,22 @@ const actions = {
 };
 
 // TODO: cleanup
+
+function wrapWithHelpTracker(innerFn) {
+    return function(event, response, model) {
+        if (event.request.type === "IntentRequest") {
+            // only mess with the help counter if it's an intent request
+            const helpCount = model.getAttr("helpCtr") || 0;
+            const intentName = event.request.intent && event.request.intent.name;
+            if (intentName === "AMAZON.HelpIntent") {
+                helpCount++;
+            }
+            model.setAttr("helpCtr") = helpCount;
+        }
+        return innerFn.apply(this, arguments);
+    };
+}
+
 function wrapWithAuth(innerFn) {
     return function(event, response, model) {
         authHelper.isSessionAuthenticated(event.session, function(auth) {
@@ -413,6 +436,10 @@ function wrapWithAuth(innerFn) {
             }
         });
     };
+}
+
+for(let key in actions) {
+    actions[key] = wrapWithHelpTracker(actions[key]);
 }
 
 for(let key in ['launchRequest', 'playLatest', 'playExclusive', 'playFavorite']) {

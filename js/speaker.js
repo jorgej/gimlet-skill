@@ -24,7 +24,6 @@ function getKeyedSpeech(key) {
         "WhatToDo":             audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/What+To+Do.mp3"),
 
         "Help":                 audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Help.mp3"),
-        "Help:Playback":        "I get by with a little help from my friends.", // *
         
         "LinkAccount":          audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Link+Account.mp3"),
         
