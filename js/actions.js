@@ -486,7 +486,7 @@ function startPlayingMostRecent(show, response, model) {
 }
 
 function startPlayingSerial(show, response, model) {
-    getFeedEntries(show.id, function(entries, err) {
+    getFeedEntries(show.id, isFullLengthEpisode, function(entries, err) {
         if (err) {
             // TODO
             response.speak("Sorry, there was a problem.").send();
@@ -601,7 +601,7 @@ function isSerial(show) {
 }
 
 // callback arguments: ([entry], err)
-function getFeedEntries(showId, callback) {
+function getFeedEntries(showId, filterFn, callback) {
     gimlet.getFeedMap(function(feedMap, err) {
         if (err || !feedMap[show.id]) {
             callback(entry, new Error("Problem getting feed URL"));
@@ -616,9 +616,15 @@ function getFeedEntries(showId, callback) {
                 return;
             }
 
-            const entries = parsed.feed.entries;
+            if (!filterFn) {
+                filterFn = function() { return true; }
+            }
+            
+            let entries = parsed.feed.entries.reverse();
             entries.reverse();
-
+            if (filterFn) {
+                entries = entries.filter(filterFn);
+            }
             callback(entries, undefined);
         });
     });
@@ -648,3 +654,12 @@ function resumePlayback(response, model) {
     return false;
 }
 
+function isFullLengthEpisode(rssEntry) {
+    const durationInSec = rssEntry['itunes'] && rssEntry['itunes']['duration'];
+    if (durationInSec == undefined) {
+        return true;    // default to true if no duration can be found
+    }
+    else {
+        return durationInSec > 240;
+    }
+}
