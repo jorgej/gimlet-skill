@@ -603,12 +603,12 @@ function isSerial(show) {
 // callback arguments: ([entry], err)
 function getFeedEntries(showId, filterFn, callback) {
     gimlet.getFeedMap(function(feedMap, err) {
-        if (err || !feedMap[show.id]) {
+        if (err || !feedMap[showId]) {
             callback(entry, new Error("Problem getting feed URL"));
             return;
         }
         
-        const url = feedMap[show.id];
+        const url = feedMap[showId];
 
         rss.parseURL(url, function(err, parsed) {
             if (err) {
