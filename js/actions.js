@@ -15,37 +15,34 @@ const fs = require("fs");
 const appStates = constants.states;
 
 function launchRequest(event, response, model) {
-    // TODO: move this somewhere. auth flow here is too cluttered
-    requireAuth(event, response, speaker.get("LinkAccount"), function() {
-        // we can assume we're in DEFAULT state
-        let speech, reprompt;
+    // we can assume we're in DEFAULT state
+    let speech, reprompt;
 
-        const currentTrack = model.getPlaybackState().track;
-        if (currentTrack && !model.isPlaybackIdle()) {
-            // if there's a track already enqueued, and it's not idle 
-            //  (i.e. hasn't completed), we ask if the user want to continue playback
-            model.enterQuestionMode(constants.questions.ConfirmResumePlayback);
-            speech = speaker.askToResume(currentTrack.showId);
+    const currentTrack = model.getPlaybackState().track;
+    if (currentTrack && !model.isPlaybackIdle()) {
+        // if there's a track already enqueued, and it's not idle 
+        //  (i.e. hasn't completed), we ask if the user want to continue playback
+        model.enterQuestionMode(constants.questions.ConfirmResumePlayback);
+        speech = speaker.askToResume(currentTrack.showId);
+    }
+    else {
+        // ensure we're in DEFAULT (should be true, but this will force us out of 
+        //  state transition holes in case the logic is broken and the user is we're stuck) 
+        model.exitQuestionMode();
+        if (model.getAttr('returningUser')) {
+            speech = speaker.get("Welcome");
+            reprompt = speaker.get("WhatToDo")
         }
         else {
-            // ensure we're in DEFAULT (should be true, but this will force us out of 
-            //  state transition holes in case the logic is broken and the user is we're stuck) 
-            model.exitQuestionMode();
-            if (model.getAttr('returningUser')) {
-                speech = speaker.get("Welcome");
-                reprompt = speaker.get("WhatToDo")
-            }
-            else {
-                speech = speaker.get("NewUserWelcome");
-                reprompt = speaker.get("WhatToDo")
-                model.setAttr('returningUser', true);
-            }
+            speech = speaker.get("NewUserWelcome");
+            reprompt = speaker.get("WhatToDo")
+            model.setAttr('returningUser', true);
         }
+    }
 
-        response.speak(speech)
-                .listen(reprompt || speech)
-                .send();
-    });
+    response.speak(speech)
+            .listen(reprompt || speech)
+            .send();
 }
 
 function help(event, response, model) {
@@ -75,60 +72,53 @@ function help(event, response, model) {
 }
 
 function playLatest(event, response, model) {
-    requireAuth(event, response, speaker.get("LinkAccount"), function() {
-        const show = getShowFromSlotValue(event.request);
-        if (show) {
-            model.exitQuestionMode();
-            if (isSerial(show)) {
-                startPlayingSerial(show, response, model);
-            }
-            else {
-                startPlayingMostRecent(show, response, model);
-            }
+    const show = getShowFromSlotValue(event.request);
+    if (show) {
+        model.exitQuestionMode();
+        if (isSerial(show)) {
+            startPlayingSerial(show, response, model);
         }
         else {
-            let activeQuestion = constants.questions.FavoriteShowTitle;
-            model.enterQuestionMode(activeQuestion);
-
-            response.speak(speaker.getQuestionSpeech(activeQuestion, "original"))
-                    .listen(speaker.getQuestionSpeech(activeQuestion, "reprompt"))
-                    .send();
+            startPlayingMostRecent(show, response, model);
         }
-    });
+    }
+    else {
+        let activeQuestion = constants.questions.FavoriteShowTitle;
+        model.enterQuestionMode(activeQuestion);
+
+        response.speak(speaker.getQuestionSpeech(activeQuestion, "original"))
+                .listen(speaker.getQuestionSpeech(activeQuestion, "reprompt"))
+                .send();
+    }
 }
 
 function playExclusive(event, response, model) {
-    requireAuth(event, response, speaker.get("LinkAccount"), function() {
-        const activeQuestion = constants.questions.ExclusiveNumber;
-        model.enterQuestionMode(activeQuestion);
+    const activeQuestion = constants.questions.ExclusiveNumber;
+    model.enterQuestionMode(activeQuestion);
 
-        const excList = speaker.get("ExclusivePreamble") + 
-                        speaker.get("ExclusiveList");
-        const prompt = speaker.getQuestionSpeech(activeQuestion, "original")
+    const excList = speaker.get("ExclusivePreamble") + 
+                    speaker.get("ExclusiveList");
+    const prompt = speaker.getQuestionSpeech(activeQuestion, "original")
 
-        response.speak(excList + prompt)
-                .listen(speaker.getQuestionSpeech(activeQuestion, "reprompt"))
-                .send();
-    });
+    response.speak(excList + prompt)
+            .listen(speaker.getQuestionSpeech(activeQuestion, "reprompt"))
+            .send();
 }
 
 function playFavorite(event, response, model) {
-    requireAuth(event, response, speaker.get("LinkAccount"), function() {
+    const show = getShowFromSlotValue(event.request);    
+    if (show) {
+        model.exitQuestionMode();
+        startPlayingFavorite(show, response, model);
+    }
+    else {
+        let activeQuestion = constants.questions.FavoriteShowTitle;
+        model.enterQuestionMode(activeQuestion);
 
-        const show = getShowFromSlotValue(event.request);    
-        if (show) {
-            model.exitQuestionMode();
-            startPlayingFavorite(show, response, model);
-        }
-        else {
-            let activeQuestion = constants.questions.FavoriteShowTitle;
-            model.enterQuestionMode(activeQuestion);
-
-            response.speak(speaker.getQuestionSpeech(activeQuestion, "original"))
-                    .listen(speaker.getQuestionSpeech(activeQuestion, "reprompt"))
-                    .send();
-        }
-    });
+        response.speak(speaker.getQuestionSpeech(activeQuestion, "original"))
+                .listen(speaker.getQuestionSpeech(activeQuestion, "reprompt"))
+                .send();
+    }
 }
 
 function listShows(event, response, model) {
@@ -377,7 +367,7 @@ function unhandledAction(event, response, model) {
     response.send();
 }
 
-module.exports = {
+const actions = {
     launchRequest: launchRequest,
 
     playLatest: playLatest,
@@ -408,6 +398,28 @@ module.exports = {
 
     unhandledAction: unhandledAction,
 };
+
+// TODO: cleanup
+function wrapWithAuth(innerFn) {
+    return function(event, response, model) {
+        authHelper.isSessionAuthenticated(event.session, function(auth) {
+            if (auth) {
+                innerFn.apply(this, arguments);
+            }
+            else {
+                response.speak(prompt)
+                        .linkAccountCard()
+                        .send();
+            }
+        });
+    };
+}
+
+for(let key in ['launchRequest', 'playLatest', 'playExclusive', 'playFavorite']) {
+    actions[key] = wrapWithHelpTracker(actions[key]);
+}
+
+module.exports = actions;
 
 /**
  * Helpers
@@ -555,20 +567,6 @@ function getNumberFromSlotValue(request) {
 
 function urlToSSML(url) {
     return `<audio src="${url}" />`;
-}
-
-// TODO: make into middleware
-function requireAuth(event, response, prompt, successCallback) {
-    authHelper.isSessionAuthenticated(event.session, function(auth) {
-        if (auth) {
-            successCallback();
-        }
-        else {
-            response.speak(prompt)
-                    .linkAccountCard()
-                    .send();
-        }
-    });
 }
 
 function isSerial(show) {
