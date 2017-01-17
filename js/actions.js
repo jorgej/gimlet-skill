@@ -4,14 +4,58 @@ const speaker = require("./speaker");
 const constants = require("./constants");
 const gimlet = require("./gimlet");
 const authHelper = require("./authHelper");
+const playbackHelpers = require("./playbackHelpers");
 
-const PlaybackState = require("./playbackState");
 const ContentToken = require("./token");
 
 const rss = require("rss-parser");
 
 const appStates = constants.states;
 
+const actions = {
+    launchRequest: authDecorator(launchRequest),
+
+    playLatest: authDecorator(playLatest),
+    playExclusive: authDecorator(playExclusive),
+    playFavorite: authDecorator(playFavorite),
+
+    listShows: listShows,
+    whoIsMatt: whoIsMatt,
+    showTitleNamed: showTitleNamed,
+    exclusiveChosen: exclusiveChosen,
+
+    help: help,
+    cancel: cancel,
+    
+    pause: pause,
+    stop: stop,
+    resume: resume,
+    playbackOperationUnsupported: playbackOperationUnsupported,
+    startOver: startOver,
+    resumeConfirmationYes: resumeConfirmationYes,
+    resumeConfirmationNo: resumeConfirmationNo,
+
+    sessionEnded: sessionEnded,
+    playbackStarted: playbackStarted,
+    playbackStopped: playbackStopped,
+    playbackNearlyFinished: playbackNearlyFinished,
+    playbackFinished: playbackFinished,
+    playbackFailed: playbackFailed,
+
+    unhandledAction: unhandledAction,
+};
+
+// add help tracking "middleware" to all actions
+for(let key in actions) {
+    actions[key] = helpTrackingDecorator(actions[key]);
+}
+
+module.exports = actions;
+
+
+/**
+ * Actions
+ */
 function launchRequest(event, response, model) {
     // we can assume we're in DEFAULT state
     let speech, reprompt;
@@ -93,10 +137,10 @@ function playLatest(event, response, model) {
 
         if (gimlet.isSerialShow(showId)) {
             const lastPlayedIndex = model.setLatestSerialFinished(showId);
-            startPlayingSerial(response, showId, lastPlayedIndex, callback);
+            playbackHelpers.startPlayingSerial(response, showId, lastPlayedIndex, callback);
         }
         else {
-            startPlayingMostRecent(response, showId, callback);
+            playbackHelpers.startPlayingMostRecent(response, showId, callback);
         }
     }
     else {
@@ -137,7 +181,7 @@ function playFavorite(event, response, model) {
     model.exitQuestionMode();
     const lastPlayedIndex = model.getLatestFavoriteStart(showId) || 0;
     
-    startPlayingFavorite(response, showId, lastPlayedIndex+1, function(pbState, err) {
+    playbackHelpers.startPlayingFavorite(response, showId, lastPlayedIndex+1, function(pbState, err) {
         if (pbState) {
             // if the call succeeded, persist the new playback state
             model.setPlaybackState(pbState);
@@ -232,6 +276,8 @@ function showTitleNamed(event, response, model) {
 function exclusiveChosen(event, response, model) {
     const number = getNumberFromSlotValue(event.request);
 
+    playbackHelpers.startPlayingExclusive(exclusiveIndex)
+
     gimlet.getExclusives(function(exclusives, err) {
         if (err || !exclusives) {
             response.speak(speaker.get("Error")).send();
@@ -245,7 +291,7 @@ function exclusiveChosen(event, response, model) {
             const contentUrl = exclusive.content;
             const token = ContentToken.createExclusive();
             
-            const pbState = beginPlayback(response, contentUrl, token);
+            const pbState = playbackHelpers.beginPlayback(response, contentUrl, token);
             model.setPlaybackState(pbState);
 
             const title = exclusive.title || `Exclusive #${number}`;
@@ -274,14 +320,14 @@ function stop(event, response, model) {
 
 function resume(event, response, model) {
     model.exitQuestionMode();
-    resumePlayback(response, model.getPlaybackState());
+    playbackHelpers.resumePlayback(response, model.getPlaybackState());
     response.send();
 }
 
 function startOver(event, response, model) {
     model.exitQuestionMode();
 
-    const newPbState = restartPlayback(response, model.getPlaybackState());
+    const newPbState = playbackHelpers.restartPlayback(response, model.getPlaybackState());
     if (newPbState) {
         // if we successfully set a new playback state, persist it
         model.setPlaybackState(newPbState);
@@ -398,41 +444,12 @@ function unhandledAction(event, response, model) {
     response.send();
 }
 
-const actions = {
-    launchRequest: launchRequest,
 
-    playLatest: playLatest,
-    playExclusive: playExclusive,
-    playFavorite: playFavorite,
-    listShows: listShows,
-    whoIsMatt: whoIsMatt,
-    showTitleNamed: showTitleNamed,
-    exclusiveChosen: exclusiveChosen,
+/***
+ * Decorators 
+ */
 
-    help: help,
-    cancel: cancel,
-    
-    pause: pause,
-    stop: stop,
-    resume: resume,
-    playbackOperationUnsupported: playbackOperationUnsupported,
-    startOver: startOver,
-    resumeConfirmationYes: resumeConfirmationYes,
-    resumeConfirmationNo: resumeConfirmationNo,
-
-    sessionEnded: sessionEnded,
-    playbackStarted: playbackStarted,
-    playbackStopped: playbackStopped,
-    playbackNearlyFinished: playbackNearlyFinished,
-    playbackFinished: playbackFinished,
-    playbackFailed: playbackFailed,
-
-    unhandledAction: unhandledAction,
-};
-
-// TODO: cleanup
-
-function wrapWithHelpTracker(innerFn) {
+function helpTrackingDecorator(innerFn) {
     return function(event, response, model) {
         if (event.request.type === "IntentRequest") {
             // only mess with the help counter if it's an intent request
@@ -447,7 +464,7 @@ function wrapWithHelpTracker(innerFn) {
     };
 }
 
-function wrapWithAuth(innerFn) {
+function authDecorator(innerFn) {
     return function(event, response, model) {
         authHelper.isSessionAuthenticated(event.session, function(auth) {
             if (auth) {
@@ -462,127 +479,9 @@ function wrapWithAuth(innerFn) {
     };
 }
 
-for(let key in actions) {
-    actions[key] = wrapWithHelpTracker(actions[key]);
-}
-
-for(let key in ['launchRequest', 'playLatest', 'playExclusive', 'playFavorite']) {
-    actions[key] = wrapWithAuth(actions[key]);
-}
-
-module.exports = actions;
-
 /**
  * Helpers
  */
-
-function startPlayingMostRecent(showId, response, callback) {
-    getFeedEntries(showId, function(entries, err) {
-        if (err) {
-            callback(undefined, err);
-            return;
-        }
-
-        const entry = entries[entries.length-1];
-        if (!entry) {
-            callback(undefined, new Error(`No episodes found for showId "${showId}"`));
-            return;
-        }
-
-        // Alexa only plays HTTPS urls, feeds give us HTTP ones
-        const contentUrl = entry.enclosure.url.replace('http://', 'https://');
-        
-        const token = ContentToken.createLatest(showId);
-
-        const intro = speaker.introduceMostRecent(showId);
-        const showTitle = gimlet.titleForShow(showId);
-        response.speak(intro)
-                .cardRenderer(`Playing ${showTitle}`, 
-                              `Now playing the most recent episode of ${showTitle}, "${entry.title}"`);
-
-        const pbState = beginPlayback(response, contentUrl, token);
-        callback(pbState);
-    });
-}
-
-function startPlayingSerial(response, showId, lastFinishedIndex, callback) {
-    getFeedEntries(showId, isFullLengthEpisode, function(entries, err) {
-        if (err) {
-            callback(undefined, err);
-            return;
-        }
-        else if (!entries.length) {
-            callback(undefined, new Error(`No episodes found for showId "${showId}"`));
-            return;
-        }
-
-        if (lastFinishedIndex === undefined) {
-            lastFinishedIndex = -1;
-        }
-
-        // add one to the last index, cycling back to 0 at the end of the feed
-        const nextIndex = (lastFinishedIndex + 1) % entries.length;
-        const entry = entries[nextIndex];
-
-        const intro = speaker.introduceSerial(showId);
-        if (intro) {
-            response.speak(intro);
-        }
-
-        // Alexa only plays HTTPS urls, feeds give us HTTP ones
-        const contentUrl = entry.enclosure.url.replace('http://', 'https://');
-        
-        const token = ContentToken.createSerial(showId, nextIndex);
-        
-        const showTitle = gimlet.titleForShow(showId);
-        response.cardRenderer(`Playing ${title}`, 
-                              `Now playing the next episode of ${title}, "${entry.title}"`);
-
-        const pbState = beginPlayback(response, contentUrl, token);
-        callback(pbState);
-    });
-}
-
-function startPlayingFavorite(response, showId, favoriteIndex, callback) {
-    gimlet.getFavoritesMap(function(favoritesMap, err) {
-        if (err || !favoritesMap) {
-            callback(undefined, err || new Error("No favorites configured"));
-            return;
-        }
-
-        const favs = favoritesMap[showId];
-        if (!favs) {
-            callback(undefined, new Error(`No favorites configured for showId "${showId}"`));
-            return;
-        }
-
-        // ensure index fits in range of avaialble favorites
-        favoriteIndex = favoriteIndex % favs.length;
-
-        let fav = favs[favoriteIndex];
-        if (!fav) {
-            callback(undefined, new Error(`No favorites configured for showId "${showId}"`));
-            return;
-        }
-
-        const contentUrl = fav.content;        
-        const token = ContentToken.createFavorite(showId, favoriteIndex);
-
-        const intro = speaker.introduceFavorite(showId);
-        const showTitle = gimlet.titleForShow(showId);
-
-        let cardContent = `Now playing a staff-favorite episode of ${title}`
-        if (fav.title) {
-            cardContent += `, "${fav.title}"`
-        }
-
-        response.speak(intro)
-                .cardRenderer(`Playing ${title}`, cardContent);
-
-        const newPbState = beginPlayback(response, contentUrl, token);
-        callback(newPbState);
-    });
-}
 
 function getShowFromSlotValue(request) {
     const slots = request.intent.slots;
@@ -608,65 +507,4 @@ function getNumberFromSlotValue(request) {
 
 function urlToSSML(url) {
     return `<audio src="${url}" />`;
-}
-
-// callback arguments: ([entry], err)
-function getFeedEntries(showId, filterFn, callback) {
-    gimlet.getFeedMap(function(feedMap, err) {
-        if (err || !feedMap[showId]) {
-            callback(entry, new Error("Problem getting feed URL"));
-            return;
-        }
-        
-        const url = feedMap[showId];
-
-        rss.parseURL(url, function(err, parsed) {
-            if (err) {
-                callback(entry, new Error("Problem fetching RSS feed"));
-                return;
-            }
-
-            if (!filterFn) {
-                filterFn = function() { return true; }
-            }
-            
-            let entries = parsed.feed.entries.reverse();
-            entries.reverse();
-            if (filterFn) {
-                entries = entries.filter(filterFn);
-            }
-            callback(entries, undefined);
-        });
-    });
-}
-
-function beginPlayback(response, url, contentToken) {
-    const pbState = new PlaybackState(url, contentToken.toString(), 0);
-    return resumePlayback(response, pbState);
-}
-
-function restartPlayback(response, pbState) {
-    if (pbState.isValid()) {
-        pbState.offset = 0;
-        return resumePlayback(response, pbState);
-    }
-    return undefined;
-}
-
-function resumePlayback(response, pbState) {
-    if (pbState.isValid() && !pbState.isFinished()) {
-        response.audioPlayerPlay('REPLACE_ALL', pbState.url, pbState.token, null, pbState.offset);
-        return pbState;
-    }
-    return undefined;
-}
-
-function isFullLengthEpisode(rssEntry) {
-    const durationInSec = rssEntry['itunes'] && rssEntry['itunes']['duration'];
-    if (durationInSec == undefined) {
-        return true;    // default to true if no duration can be found
-    }
-    else {
-        return durationInSec > 240;
-    }
 }
