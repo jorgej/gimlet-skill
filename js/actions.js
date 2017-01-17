@@ -648,7 +648,6 @@ function beginPlayback(response, url, contentToken) {
 function restartPlayback(response, pbState) {
     if (pbState.isValid()) {
         pbState.offset = 0;
-        model.setPlaybackState(pbState);
         return resumePlayback(response, pbState);
     }
     return undefined;
