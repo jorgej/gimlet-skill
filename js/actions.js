@@ -80,11 +80,23 @@ function playLatest(event, response, model) {
     const showId = getShowFromSlotValue(event.request);
     if (showId) {
         model.exitQuestionMode();
+        
+        const callback = function(pbState, err) {
+            if (pbState) {
+                model.setPlaybackState(pbState);
+            }
+            else {
+                response.speak(speaker.get("Error"));
+            }
+            response.send();
+        }
+
         if (gimlet.isSerialShow(showId)) {
-            startPlayingSerial(showId, response, model);
+            const lastPlayedIndex = model.setLatestSerialFinished(showId);
+            startPlayingSerial(response, showId, lastPlayedIndex, callback);
         }
         else {
-            startPlayingMostRecent(showId, response, model);
+            startPlayingMostRecent(response, showId, callback);
         }
     }
     else {
@@ -240,7 +252,6 @@ function exclusiveChosen(event, response, model) {
 
             response.cardRenderer("Playing Members-Only Exclusive", 
                         `Now playing ${title}`);
-
 
             response.send();
         }
@@ -465,16 +476,16 @@ module.exports = actions;
  * Helpers
  */
 
-function startPlayingMostRecent(showId, response, model) {
+function startPlayingMostRecent(showId, response, callback) {
     getFeedEntries(showId, function(entries, err) {
         if (err) {
-            response.speak(speaker.get("Error")).send();
+            callback(undefined, err);
             return;
         }
 
         const entry = entries[entries.length-1];
         if (!entry) {
-            response.speak(speaker.get("Error")).send();
+            callback(undefined, new Error(`No episodes found for showId "${showId}"`));
             return;
         }
 
@@ -483,31 +494,28 @@ function startPlayingMostRecent(showId, response, model) {
         
         const token = ContentToken.createLatest(showId);
 
-        const pbState = beginPlayback(response, contentUrl, token);
-        model.setPlaybackState(pbState);
-
         const intro = speaker.introduceMostRecent(showId);
         const showTitle = gimlet.titleForShow(showId);
         response.speak(intro)
                 .cardRenderer(`Playing ${showTitle}`, 
                               `Now playing the most recent episode of ${showTitle}, "${entry.title}"`);
 
-        response.send();
+        const pbState = beginPlayback(response, contentUrl, token);
+        callback(pbState);
     });
 }
 
-function startPlayingSerial(showId, response, model) {
+function startPlayingSerial(response, showId, lastFinishedIndex, callback) {
     getFeedEntries(showId, isFullLengthEpisode, function(entries, err) {
         if (err) {
-            response.speak(speaker.get("Error")).send();
+            callback(undefined, err);
             return;
         }
         else if (!entries.length) {
-            response.speak(speaker.get("Error")).send();
+            callback(undefined, new Error(`No episodes found for showId "${showId}"`));
             return;
         }
 
-        const lastFinishedIndex = model.getLatestSerialFinished(showId);
         if (lastFinishedIndex === undefined) {
             lastFinishedIndex = -1;
         }
@@ -526,14 +534,12 @@ function startPlayingSerial(showId, response, model) {
         
         const token = ContentToken.createSerial(showId, nextIndex);
         
-        const pbState = beginPlayback(response, contentUrl, token);
-        model.setPlaybackState(pbState);
-
         const showTitle = gimlet.titleForShow(showId);
         response.cardRenderer(`Playing ${title}`, 
                               `Now playing the next episode of ${title}, "${entry.title}"`);
 
-        response.send();
+        const pbState = beginPlayback(response, contentUrl, token);
+        callback(pbState);
     });
 }
 
