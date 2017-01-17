@@ -1,10 +1,18 @@
 'use strict';
 
 const Alexa = require('alexa-sdk');
+
+const constants = require("./constants");
 const RequestModel = require('./model');
 
 function alexaClient(event, context, callback) {
     const underlyingHandler = Alexa.handler(event, context, callback);
+
+    // ensure initial interaction with the skill is in default state 
+    // (this gets around a bug mentioned in `constants.js`)
+    if (!underlyingHandler.attributes[Alexa.StateString]) {
+        underlyingHandler.attributes[Alexa.StateString] = constants.states.DEFAULT;
+    }
 
     Object.defineProperty(underlyingHandler, 'registerRouters', {
         value: function() {
