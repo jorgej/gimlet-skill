@@ -112,18 +112,29 @@ function playExclusive(event, response, model) {
 
 function playFavorite(event, response, model) {
     const showId = getShowFromSlotValue(event.request);    
-    if (showId) {
-        model.exitQuestionMode();
-        startPlayingFavorite(showId, response, model);
-    }
-    else {
+    if (!showId) {
         let activeQuestion = constants.questions.FavoriteShowTitle;
         model.enterQuestionMode(activeQuestion);
 
         response.speak(speaker.getQuestionSpeech(activeQuestion, "original"))
                 .listen(speaker.getQuestionSpeech(activeQuestion, "reprompt"))
                 .send();
+        return;
     }
+
+    model.exitQuestionMode();
+    const lastPlayedIndex = model.getLatestFavoriteStart(showId) || 0;
+    
+    startPlayingFavorite(response, showId, lastPlayedIndex+1, function(pbState, err) {
+        if (pbState) {
+            // if the call succeeded, persist the new playback state
+            model.setPlaybackState(pbState);
+        }
+        else {
+            response.speak(speaker.get("Error"));
+        }
+        response.send();
+    });
 }
 
 function listShows(event, response, model) {
@@ -526,39 +537,27 @@ function startPlayingSerial(showId, response, model) {
     });
 }
 
-function startPlayingFavorite(showId, response, model) {
+function startPlayingFavorite(response, showId, favoriteIndex, callback) {
     gimlet.getFavoritesMap(function(favoritesMap, err) {
         if (err || !favoritesMap) {
-            response.speak(speaker.get("Error")).send();
-            return;
+            callback(undefined, err || new Error("No favorites configured"));
         }
 
         const favs = favoritesMap[showId];
         if (!favs) {
-            response.speak(speaker.get("Error")).send();
-            return;
+            callback(undefined, new Error(`No favorites configured for showId "${showId}"`));
         }
 
-        // get the favorite index that was last played (default to -1)
-        const lastPlayedIndex = model.getLatestFavoriteStart(showId);
-        if (lastPlayedIndex === undefined) {
-            lastPlayedIndex = -1;
-        }
+        // ensure index fits in range of avaialble favorites
+        favoriteIndex = favoriteIndex % favs.length;
 
-        // next index is either 1 + last, or cycled back down to 0
-        const nextIndex = (lastPlayedIndex + 1) % favs.length;
-
-        let fav = favs[nextIndex];
+        let fav = favs[favoriteIndex];
         if (!fav) {
-            response.speak(speaker.get("Error")).send();
-            return;
+            callback(undefined, new Error(`No favorites configured for showId "${showId}"`));
         }
-        const contentUrl = fav.content;
-        
-        const token = ContentToken.createFavorite(showId, nextIndex);
 
-        const pbState = beginPlayback(response, contentUrl, token);
-        model.setPlaybackState(pbState);
+        const contentUrl = fav.content;        
+        const token = ContentToken.createFavorite(showId, favoriteIndex);
 
         const intro = speaker.introduceFavorite(showId);
         const showTitle = gimlet.titleForShow(showId);
@@ -569,8 +568,10 @@ function startPlayingFavorite(showId, response, model) {
         }
 
         response.speak(intro)
-                .cardRenderer(`Playing ${title}`, cardContent)
-                .send();
+                .cardRenderer(`Playing ${title}`, cardContent);
+
+        const newPbState = beginPlayback(response, contentUrl, token);
+        callback(newPbState);
     });
 }
 
@@ -600,7 +601,7 @@ function urlToSSML(url) {
     return `<audio src="${url}" />`;
 }
 
-]// callback arguments: ([entry], err)
+// callback arguments: ([entry], err)
 function getFeedEntries(showId, filterFn, callback) {
     gimlet.getFeedMap(function(feedMap, err) {
         if (err || !feedMap[showId]) {
