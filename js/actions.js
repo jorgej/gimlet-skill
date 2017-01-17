@@ -482,7 +482,7 @@ function startPlayingMostRecent(showId, response, model) {
         const contentUrl = entry.enclosure.url.replace('http://', 'https://');
         
         const token = ContentToken.createLatest(showId);
-        
+
         const pbState = beginPlayback(response, contentUrl, token);
         model.setPlaybackState(pbState);
 
@@ -541,11 +541,13 @@ function startPlayingFavorite(response, showId, favoriteIndex, callback) {
     gimlet.getFavoritesMap(function(favoritesMap, err) {
         if (err || !favoritesMap) {
             callback(undefined, err || new Error("No favorites configured"));
+            return;
         }
 
         const favs = favoritesMap[showId];
         if (!favs) {
             callback(undefined, new Error(`No favorites configured for showId "${showId}"`));
+            return;
         }
 
         // ensure index fits in range of avaialble favorites
@@ -554,6 +556,7 @@ function startPlayingFavorite(response, showId, favoriteIndex, callback) {
         let fav = favs[favoriteIndex];
         if (!fav) {
             callback(undefined, new Error(`No favorites configured for showId "${showId}"`));
+            return;
         }
 
         const contentUrl = fav.content;        
