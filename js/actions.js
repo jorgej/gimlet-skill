@@ -220,12 +220,10 @@ function exclusiveChosen(event, response, model) {
             model.exitQuestionMode();
 
             const contentUrl = exclusive.content;
-
-            beginPlayback(response, 
-                model, 
-                contentUrl,
-                ContentToken.createExclusive().toString()
-            );
+            const token = ContentToken.createExclusive();
+            
+            const pbState = beginPlayback(response, contentUrl, token);
+            model.setPlaybackState(pbState);
 
             const title = exclusive.title || `Exclusive #${number}`;
 
@@ -254,15 +252,20 @@ function stop(event, response, model) {
 
 function resume(event, response, model) {
     model.exitQuestionMode();
-    resumePlayback(response, model);
+    resumePlayback(response, model.getPlaybackState());
     response.send();
 }
 
 function startOver(event, response, model) {
     model.exitQuestionMode();
 
-    const didRestart = restartPlayback(response, model);
-    if (!didRestart) {
+    const newPbState = restartPlayback(response, model.getPlaybackState());
+    if (newPbState) {
+        // if we successfully set a new playback state, persist it
+        model.setPlaybackState(newPbState);
+    }
+    else {
+        // otherwise, there was no audio there to restart
         response.speak(speaker.get("EmptyQueueMessage"));
     }
     response.send();
@@ -467,11 +470,10 @@ function startPlayingMostRecent(showId, response, model) {
         // Alexa only plays HTTPS urls, feeds give us HTTP ones
         const contentUrl = entry.enclosure.url.replace('http://', 'https://');
         
-        beginPlayback(response,
-            model,
-            contentUrl,
-            ContentToken.createLatest(showId).toString()
-        );
+        const token = ContentToken.createLatest(showId);
+        
+        const pbState = beginPlayback(response, contentUrl, token);
+        model.setPlaybackState(pbState);
 
         const intro = speaker.introduceMostRecent(showId);
         const showTitle = gimlet.titleForShow(showId);
@@ -510,12 +512,11 @@ function startPlayingSerial(showId, response, model) {
 
         // Alexa only plays HTTPS urls, feeds give us HTTP ones
         const contentUrl = entry.enclosure.url.replace('http://', 'https://');
-
-        beginPlayback(response,
-            model,
-            contentUrl,
-            ContentToken.createSerial(showId, nextIndex).toString()
-        );
+        
+        const token = ContentToken.createSerial(showId, nextIndex);
+        
+        const pbState = beginPlayback(response, contentUrl, token);
+        model.setPlaybackState(pbState);
 
         const showTitle = gimlet.titleForShow(showId);
         response.cardRenderer(`Playing ${title}`, 
@@ -554,11 +555,10 @@ function startPlayingFavorite(showId, response, model) {
         }
         const contentUrl = fav.content;
         
-        beginPlayback(response, 
-            model,
-            contentUrl,
-            ContentToken.createFavorite(showId, nextIndex)
-        );
+        const token = ContentToken.createFavorite(showId, nextIndex);
+
+        const pbState = beginPlayback(response, contentUrl, token);
+        model.setPlaybackState(pbState);
 
         const intro = speaker.introduceFavorite(showId);
         const showTitle = gimlet.titleForShow(showId);
@@ -630,28 +630,26 @@ function getFeedEntries(showId, filterFn, callback) {
     });
 }
 
-function beginPlayback(response, model, url, token) {
-    model.setPlaybackState(new PlaybackState(url, token, 0));
-    resumePlayback(response, model);
+function beginPlayback(response, url, contentToken) {
+    const pbState = new PlaybackState(url, contentToken.toString(), 0);
+    return resumePlayback(response, pbState);
 }
 
-function restartPlayback(response, model) {
-    const pbState = model.getPlaybackState();
+function restartPlayback(response, pbState) {
     if (pbState.isValid()) {
         pbState.offset = 0;
         model.setPlaybackState(pbState);
-        return resumePlayback(response, model);
+        return resumePlayback(response, pbState);
     }
-    return false;
+    return undefined;
 }
 
-function resumePlayback(response, model) {
-    const pbState = model.getPlaybackState();
+function resumePlayback(response, pbState) {
     if (pbState.isValid() && !pbState.isFinished()) {
         response.audioPlayerPlay('REPLACE_ALL', pbState.url, pbState.token, null, pbState.offset);
-        return true;
+        return pbState;
     }
-    return false;
+    return undefined;
 }
 
 function isFullLengthEpisode(rssEntry) {
