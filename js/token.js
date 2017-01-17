@@ -1,3 +1,5 @@
+'use strict';
+
 function ContentToken(type, showId, info) {
     this.type = type;
     this.showId = showId;

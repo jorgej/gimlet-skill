@@ -9,8 +9,6 @@ const PlaybackState = require("./playbackState");
 const ContentToken = require("./token");
 
 const rss = require("rss-parser");
-const _ = require("lodash");
-const fs = require("fs");
 
 const appStates = constants.states;
 
@@ -59,10 +57,10 @@ function help(event, response, model) {
     else {
         const helpCount = model.getAttr("helpCtr");
         if (helpCount > 2) {
-            speech = "Help level 3";
+            speech = speaker.get("Help3");
         }
         else if (helpCount === 2) {
-            speech = "Help level 2";
+            speech = speaker.get("Help2");
         }
         else {
             speech = speaker.get("Help");
@@ -150,8 +148,7 @@ function whoIsMatt(event, response, model) {
 
     gimlet.getMLIs(function(urls, err) {
         if (err || urls.length == 0) {
-            // TODO
-            response.speak("Sorry, there was a problem.").send();
+            response.speak(speaker.get("Error")).send();
             return;
         }
 
@@ -214,8 +211,7 @@ function exclusiveChosen(event, response, model) {
 
     gimlet.getExclusives(function(exclusives, err) {
         if (err || !exclusives) {
-            // TODO
-            response.speak("Sorry, there was a problem.").send();
+            response.speak(speaker.get("Error")).send();
             return;
         }
 
@@ -446,7 +442,7 @@ for(let key in actions) {
 }
 
 for(let key in ['launchRequest', 'playLatest', 'playExclusive', 'playFavorite']) {
-    actions[key] = wrapWithHelpTracker(actions[key]);
+    actions[key] = wrapWithAuth(actions[key]);
 }
 
 module.exports = actions;
@@ -458,15 +454,13 @@ module.exports = actions;
 function startPlayingMostRecent(show, response, model) {
     getFeedEntries(show.id, function(entries, err) {
         if (err) {
-            // TODO
-            response.speak("Sorry, there was a problem.").send();
+            response.speak(speaker.get("Error")).send();
             return;
         }
 
         const entry = entries[entries.length-1];
         if (!entry) {
-            // TODO
-            response.speak("Sorry, there was a problem.").send();
+            response.speak(speaker.get("Error")).send();
             return;
         }
 
@@ -491,13 +485,11 @@ function startPlayingMostRecent(show, response, model) {
 function startPlayingSerial(show, response, model) {
     getFeedEntries(show.id, isFullLengthEpisode, function(entries, err) {
         if (err) {
-            // TODO
-            response.speak("Sorry, there was a problem.").send();
+            response.speak(speaker.get("Error")).send();
             return;
         }
         else if (!entries.length) {
-            // TODO
-            response.speak("Sorry, there was a problem.").send();
+            response.speak(speaker.get("Error")).send();
             return;
         }
 
@@ -510,7 +502,10 @@ function startPlayingSerial(show, response, model) {
         const nextIndex = (lastFinishedIndex + 1) % entries.length;
         const entry = entries[nextIndex];
 
-        // TODO: include introduction?
+        const intro = speaker.introduceSerial(show);
+        if (intro) {
+            response.speak(intro);
+        }
 
         // Alexa only plays HTTPS urls, feeds give us HTTP ones
         const contentUrl = entry.enclosure.url.replace('http://', 'https://');
@@ -531,15 +526,13 @@ function startPlayingSerial(show, response, model) {
 function startPlayingFavorite(show, response, model) {
     gimlet.getFavoritesMap(function(favoritesMap, err) {
         if (err || !favoritesMap) {
-            // TODO
-            response.speak("Sorry, there was a problem.").send();
+            response.speak(speaker.get("Error")).send();
             return;
         }
 
         const favs = favoritesMap[show.id];
         if (!favs) {
-            // TODO
-            response.speak("Sorry, there was a problem.").send();
+            response.speak(speaker.get("Error")).send();
             return;
         }
 
@@ -554,7 +547,8 @@ function startPlayingFavorite(show, response, model) {
 
         let fav = favs[nextIndex];
         if (!fav) {
-            // TODO
+            response.speak(speaker.get("Error")).send();
+            return;
         }
         const contentUrl = fav.content;
         

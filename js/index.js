@@ -4,7 +4,7 @@ var AlexaPlus = require('./alexaplus');
 var constants = require('./constants');
 var routers = require('./routers');
 
-// TODO: should this just be in dev?
+// Note: we fix this in code because development environment was breaking without it. shouldn't be necessary for productions
 var AWS = require('aws-sdk');
 AWS.config.update({region: 'us-east-1'});
 

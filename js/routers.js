@@ -1,3 +1,5 @@
+'use strict';
+
 const alexaPlus = require('./alexaPlus');
 var Alexa = require('alexa-sdk');
 var constants = require('./constants');
@@ -6,8 +8,6 @@ var actions = require('./actions.js')
 
 const states = constants.states;
 
-// TODO: use enums instead of strings for intent names
-// TODO: revisit this in a way that isn't organized by state-first
 var defaultIntentHandlers = alexaPlus.createRouter(states.DEFAULT, {
     /*
     *  All Intent Handlers for state : DEFAULT
@@ -56,10 +56,6 @@ var confirmIntentHandlers = alexaPlus.createRouter(states.QUESTION_CONFIRM, {
     'AMAZON.NoIntent': actions.resumeConfirmationNo,
 
     'AMAZON.HelpIntent': actions.help,
-
-    // TODO: include this?
-    // 'AMAZON.ResumeIntent': actions.resume,
-    // 'AMAZON.StartOverIntent': actions.startOver,
 
     'AMAZON.StopIntent': actions.cancel, // NOTE: In this case, treat this like a "cancel".
     'AMAZON.CancelIntent': actions.cancel,

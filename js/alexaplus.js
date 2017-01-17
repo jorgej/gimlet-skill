@@ -1,3 +1,5 @@
+'use strict';
+
 const Alexa = require('alexa-sdk');
 const RequestModel = require('./model');
 

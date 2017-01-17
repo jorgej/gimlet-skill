@@ -24,6 +24,8 @@ function getKeyedSpeech(key) {
         "WhatToDo":             audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/What+To+Do.mp3"),
 
         "Help":                 audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Help.mp3"),
+        "Help2":                "Help Level 2",
+        "Help3":                "Help Level 3",
         
         "LinkAccount":          audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Link+Account.mp3"),
         
@@ -37,6 +39,9 @@ function getKeyedSpeech(key) {
         "ExclusiveList":        audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Exclusive+List.mp3"),
 
         "UnsupportedOperation": audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Unsupported+Operation.mp3"),
+
+        // TODO: track
+        "Error":                "Sorry, I ran into a problem. Please try again later.",
 
         "_Unhandled":           audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Did+Not+Understand.mp3")
     };
@@ -103,7 +108,7 @@ function introduceMostRecent(show) {
         return audio(standardMostRecentUrl(urlSuffixMap[show.id]));
     }
     else {
-        // TODO: handle erroneous arg
+        // TODO: handle erroneous arg with Alexa speech?
         return "";
     }
 }
@@ -116,6 +121,11 @@ function introduceFavorite(show) {
         // TODO: handle erroneous arg
         return "";
     }
+}
+
+function introduceSerial(show) {
+    // TODO: track this?
+    return "";
 }
 
 function askToResume(show) {
