@@ -77,14 +77,14 @@ function help(event, response, model) {
 }
 
 function playLatest(event, response, model) {
-    const show = getShowFromSlotValue(event.request);
-    if (show) {
+    const showId = getShowFromSlotValue(event.request);
+    if (showId) {
         model.exitQuestionMode();
-        if (isSerial(show)) {
-            startPlayingSerial(show, response, model);
+        if (gimlet.isSerialShow(showId)) {
+            startPlayingSerial(showId, response, model);
         }
         else {
-            startPlayingMostRecent(show, response, model);
+            startPlayingMostRecent(showId, response, model);
         }
     }
     else {
@@ -111,10 +111,10 @@ function playExclusive(event, response, model) {
 }
 
 function playFavorite(event, response, model) {
-    const show = getShowFromSlotValue(event.request);    
-    if (show) {
+    const showId = getShowFromSlotValue(event.request);    
+    if (showId) {
         model.exitQuestionMode();
-        startPlayingFavorite(show, response, model);
+        startPlayingFavorite(showId, response, model);
     }
     else {
         let activeQuestion = constants.questions.FavoriteShowTitle;
@@ -230,7 +230,7 @@ function exclusiveChosen(event, response, model) {
             const title = exclusive.title || `Exclusive #${number}`;
 
             response.cardRenderer("Playing Members-Only Exclusive", 
-                        `Now playing ${exclusive.title}`);
+                        `Now playing ${title}`);
 
 
             response.send();
@@ -451,8 +451,8 @@ module.exports = actions;
  * Helpers
  */
 
-function startPlayingMostRecent(show, response, model) {
-    getFeedEntries(show.id, function(entries, err) {
+function startPlayingMostRecent(showId, response, model) {
+    getFeedEntries(showId, function(entries, err) {
         if (err) {
             response.speak(speaker.get("Error")).send();
             return;
@@ -470,20 +470,21 @@ function startPlayingMostRecent(show, response, model) {
         beginPlayback(response,
             model,
             contentUrl,
-            ContentToken.createLatest(show.id).toString()
+            ContentToken.createLatest(showId).toString()
         );
 
-        const intro = speaker.introduceMostRecent(show);
+        const intro = speaker.introduceMostRecent(showId);
+        const showTitle = gimlet.titleForShow(showId);
         response.speak(intro)
-                .cardRenderer(`Playing ${show.title}`, 
-                              `Now playing the most recent episode of ${show.title}, "${entry.title}"`);
+                .cardRenderer(`Playing ${showTitle}`, 
+                              `Now playing the most recent episode of ${showTitle}, "${entry.title}"`);
 
         response.send();
     });
 }
 
-function startPlayingSerial(show, response, model) {
-    getFeedEntries(show.id, isFullLengthEpisode, function(entries, err) {
+function startPlayingSerial(showId, response, model) {
+    getFeedEntries(showId, isFullLengthEpisode, function(entries, err) {
         if (err) {
             response.speak(speaker.get("Error")).send();
             return;
@@ -493,7 +494,7 @@ function startPlayingSerial(show, response, model) {
             return;
         }
 
-        const lastFinishedIndex = model.getLatestSerialFinished(show.id);
+        const lastFinishedIndex = model.getLatestSerialFinished(showId);
         if (lastFinishedIndex === undefined) {
             lastFinishedIndex = -1;
         }
@@ -502,7 +503,7 @@ function startPlayingSerial(show, response, model) {
         const nextIndex = (lastFinishedIndex + 1) % entries.length;
         const entry = entries[nextIndex];
 
-        const intro = speaker.introduceSerial(show);
+        const intro = speaker.introduceSerial(showId);
         if (intro) {
             response.speak(intro);
         }
@@ -513,31 +514,32 @@ function startPlayingSerial(show, response, model) {
         beginPlayback(response,
             model,
             contentUrl,
-            ContentToken.createSerial(show.id, nextIndex).toString()
+            ContentToken.createSerial(showId, nextIndex).toString()
         );
 
-        response.cardRenderer(`Playing ${show.title}`, 
-                              `Now playing the next episode of ${show.title}, "${entry.title}"`);
+        const showTitle = gimlet.titleForShow(showId);
+        response.cardRenderer(`Playing ${title}`, 
+                              `Now playing the next episode of ${title}, "${entry.title}"`);
 
         response.send();
     });
 }
 
-function startPlayingFavorite(show, response, model) {
+function startPlayingFavorite(showId, response, model) {
     gimlet.getFavoritesMap(function(favoritesMap, err) {
         if (err || !favoritesMap) {
             response.speak(speaker.get("Error")).send();
             return;
         }
 
-        const favs = favoritesMap[show.id];
+        const favs = favoritesMap[showId];
         if (!favs) {
             response.speak(speaker.get("Error")).send();
             return;
         }
 
         // get the favorite index that was last played (default to -1)
-        const lastPlayedIndex = model.getLatestFavoriteStart(show.id);
+        const lastPlayedIndex = model.getLatestFavoriteStart(showId);
         if (lastPlayedIndex === undefined) {
             lastPlayedIndex = -1;
         }
@@ -555,18 +557,19 @@ function startPlayingFavorite(show, response, model) {
         beginPlayback(response, 
             model,
             contentUrl,
-            ContentToken.createFavorite(show.id, nextIndex)
+            ContentToken.createFavorite(showId, nextIndex)
         );
 
-        const intro = speaker.introduceFavorite(show);
-        
-        let cardContent = `Now playing a staff-favorite episode of ${show.title}`
+        const intro = speaker.introduceFavorite(showId);
+        const showTitle = gimlet.titleForShow(showId);
+
+        let cardContent = `Now playing a staff-favorite episode of ${title}`
         if (fav.title) {
             cardContent += `, "${fav.title}"`
         }
 
         response.speak(intro)
-                .cardRenderer(`Playing ${show.title}`)
+                .cardRenderer(`Playing ${title}`, cardContent)
                 .send();
     });
 }
@@ -597,11 +600,7 @@ function urlToSSML(url) {
     return `<audio src="${url}" />`;
 }
 
-function isSerial(show) {
-    return show.id === 'homecoming' || show.id === 'crimetown';
-}
-
-// callback arguments: ([entry], err)
+]// callback arguments: ([entry], err)
 function getFeedEntries(showId, filterFn, callback) {
     gimlet.getFeedMap(function(feedMap, err) {
         if (err || !feedMap[showId]) {

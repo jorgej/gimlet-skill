@@ -103,9 +103,9 @@ const urlSuffixMap = {
     "undone": "Undone"
 }
 
-function introduceMostRecent(show) {
-    if (urlSuffixMap[show.id]) {
-        return audio(standardMostRecentUrl(urlSuffixMap[show.id]));
+function introduceMostRecent(showId) {
+    if (urlSuffixMap[showId]) {
+        return audio(standardMostRecentUrl(urlSuffixMap[showId]));
     }
     else {
         // TODO: handle erroneous arg with Alexa speech?
@@ -113,9 +113,9 @@ function introduceMostRecent(show) {
     }
 }
 
-function introduceFavorite(show) {
-    if (urlSuffixMap[show.id]) {
-        return audio(standardFavoriteUrl(urlSuffixMap[show.id]));
+function introduceFavorite(showId) {
+    if (urlSuffixMap[showId]) {
+        return audio(standardFavoriteUrl(urlSuffixMap[showId]));
     }
     else {
         // TODO: handle erroneous arg
@@ -123,15 +123,15 @@ function introduceFavorite(show) {
     }
 }
 
-function introduceSerial(show) {
+function introduceSerial(showId) {
     // TODO: track this?
     return "";
 }
 
-function askToResume(show) {
+function askToResume(showId) {
     let url;
-    if (show) {
-        url = `https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Confirm+Resume+${urlSuffixMap[show.id]}.mp3`
+    if (showId) {
+        url = `https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Confirm+Resume+${urlSuffixMap[showId]}.mp3`
     }
     else {
         url = "https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Confirm+Resume+Help.mp3";

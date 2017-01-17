@@ -3,22 +3,44 @@
 const _ = require("lodash");
 
 const shows = {
-    CrimeTown: makeShow("Crime Town"),
-    Heavyweight: makeShow("Heavyweight"),
-    Homecoming: makeShow("Homecoming"),
-    MysteryShow: makeShow("Mystery Show"),
-    ReplyAll: makeShow("Reply All"),
-    ScienceVs: makeShow("Science Vs"),
-    StartUp: makeShow("StartUp"),
-    Sampler: makeShow("Sampler"),
-    SurprisinglyAwesome: makeShow("Surprisingly Awesome"),
-    TwiceRemoved: makeShow("Twice Removed"),
-    Undone: makeShow("Undone")
+    CrimeTown: 'crimetown',
+    Heavyweight: 'heavyweight',
+    Homecoming: 'homecoming',
+    MysteryShow: 'mysteryshow',
+    ReplyAll: 'replyall',
+    ScienceVs: 'sciencevs',
+    StartUp: 'startup',
+    Sampler: 'sampler',
+    SurprisinglyAwesome: 'surprisinglyawesome',
+    TwiceRemoved: 'twiceremoved',
+    Undone: 'undone'
+};
+
+const titleMap = {
+    crimetown: 'Crime Town',
+    heavyweight: 'Heavyweight',
+    homecoming: 'Homecoming',
+    mysteryshow: 'Mystery Show',
+    replyall: 'Reply All',
+    sciencevs: 'Science Vs',
+    startup: 'StartUp',
+    sampler: 'Sampler',
+    surprisinglyawesome: 'Surprisingly Awesome',
+    twiceremoved: 'Twice Removed',
+    undone: 'Undone'
 };
 
 module.exports = {
     shows: shows,
     
+    titleForShow: function(showId) {
+        return titleMap[showId];
+    },
+
+    isSerialShow: function(showId) {
+        return showId === 'homecoming' || showId === 'crimetown';
+    },
+
     getFeedMap: function(callback) {
         fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/feeds.json', callback);
     },
@@ -36,24 +58,22 @@ module.exports = {
     },
 
     showMatchingSlotValue: function(slotValue) {
-        // first built a list of valid patterns we'll accept for each show
-        const showSlotPatterns = {};
-        
-        // by default, just use lowercase version of title
-        _.keys(shows).forEach(key => {
-            showSlotPatterns[key] = [shows[key].title.toLowerCase()];
+        // first build a list of valid patterns we'll accept for each show based on their English titles
+        const showIds = _.values(shows);
+        const showSlotPatterns = _.mapValues(titleMap, function(title) {
+            return [title.toLowerCase()];
         });
 
-        // explicitly add some common aliases
-        showSlotPatterns.Heavyweight = ["heavyweight", "heavy weight", "heavyweights", "heavy weights"];
-        showSlotPatterns.ScienceVs = ["science vs", "science versus"];
-        showSlotPatterns.StartUp = ["startup", "start up"];
+        // explicitly set some common aliases that differ from the title
+        showSlotPatterns["heavyweight"] = ["heavyweight", "heavy weight", "heavyweights", "heavy weights"];
+        showSlotPatterns["sciencevs"] = ["science vs", "science versus"];
+        showSlotPatterns["startup"] = ["startup", "start up"];
 
         const targetVal = slotValue.toLowerCase();
-        const matchingKey = _.keys(shows).find(key => {
-            return _.includes(showSlotPatterns[key], targetVal);
+        // look through the show Ids for a pattern that matches
+        return _.values(shows).find(showId => {
+            return _.includes(showSlotPatterns[showId], targetVal);
         });
-        return shows[matchingKey];
     }
 };
 
@@ -66,11 +86,4 @@ function fetchJSONData(url, callback) {
             callback(undefined, err);
         }
     });
-}
-
-function makeShow(title) {
-    return {
-        id: title.replace(/\s/g, '').toLowerCase(), 
-        title: title
-    }
 }
