@@ -231,8 +231,11 @@ function exclusiveChosen(event, response, model) {
                 ContentToken.createExclusive().toString()
             );
 
-            // TODO: send card
             const title = exclusive.title || `Exclusive #${number}`;
+
+            response.cardRenderer("Playing Members-Only Exclusive", 
+                        `Now playing ${exclusive.title}`);
+
 
             response.send();
         }
@@ -478,8 +481,8 @@ function startPlayingMostRecent(show, response, model) {
 
         const intro = speaker.introduceMostRecent(show);
         response.speak(intro)
-
-        // TODO: send card?
+                .cardRenderer(`Playing ${show.title}`, 
+                              `Now playing the most recent episode of ${show.title}, "${entry.title}"`);
 
         response.send();
     });
@@ -518,7 +521,8 @@ function startPlayingSerial(show, response, model) {
             ContentToken.createSerial(show.id, nextIndex).toString()
         );
 
-        // TODO: send card?
+        response.cardRenderer(`Playing ${show.title}`, 
+                              `Now playing the next episode of ${show.title}, "${entry.title}"`);
 
         response.send();
     });
@@ -561,12 +565,15 @@ function startPlayingFavorite(show, response, model) {
         );
 
         const intro = speaker.introduceFavorite(show);
-        response.speak(intro);
+        
+        let cardContent = `Now playing a staff-favorite episode of ${show.title}`
+        if (fav.title) {
+            cardContent += `, "${fav.title}"`
+        }
 
-        // TODO: send card?
-        const title = fav.title || "";
-
-        response.send();
+        response.speak(intro)
+                .cardRenderer(`Playing ${show.title}`)
+                .send();
     });
 }
 
