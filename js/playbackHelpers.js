@@ -105,16 +105,14 @@ function startPlayingSerial(response, showId, lastFinishedIndex, callback) {
 }
 
 function startPlayingFavorite(response, showId, favoriteIndex, callback) {
-    gimlet.getFavoritesMap(function(favoritesMap, err) {
-        if (err || !favoritesMap) {
-            callback(undefined, err || new Error("No favorites configured"));
-            return;
+    gimlet.getFavoritesMap().then(favoritesMap => {
+        if (!favoritesMap) {
+            throw new Error("No favorites configured");
         }
 
         const favs = favoritesMap[showId];
         if (!favs) {
-            callback(undefined, new Error(`No favorites configured for showId "${showId}"`));
-            return;
+            throw new Error(`No favorites configured for showId "${showId}"`);
         }
 
         // ensure index fits in range of avaialble favorites
@@ -122,8 +120,7 @@ function startPlayingFavorite(response, showId, favoriteIndex, callback) {
 
         let fav = favs[favoriteIndex];
         if (!fav) {
-            callback(undefined, new Error(`No favorites configured for showId "${showId}"`));
-            return;
+            throw new Error(`No favorites configured for showId "${showId}"`);
         }
 
         const contentUrl = fav.content;        
@@ -142,7 +139,8 @@ function startPlayingFavorite(response, showId, favoriteIndex, callback) {
 
         const newPbState = beginPlayback(response, contentUrl, token);
         callback(newPbState);
-    });
+    })
+    .catch(err => callback(undefined, err));
 }
 
 function isFullLengthEpisode(rssEntry) {
@@ -157,10 +155,9 @@ function isFullLengthEpisode(rssEntry) {
 
 // callback arguments: ([entry], err)
 function getFeedEntries(showId, filterFn, callback) {
-    gimlet.getFeedMap(function(feedMap, err) {
-        if (err || !feedMap[showId]) {
-            callback(undefined, new Error("Problem getting feed URL"));
-            return;
+    gimlet.getFeedMap().then(feedMap => {
+        if (!feedMap[showId]) {
+            throw new Error("Problem getting feed URL");
         }
         
         const url = feedMap[showId];
@@ -182,5 +179,6 @@ function getFeedEntries(showId, filterFn, callback) {
             }
             callback(entries);
         });
-    });
+    })
+    .catch(err => callback(undefined, err));
 }

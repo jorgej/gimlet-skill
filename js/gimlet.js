@@ -41,20 +41,20 @@ module.exports = {
         return showId === 'homecoming' || showId === 'crimetown';
     },
 
-    getFeedMap: function(callback) {
-        fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/feeds.json', callback);
+    getFeedMap: function() {
+        return fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/feeds.json');
     },
 
-    getFavoritesMap: function(callback) {
-        fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/favorites.json', callback);
+    getFavoritesMap: function() {
+        return fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/favorites.json');
     },
 
     getExclusives: function(callback) {
-        fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/exclusives.json', callback);
+        return fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/exclusives.json');
     },
 
     getMLIs: function(callback) {
-        fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/mattlieberis.json', callback);
+        return fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/mattliebris.json');
     },
 
     showMatchingSlotValue: function(slotValue) {
@@ -79,11 +79,22 @@ module.exports = {
 
 function fetchJSONData(url, callback) {
     const request = require("request");
-    request(url, (err, response, body)=> {
-        if (!err && response.statusCode === 200) {
-            callback(JSON.parse(body));
-        } else {
-            callback(undefined, err);
-        }
+    return new Promise((resolve, reject) => {
+        request(url, (err, response, body) => {
+            if (err) {
+                reject(err);
+            }
+            else if(response.statusCode !== 200) {
+                reject(new Error(`HTTP response code ${response.statusCode}`));
+            } 
+            else {
+                try {
+                    resolve(JSON.parse(body));
+                }
+                catch (e) {
+                    reject(e);
+                }
+            }
+        });
     });
 }

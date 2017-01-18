@@ -212,10 +212,9 @@ function listShows(event, response, model) {
 function whoIsMatt(event, response, model) {
     model.exitQuestionMode();
 
-    gimlet.getMLIs(function(urls, err) {
-        if (err || urls.length == 0) {
-            response.speak(speaker.get("Error")).send();
-            return;
+    gimlet.getMLIs().then(urls => {
+        if (!urls.length) {
+            throw new Error("No content URLs were found");
         }
 
         // pick random urls
@@ -224,7 +223,8 @@ function whoIsMatt(event, response, model) {
 
         const content = urlToSSML(url);
         response.speak(content).send();
-    });
+    })
+    .catch(speakAndSendError(response));
 }
 
 function cancel(event, response, model) {
@@ -268,14 +268,16 @@ function showTitleNamed(event, response, model) {
     // note: all branches above send response
 }
 
-function exclusiveChosen(event, response, model, handlerContext) {
+function exclusiveChosen(event, response, model) {
     const origArgs = arguments;
     const number = getNumberFromSlotValue(event.request);
 
-    gimlet.getExclusives(function(exclusives, err) {
-        if (err || !exclusives) {
-            response.speak(speaker.get("Error")).send();
-            return;
+    // while in current context, create a function we might use below
+    const deferToUnhandled = unhandledAction.bind(this, ...arguments);
+
+    gimlet.getExclusives().then(exclusives => {
+        if (!exclusives) {
+            throw new Error("No exclusive content found");
         }
 
         const exclusive = exclusives[number-1];
@@ -291,15 +293,13 @@ function exclusiveChosen(event, response, model, handlerContext) {
             const title = exclusive.title || `Exclusive #${number}`;
 
             response.cardRenderer("Playing Members-Only Exclusive", 
-                        `Now playing ${title}.`);
-
-            response.send();
+                        `Now playing ${title}.`)
+                    .send();
         }
         else {
-            // defer index out of range to unhandled
-            unhandledAction.apply(this, origArgs);
+            deferToUnhandled();
         }
-    });
+    }).catch(speakAndSendError(response));
 }
 
 function pause(event, response, model) {
@@ -506,4 +506,10 @@ function getNumberFromSlotValue(request) {
 
 function urlToSSML(url) {
     return `<audio src="${url}" />`;
+}
+
+function speakAndSendError(response) {
+    return function(err) {
+        response.speak(speaker.get("Error")).send();
+    };
 }
