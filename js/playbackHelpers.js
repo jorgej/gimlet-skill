@@ -44,11 +44,11 @@ function startPlayingMostRecent(response, showId, callback) {
             return;
         }
 
-        const entry = entries[0];//entries[entries.length-1];
         if (!entry) {
             callback(undefined, new Error(`No episodes found for showId "${showId}"`));
             return;
         }
+            const entry = entries[entries.length-1];
 
         // Alexa only plays HTTPS urls, feeds give us HTTP ones
         const contentUrl = entry.enclosure.url.replace('http://', 'https://');
