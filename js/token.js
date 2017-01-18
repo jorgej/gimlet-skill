@@ -1,6 +1,8 @@
 'use strict';
 
-function ContentToken(type, showId, info) {
+const _ = require("lodash");
+
+function ContentToken(type, showId, index) {
     this.type = type;
     this.showId = showId;
     this.index = index;
@@ -12,13 +14,13 @@ function ContentToken(type, showId, info) {
     this.isValidSerialToken = function() {
         return this.type === TOKEN_TYPE.SERIAL && 
                 !!this.showId && 
-                isNumber(this.index);
+                _.isNumber(this.index);
     };
 
     this.isValidFavoriteToken = function() {
         return this.type === TOKEN_TYPE.FAVORITE && 
                 !!this.showId && 
-                isNumber(this.index);
+                _.isNumber(this.index);
     };
 
     this.isValidLatestToken = function() {
@@ -36,7 +38,7 @@ ContentToken.fromString = function(str) {
         return new ContentToken(data.type, data.showId, data.index);
     }
     catch (e) {
-        return {};
+        return new ContentToken("", "", 0);
     }
 }
 
@@ -45,11 +47,11 @@ ContentToken.createSerial = function(showId, index) {
 }
 
 ContentToken.createFavorite = function(showId, index) {
-    return new ContentToken(TOKEN_TYPE.SERIAL, showId, index);
+    return new ContentToken(TOKEN_TYPE.FAVORITE, showId, index);
 }
 
 ContentToken.createLatest = function(showId) {
-    return new ContentToken(TOKEN_TYPE.SERIAL, showId, -1);
+    return new ContentToken(TOKEN_TYPE.LATEST, showId, -1);
 }
 
 ContentToken.createExclusive = function(index) {

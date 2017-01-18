@@ -41,7 +41,9 @@ module.exports = {
         return showId === 'homecoming' || showId === 'crimetown';
     },
 
-    getFeedEntries: getFeedEntries,
+    getFeedMap: function(callback) {
+        fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/feeds.json', callback);
+    },
 
     getFavoritesMap: function(callback) {
         fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/favorites.json', callback);
@@ -83,35 +85,5 @@ function fetchJSONData(url, callback) {
         } else {
             callback(undefined, err);
         }
-    });
-}
-
-// callback arguments: ([entry], err)
-function getFeedEntries(showId, filterFn, callback) {
-    fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/feeds.json', function(feedMap, err) {
-        if (err || !feedMap[showId]) {
-            callback(undefined, new Error("Problem getting feed URL"));
-            return;
-        }
-        
-        const url = feedMap[showId];
-
-        rss.parseURL(url, function(err, parsed) {
-            if (err) {
-                callback(undefined, new Error("Problem fetching RSS feed"));
-                return;
-            }
-
-            if (!filterFn) {
-                filterFn = function() { return true; }
-            }
-            
-            let entries = parsed.feed.entries.reverse();
-            entries.reverse();
-            if (filterFn) {
-                entries = entries.filter(filterFn);
-            }
-            callback(entries);
-        });
     });
 }

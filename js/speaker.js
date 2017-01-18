@@ -9,6 +9,7 @@ module.exports = {
     // speech that requires arguments
     introduceMostRecent: introduceMostRecent,
     introduceFavorite: introduceFavorite,
+    introduceSerial: introduceSerial,
     askToResume: askToResume
 };
 

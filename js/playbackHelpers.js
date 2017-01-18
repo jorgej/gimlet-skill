@@ -2,6 +2,9 @@
 
 const gimlet = require('./gimlet');
 const PlaybackState = require("./playbackState");
+const ContentToken = require('./token');
+const speaker = require("./speaker");
+const rss = require('rss-parser');
 
 module.exports = {
     beginPlayback: beginPlayback,
@@ -34,14 +37,14 @@ function resumePlayback(response, pbState) {
     return undefined;
 }
 
-function startPlayingMostRecent(showId, response, callback) {
-    gimlet.getFeedEntries(showId, function(entries, err) {
+function startPlayingMostRecent(response, showId, callback) {
+    getFeedEntries(showId, null, function(entries, err) {
         if (err) {
             callback(undefined, err);
             return;
         }
 
-        const entry = entries[entries.length-1];
+        const entry = entries[0];//entries[entries.length-1];
         if (!entry) {
             callback(undefined, new Error(`No episodes found for showId "${showId}"`));
             return;
@@ -56,7 +59,7 @@ function startPlayingMostRecent(showId, response, callback) {
         const showTitle = gimlet.titleForShow(showId);
         response.speak(intro)
                 .cardRenderer(`Playing ${showTitle}`, 
-                              `Now playing the most recent episode of ${showTitle}, "${entry.title}"`);
+                              `Now playing the most recent episode of ${showTitle}, "${entry.title}".`);
 
         const pbState = beginPlayback(response, contentUrl, token);
         callback(pbState);
@@ -64,7 +67,7 @@ function startPlayingMostRecent(showId, response, callback) {
 }
 
 function startPlayingSerial(response, showId, lastFinishedIndex, callback) {
-    gimlet.getFeedEntries(showId, isFullLengthEpisode, function(entries, err) {
+    getFeedEntries(showId, isFullLengthEpisode, function(entries, err) {
         if (err) {
             callback(undefined, err);
             return;
@@ -93,8 +96,8 @@ function startPlayingSerial(response, showId, lastFinishedIndex, callback) {
         const token = ContentToken.createSerial(showId, nextIndex);
         
         const showTitle = gimlet.titleForShow(showId);
-        response.cardRenderer(`Playing ${title}`, 
-                              `Now playing the next episode of ${title}, "${entry.title}"`);
+        response.cardRenderer(`Playing ${showTitle}`, 
+                              `Now playing the next episode of ${showTitle}, "${entry.title}".`);
 
         const pbState = beginPlayback(response, contentUrl, token);
         callback(pbState);
@@ -129,13 +132,13 @@ function startPlayingFavorite(response, showId, favoriteIndex, callback) {
         const intro = speaker.introduceFavorite(showId);
         const showTitle = gimlet.titleForShow(showId);
 
-        let cardContent = `Now playing a staff-favorite episode of ${title}`
+        let cardContent = `Now playing a staff-favorite episode of ${showTitle}.`
         if (fav.title) {
             cardContent += `, "${fav.title}"`
         }
 
         response.speak(intro)
-                .cardRenderer(`Playing ${title}`, cardContent);
+                .cardRenderer(`Playing ${showTitle}`, cardContent);
 
         const newPbState = beginPlayback(response, contentUrl, token);
         callback(newPbState);
@@ -150,4 +153,34 @@ function isFullLengthEpisode(rssEntry) {
     else {
         return durationInSec > 240;
     }
+}
+
+// callback arguments: ([entry], err)
+function getFeedEntries(showId, filterFn, callback) {
+    gimlet.getFeedMap(function(feedMap, err) {
+        if (err || !feedMap[showId]) {
+            callback(undefined, new Error("Problem getting feed URL"));
+            return;
+        }
+        
+        const url = feedMap[showId];
+
+        rss.parseURL(url, function(err, parsed) {
+            if (err) {
+                callback(undefined, new Error("Problem fetching RSS feed"));
+                return;
+            }
+
+            if (!filterFn) {
+                filterFn = function() { return true; }
+            }
+            
+            let entries = parsed.feed.entries;
+            entries.reverse();
+            if (filterFn) {
+                entries = entries.filter(filterFn);
+            }
+            callback(entries);
+        });
+    });
 }

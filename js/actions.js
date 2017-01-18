@@ -8,8 +8,6 @@ const playbackHelpers = require("./playbackHelpers");
 
 const ContentToken = require("./token");
 
-const rss = require("rss-parser");
-
 const appStates = constants.states;
 
 const actions = {
@@ -60,12 +58,13 @@ function launchRequest(event, response, model) {
     // we can assume we're in DEFAULT state
     let speech, reprompt;
 
-    const currentTrack = model.getPlaybackState().track;
-    if (currentTrack && !model.isPlaybackIdle()) {
-        // if there's a track already enqueued, and it's not idle 
-        //  (i.e. hasn't completed), we ask if the user want to continue playback
+    const pbState = model.getPlaybackState();
+    if (pbState.isValid() && !pbState.isFinished()) {
+        // if there's a track already enqueued, and it hasn't yet finished,
+        //  we ask if the user want to continue playback
         model.enterQuestionMode(constants.questions.ConfirmResumePlayback);
-        speech = speaker.askToResume(currentTrack.showId);
+        const contentToken = ContentToken.fromString(pbState.token);
+        speech = speaker.askToResume(contentToken.showId);
     }
     else {
         // ensure we're in DEFAULT (should be true, but this will force us out of 
@@ -136,7 +135,7 @@ function playLatest(event, response, model) {
         }
 
         if (gimlet.isSerialShow(showId)) {
-            const lastPlayedIndex = model.setLatestSerialFinished(showId);
+            const lastPlayedIndex = model.getLatestSerialFinished(showId);
             playbackHelpers.startPlayingSerial(response, showId, lastPlayedIndex, callback);
         }
         else {
@@ -229,19 +228,15 @@ function whoIsMatt(event, response, model) {
 }
 
 function cancel(event, response, model) {
-    // if we're not actively asking the user a question, and playback isn't idle, then
-    //  the audio player might be running. In that case, we need to silently stop it.
-    const audioPlayerMayHaveFocus = !model.getActiveQuestion() && !model.isPlaybackIdle()
-
-    // cut off any lingering question session
-    model.exitQuestionMode();
-
-    if (audioPlayerMayHaveFocus) {
+    model.exitQuestionMode();   // ensure we kill any active questioning
+    const pbState = model.getPlaybackState();
+    if (pbState.isValid() && !pbState.isFinished()) {
         response.audioPlayerStop();
     }
     else {
         response.speak(speaker.get("Goodbye"));
     }
+
     response.send();
 }
 
@@ -273,10 +268,9 @@ function showTitleNamed(event, response, model) {
     // note: all branches above send response
 }
 
-function exclusiveChosen(event, response, model) {
+function exclusiveChosen(event, response, model, handlerContext) {
+    const origArgs = arguments;
     const number = getNumberFromSlotValue(event.request);
-
-    playbackHelpers.startPlayingExclusive(exclusiveIndex)
 
     gimlet.getExclusives(function(exclusives, err) {
         if (err || !exclusives) {
@@ -297,13 +291,13 @@ function exclusiveChosen(event, response, model) {
             const title = exclusive.title || `Exclusive #${number}`;
 
             response.cardRenderer("Playing Members-Only Exclusive", 
-                        `Now playing ${title}`);
+                        `Now playing ${title}.`);
 
             response.send();
         }
         else {
             // defer index out of range to unhandled
-            unhandledAction.apply(this, arguments);
+            unhandledAction.apply(this, origArgs);
         }
     });
 }
@@ -334,7 +328,8 @@ function startOver(event, response, model) {
     }
     else {
         // otherwise, there was no audio there to restart
-        response.speak(speaker.get("EmptyQueueMessage"));
+        response.speak(speaker.get("EmptyQueueMessage"))
+                .listen(speaker.get("WhatToDo"));
     }
     response.send();
 }
@@ -410,7 +405,7 @@ function playbackFinished(event, response, model) {
         response.exit(true);
     }
 }
-
+// 1525991
 function playbackFailed(event, response) {
     response.exit(false);;
 }
@@ -453,12 +448,15 @@ function helpTrackingDecorator(innerFn) {
     return function(event, response, model) {
         if (event.request.type === "IntentRequest") {
             // only mess with the help counter if it's an intent request
-            const helpCount = model.getAttr("helpCtr") || 0;
+            let helpCount = model.getAttr("helpCtr") || 0;
             const intentName = event.request.intent && event.request.intent.name;
             if (intentName === "AMAZON.HelpIntent") {
                 helpCount++;
             }
-            model.setAttr("helpCtr") = helpCount;
+            else {
+                helpCount = 0;
+            }
+            model.setAttr("helpCtr", helpCount);
         }
         return innerFn.apply(this, arguments);
     };
@@ -466,9 +464,10 @@ function helpTrackingDecorator(innerFn) {
 
 function authDecorator(innerFn) {
     return function(event, response, model) {
+        const origArgs = arguments;
         authHelper.isSessionAuthenticated(event.session, function(auth) {
             if (auth) {
-                innerFn.apply(this, arguments);
+                innerFn.apply(this, origArgs);
             }
             else {
                 response.speak(prompt)

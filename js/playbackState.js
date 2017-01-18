@@ -10,12 +10,12 @@ function PlaybackState(url, token, offsetInMilliseconds) {
     }
 
     this.markFinished = function() {
-        this.offset = Infinity;
+        this.offset = null;
         return this;
     }
 
     this.isFinished = function() {
-        return this.offset === Infinity;
+        return this.offset === null;
     }
 
     this.isValid = function() {
@@ -29,7 +29,7 @@ PlaybackState.fromString = function(str) {
         return new PlaybackState(data.url, data.token, data.offset);
     }
     catch (e) {
-        return {};
+        return new PlaybackState();
     }
 }
 

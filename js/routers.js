@@ -89,7 +89,7 @@ var remoteControllerHandlers = alexaPlus.createRouter(states.DEFAULT, {
     }
 });
 
-// TODO: don't we want this for all states?
+// TODO: probably want to extend so they work for all states
 var audioEventHandlers = alexaPlus.createRouter(states.DEFAULT, {
     'PlaybackStarted': actions.playbackStarted,
     'PlaybackStopped': actions.playbackStopped,

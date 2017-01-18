@@ -8,10 +8,10 @@ const RequestModel = require('./model');
 function alexaClient(event, context, callback) {
     const underlyingHandler = Alexa.handler(event, context, callback);
 
-    // ensure initial interaction with the skill is in default state 
+    // ensure defalt value of application state is our custom DEFAULT value
     // (this gets around a bug mentioned in `constants.js`)
-    if (!underlyingHandler.attributes[Alexa.StateString]) {
-        underlyingHandler.attributes[Alexa.StateString] = constants.states.DEFAULT;
+    if (!underlyingHandler._event.session.attributes[Alexa.StateString]) {
+        underlyingHandler._event.session.attributes[Alexa.StateString] = constants.states.DEFAULT;
     }
 
     Object.defineProperty(underlyingHandler, 'registerRouters', {
@@ -49,7 +49,7 @@ function registerRouters() {
             const requestHandler = router.requestHandlers[eventName];
             alexaSDKEventHandlers[eventName] = function() {
                 // here, "this" is the "handlerContext" defined in alexa.js
-                [event, response, model] = extractRequestArgs.apply(this);
+                const [event, response, model] = extractRequestArgs.apply(this);
                 requestHandler(event, response, model, this);
             };
         }
