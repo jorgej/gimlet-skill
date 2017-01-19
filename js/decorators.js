@@ -1,4 +1,7 @@
 const authHelper = require("./authHelper");
+const constants = require("./constants");
+
+const VoiceInsights = require('voice-insights-sdk');
 
 module.exports = {
     helpTracking: helpTrackingDecorator,
@@ -44,7 +47,9 @@ function authDecorator(innerFn) {
 function analyticsDecorator(innerFn) {
     const resumeAction = innerFn.bind(this, ...arguments);
     return function(event, response, model) {
-        // TODO
-        return resumeAction();
+        const intent = event.request.intent;
+        VoiceInsights.track(intent.name, intent.slots, null, (error, response) => {
+            return resumeAction();
+        });
     };
 }

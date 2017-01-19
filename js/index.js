@@ -4,6 +4,8 @@ var AlexaPlus = require('./alexaplus');
 var constants = require('./constants');
 var routers = require('./routers');
 
+const VoiceInsights = require('voice-insights-sdk');
+
 // Note: we fix this in code because development environment was breaking without it. shouldn't be necessary for productions
 var AWS = require('aws-sdk');
 AWS.config.update({region: 'us-east-1'});
@@ -11,10 +13,11 @@ AWS.config.update({region: 'us-east-1'});
 exports.handler = function(event, context, callback){
     var alexaPlus = AlexaPlus.client(event, context);
 
-    // in addition to all this stuff, it creates a state instance
-
     alexaPlus.appId = constants.appId;
     alexaPlus.dynamoDBTableName = constants.dynamoDBTableName;
+
+    // initialize analytics
+    VoiceInsights.initialize(event.session, constants.voiceInsightsToken);
 
     // routers returns an array, so we use apply to pass that on
     alexaPlus.registerRouters.apply(alexaPlus, routers);

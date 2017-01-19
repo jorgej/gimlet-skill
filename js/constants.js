@@ -5,6 +5,8 @@ module.exports = Object.freeze({
     appId : 'amzn1.ask.skill.fb7cbf45-1f45-4307-b2ce-b36bc871625f',
     
     dynamoDBTableName : 'GimletMedia',
+
+    voiceInsightsToken : 'a773b2f0-ddb7-11a6-320b-0e2486876586',
     
     // Note: Some Amazon example code uses '' for the DEFAULT state as a way to coerce the user's 
     //  first interaction with the skill to be the DEFAULT state, but this won't work properly. That
