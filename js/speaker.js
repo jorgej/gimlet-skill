@@ -39,6 +39,7 @@ function getKeyedSpeech(key) {
         "ExclusivePreamble":    audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Exclusive+Preamble.mp3"),
         "ExclusiveList":        audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Exclusive+List.mp3"),
 
+        "NextUnsupported":      "Sorry, I can only perform this operation on serialized shows",
         "UnsupportedOperation": audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Unsupported+Operation.mp3"),
 
         // TODO: track
