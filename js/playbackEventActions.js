@@ -21,7 +21,7 @@ function playbackStarted(event, response, model) {
         model.setLatestFavoriteStart(token.showId, token.index);
     }
 
-    response.exit(true);
+    response.sendNil({saveState: true});
 }
 
 function playbackStopped(event, response, model) {
@@ -31,12 +31,12 @@ function playbackStopped(event, response, model) {
         pbState.offset = offset;
         model.setPlaybackState(pbState);
     }
-    response.exit(true);
+    response.sendNil({saveState: true});
 }
 
 function playbackNearlyFinished(event, response, model) {
     // nothing to do here -- we don't support queuing in this version
-    response.exit(false);
+    response.sendNil({saveState: false});
 }
 
 function playbackFinished(event, response, model) {
@@ -52,10 +52,10 @@ function playbackFinished(event, response, model) {
     const token = ContentToken.fromString(event.request.token);
     if (token.isValidSerialToken()) {
         model.setLatestSerialFinished(token.showId, token.index);
-        response.exit(true);
+        response.sendNil({saveState: true});
     }
 }
 
 function playbackFailed(event, response) {
-    response.exit(false);;
+    response.sendNil({saveState: false});
 }

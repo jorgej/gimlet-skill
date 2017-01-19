@@ -104,11 +104,11 @@ var remoteEventHandlers = alexaPlus.createRouter(states.DEFAULT, {
     'PauseCommandIssued': defaultActions.pause,
     'NextCommandIssued': function() {
         // don't want to react at all to this command
-        response.exit(false);
+        response.sendNil({saveState: false});
     },
     'PreviousCommandIssued': function() {
         // don't want to react at all to this command
-        response.exit(false);
+        response.sendNil({saveState: false});
     }
 });
 

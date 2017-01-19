@@ -153,5 +153,5 @@ function unhandledAction(event, response, model) {
 
 function sessionEnded(event, response, model) {
     model.exitQuestionMode();
-    response.exit(true);
+    response.sendNil({saveState: true});
 }

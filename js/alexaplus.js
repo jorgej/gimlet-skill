@@ -74,9 +74,9 @@ function extractRequestArgs() {
             handlerContext.emit(":responseReady");
             return this;
         },
-        exit: function(saveState) {
+        sendNil: function(options={}) {        // options: saveState:Boolean
             // ends execution instead of sending alexa response
-            if (saveState) {
+            if (options.saveState) {
                 handlerContext.emit(":saveState", true);
             }
             else {
