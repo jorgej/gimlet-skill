@@ -55,7 +55,9 @@ function help(event, response, model) {
 }
 
 function cancel(event, response, model) {
-    response.speak(speaker.get("Goodbye"))
+    const speech = speaker.get("WhatToDo");
+    response.speak(speech)
+            .listen(speech)
             .send();
 }
 

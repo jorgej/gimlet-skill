@@ -24,6 +24,9 @@ var defaultIntentHandlers = alexaPlus.createRouter(states.DEFAULT, {
     'ListShows': defaultActions.listShows,
     'ShowTitleIntent': defaultActions.showTitleNamed,
 
+    'Nevermind': defaultActions.cancel,
+    'NeedAssistance': defaultActions.help,
+
     'AMAZON.HelpIntent': defaultActions.help,
 
     'AMAZON.PauseIntent': defaultActions.pause,
@@ -50,11 +53,13 @@ var askShowDialogueHandlers = alexaPlus.createRouter(states.ASK_FOR_SHOW, {
     'ListShows': dialogueActions.listShows,
     'ShowTitleIntent': dialogueActions.showTitleNamed,
     
+    'Nevermind': dialogueActions.cancel,
+    'NeedAssistance': dialogueActions.help,
+
+    'AMAZON.StopIntent': dialogueActions.cancel,
+    'AMAZON.CancelIntent': dialogueActions.cancel,    
     'AMAZON.HelpIntent': dialogueActions.help,
     
-    'AMAZON.StopIntent': dialogueActions.cancel,
-    'AMAZON.CancelIntent': dialogueActions.cancel,
-
     'LaunchRequest': dialogueActions.launchRequest,
     'Unhandled': dialogueActions.unhandledAction,
 
@@ -68,10 +73,12 @@ var confirmDialogueHandlers = alexaPlus.createRouter(states.QUESTION_CONFIRM, {
     'AMAZON.YesIntent': dialogueActions.resumeConfirmationYes,
     'AMAZON.NoIntent': dialogueActions.resumeConfirmationNo,
 
-    'AMAZON.HelpIntent': dialogueActions.help,
+    'Nevermind': dialogueActions.cancel,
+    'NeedAssistance': dialogueActions.help,
 
     'AMAZON.StopIntent': dialogueActions.cancel, // NOTE: In this case, treat this like a "cancel".
     'AMAZON.CancelIntent': dialogueActions.cancel,
+    'AMAZON.HelpIntent': dialogueActions.help,
 
     'LaunchRequest': dialogueActions.launchRequest,
     'SessionEndedRequest': dialogueActions.sessionEnded,
@@ -84,10 +91,13 @@ confirmDialogueHandlers.decorateHandlers(decorators.analytics);
 var whichExclusiveDialogueHandlers = alexaPlus.createRouter(states.QUESTION_EXCLUSIVE_NUMBER, {
     'NumberIntent': dialogueActions.exclusiveChosen,
 
-    'AMAZON.HelpIntent': dialogueActions.help,
+    'Nevermind': dialogueActions.cancel,
+    'NeedAssistance': dialogueActions.help,
+
     'AMAZON.StopIntent': dialogueActions.cancel, // NOTE: In this case, treat this like a "cancel".
     'AMAZON.CancelIntent': dialogueActions.cancel,
-
+    'AMAZON.HelpIntent': dialogueActions.help,
+    
     'LaunchRequest': dialogueActions.launchRequest,
     'SessionEndedRequest': dialogueActions.sessionEnded,
     'Unhandled': dialogueActions.unhandledAction
