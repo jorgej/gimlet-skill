@@ -1,6 +1,8 @@
+
+const _ = require("lodash");
+
 const authHelper = require("./authHelper");
 const constants = require("./constants");
-
 const VoiceInsights = require('voice-insights-sdk');
 
 module.exports = {
@@ -10,8 +12,8 @@ module.exports = {
 };
 
 function helpTrackingDecorator(innerFn) {
-    const resumeAction = innerFn.bind(this, ...arguments);
     return function(event, response, model) {
+        const resumeAction = innerFn.bind(this, ...arguments);
         if (event.request.type === "IntentRequest") {
             // only mess with the help counter if it's an intent request
             let helpCount = model.getAttr("helpCtr") || 0;
@@ -45,11 +47,27 @@ function authDecorator(innerFn) {
 }
 
 function analyticsDecorator(innerFn) {
-    const resumeAction = innerFn.bind(this, ...arguments);
     return function(event, response, model) {
-        const intent = event.request.intent;
-        VoiceInsights.track(intent.name, intent.slots, null, (error, response) => {
+        const resumeAction = innerFn.bind(this, ...arguments);
+        let eventName, eventParams;
+        if (event.request.type === 'LaunchRequest') {
+            eventName = 'LaunchRequest'
+            eventParams = {}
+        }
+        else if (event.request.type === 'IntentRequest') {
+            eventName = event.request.intent.name;
+            eventParams = _.pickBy(event.request.intent.slots, function(slot) {
+                return _.has(slot, 'value');
+            });
+        }
+
+        if (eventName) {
+            VoiceInsights.track(eventName, eventParams, null, (error, response) => {
+                return resumeAction();
+            });
+        }
+        else {
             return resumeAction();
-        });
+        }
     };
 }

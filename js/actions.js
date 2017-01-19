@@ -134,7 +134,7 @@ function playLatest(event, response, model) {
         model.exitQuestionMode();
 
         if (gimlet.isSerialShow(showId)) {
-            const lastPlayedIndex = model.getLatestSerialFinished(showId);
+            let lastPlayedIndex = model.getLatestSerialFinished(showId);
             if (lastPlayedIndex === undefined) {
                 lastPlayedIndex = -1
             }
@@ -183,7 +183,7 @@ function playFavorite(event, response, model) {
     }
 
     model.exitQuestionMode();
-    const lastPlayedIndex = model.getLatestFavoriteStart(showId);
+    let lastPlayedIndex = model.getLatestFavoriteStart(showId);
     if (lastPlayedIndex === undefined) {
         lastPlayedIndex = -1;
     }
@@ -468,7 +468,7 @@ function speakAndSendError(response) {
     };
 }
 
-function decorateActions(decorator, actions) {
+function decorateActions(actions, decorator) {
     // add help tracking "middleware" to all actions
     for(let key in actions) {
         actions[key] = decorator(actions[key]);
