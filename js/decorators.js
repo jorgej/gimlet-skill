@@ -1,3 +1,5 @@
+const authHelper = require("./authHelper");
+
 module.exports = {
     helpTracking: helpTrackingDecorator,
     auth: authDecorator,

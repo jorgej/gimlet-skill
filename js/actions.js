@@ -3,11 +3,10 @@
 const speaker = require("./speaker");
 const constants = require("./constants");
 const gimlet = require("./gimlet");
-const authHelper = require("./authHelper");
 const contentHelper = require("./contentHelper");
 const decorators = require("./decorators");
 const ContentToken = require("./token");
-
+const PlaybackState = require("./playbackState");
 const appStates = constants.states;
 
 const actions = {
@@ -273,16 +272,15 @@ function exclusiveChosen(event, response, model) {
         if (exclusive) {
             model.exitQuestionMode();
 
-            const token = ContentToken.createExclusive(showId, episode.index);
-
             const title = exclusive.title || `Exclusive #${number}`
             const cardTitle = "Playing Members-Only Exclusive";
             const cardContent = `Now playing ${title}.`;
 
             const contentUrl = exclusive.content;
+            const token = ContentToken.createExclusive(contentUrl, number-1);
             
             response.cardRenderer(cardTitle, cardContent)
-                    .audioPlayerPlay('REPLACE_ALL', contentUrl, token, null, 0)
+                    .audioPlayerPlay('REPLACE_ALL', contentUrl, token.toString(), null, 0)
                     .send();
         }
         else {
@@ -305,7 +303,7 @@ function resume(event, response, model) {
     model.exitQuestionMode();
     const pbState = model.getPlaybackState();
     if (pbState.isValid() && !pbState.isFinished()) {
-        response.audioPlayerPlay('REPLACE_ALL', pbState.url, pbState.token, null, pbState.offset);
+        response.audioPlayerPlay('REPLACE_ALL', pbState.url, pbState.token.toString(), null, pbState.offset);
     }
     response.send();
 }
@@ -314,7 +312,7 @@ function startOver(event, response, model) {
     model.exitQuestionMode();
     const pbState = model.getPlaybackState();
     if (pbState.isValid()) {
-        response.audioPlayerPlay('REPLACE_ALL', pbState.url, pbState.token, null, 0);
+        response.audioPlayerPlay('REPLACE_ALL', pbState.url, pbState.token.toString(), null, 0);
     }
     else {
         // otherwise, there was no audio there to restart
@@ -357,11 +355,16 @@ function sessionEnded(event, response, model) {
 function playbackStarted(event, response, model) {
     // if this track is a favorite, we want to note it in the user's history
     const token = ContentToken.fromString(event.request.token);
+
+    if (token.url) {
+        model.setPlaybackState(new PlaybackState(token.url, token, 0));
+    }
+
     if (token.isValidFavoriteToken()) {
         model.setLatestFavoriteStart(token.showId, token.index);
-        response.exit(true);
     }
-    response.exit(false);
+
+    response.exit(true);
 }
 
 function playbackStopped(event, response, model) {
@@ -481,14 +484,14 @@ function playLatestHelper(response, model, showId) {
         const cardTitle = `Playing ${showTitle}`;
         const cardContent = `Now playing the most recent episode of ${showTitle}, "${episode.title}".`
 
-        const token = ContentToken.createLatest(showId);
+        const token = ContentToken.createLatest(episode.url, showId);
 
         if (intro) {
             response.speak(intro);
         }
 
         response.cardRenderer(cardTitle, cardContent)
-                .audioPlayerPlay('REPLACE_ALL', episode.url, token, null, 0)
+                .audioPlayerPlay('REPLACE_ALL', episode.url, token.toString(), null, 0)
                 .send();
     })
     .catch(speakAndSendError(response));
@@ -503,14 +506,14 @@ function playSerialHelper(response, model, showId, epIndex) {
             const cardTitle = `Playing ${showTitle}`;
             const cardContent = `Now playing the next episode of ${showTitle}, "${episode.title}".`
 
-            const token = ContentToken.createSerial(showId, episode.index);
+            const token = ContentToken.createSerial(episode.url, showId, episode.index);
 
             if (intro) {
                 response.speak(intro);
             }
 
             response.cardRenderer(cardTitle, cardContent)
-                    .audioPlayerPlay('REPLACE_ALL', episode.url, token, null, 0)
+                    .audioPlayerPlay('REPLACE_ALL', episode.url, token.toString(), null, 0)
                     .send();
         })
         .catch(speakAndSendError(response));
@@ -519,7 +522,7 @@ function playSerialHelper(response, model, showId, epIndex) {
 function playFavoriteHelper(response, model, showId, favIndex) {
     contentHelper.fetchFavoriteEpisode(response, showId, favIndex)
         .then(episode => {
-            const token = ContentToken.createFavorite(showId, episode.index);
+            const token = ContentToken.createFavorite(episode.url, showId, episode.index);
 
             const intro = speaker.introduceFavorite(showId);
             const showTitle = gimlet.titleForShow(showId);
@@ -531,7 +534,7 @@ function playFavoriteHelper(response, model, showId, favIndex) {
 
             response.speak(intro)
                     .cardRenderer(cardTitle, cardContent)
-                    .audioPlayerPlay('REPLACE_ALL', episode.url, token, null, 0)
+                    .audioPlayerPlay('REPLACE_ALL', episode.url, token.toString(), null, 0)
                     .send();
         })
         .catch(speakAndSendError(response));
