@@ -7,7 +7,7 @@ module.exports = {
     fetchLatestEpisode: fetchLatestEpisode,
     fetchSerialEpisode: fetchSerialEpisode,
     fetchFavoriteEpisode: fetchFavoriteEpisode
-}
+};
 
 function fetchLatestEpisode(response, showId) {
     return getFeedEntries(showId).then(entries => {

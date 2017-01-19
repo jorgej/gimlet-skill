@@ -5,8 +5,6 @@ const constants = require('./constants');
 const questions = constants.questions;
 const appStates = constants.states;
 
-const PlaybackState = require('./playbackState');
-
 function RequestModel(handlerContext) {
     this.underlyingHandlerContext = handlerContext;
 
@@ -33,11 +31,11 @@ function RequestModel(handlerContext) {
 
     // Playback operations
     this.setPlaybackState = function(pbState) {
-        this.underlyingHandlerContext.attributes["pb"] = pbState.toString();
+        this.underlyingHandlerContext.attributes["pb"] = pbState;
     }
 
     this.getPlaybackState = function() {
-        return PlaybackState.fromString(this.underlyingHandlerContext.attributes["pb"]);
+        return this.underlyingHandlerContext.attributes["pb"];
     }
 
     this.clearPlaybackState = function() {

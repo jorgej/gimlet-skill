@@ -2,73 +2,41 @@
 
 const _ = require("lodash");
 
-function ContentToken(type, url, showId, index) {
-    this.type = type;
-    this.url = url;
-    this.showId = showId;
-    this.index = index;
+module.exports = {
+    TYPES: TYPES,
+    
+    createToken: createToken,
+    createTokenFromString: createTokenFromString,
+    isValid: isValid
+};
 
-    this.toString = function() {
-        return JSON.stringify(this);
-    }
-
-    this.isValidSerialToken = function() {
-        return this.type === TOKEN_TYPE.SERIAL && 
-                !!this.url &&
-                !!this.showId && 
-                _.isNumber(this.index);
+function createToken(type, url, info={}) {
+    return {
+        type: type,
+        url: url,
+        info: info
     };
-
-    this.isValidFavoriteToken = function() {
-        return this.type === TOKEN_TYPE.FAVORITE && 
-                !!this.url &&
-                !!this.showId && 
-                _.isNumber(this.index);
-    };
-
-    this.isValidLatestToken = function() {
-        return this.type === TOKEN_TYPE.LATEST && 
-                !!this.url &&
-                !!this.showId;
-    }
-
-    this.isValidExclusiveToken = function() {
-        return this.type === TOKEN_TYPE.EXCLUSIVE &&
-                !!this.url;
-    }
 }
 
-ContentToken.fromString = function(str) {
+function createTokenFromString(str) {
     try {
         const data = JSON.parse(str);
-        return new ContentToken(data.type, data.url, data.showId, data.index);
+        return createToken(data.type, data.url, data.info);
     }
     catch (e) {
-        return new ContentToken("", "", 0);
+        return {};
     }
 }
 
-ContentToken.createSerial = function(url, showId, index) {
-    return new ContentToken(TOKEN_TYPE.SERIAL, url, showId, index);
+function isValid(token) {
+    return !_.isEmpty(token) && 
+        _.includes(_.keys(TYPES), token.type) &&
+        !!token.url;
 }
 
-ContentToken.createFavorite = function(url, showId, index) {
-    return new ContentToken(TOKEN_TYPE.FAVORITE, url, showId, index);
-}
-
-ContentToken.createLatest = function(url, showId) {
-    return new ContentToken(TOKEN_TYPE.LATEST, url, showId, -1);
-}
-
-ContentToken.createExclusive = function(url, index) {
-    return new ContentToken(TOKEN_TYPE.EXCLUSIVE, url, undefined, index);
-}
-
-const TOKEN_TYPE = {
+const TYPES = {
     SERIAL: 'SERIAL',
     FAVORITE: 'FAVORITE',
     LATEST: 'LATEST',
     EXCLUSIVE: 'EXCLUSIVE'
-}
-
-module.exports = ContentToken;
+};

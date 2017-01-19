@@ -4,7 +4,6 @@ const utils = require('./utils');
 const speaker = require('./speaker');
 const defaultStateActions = require('./defaultActions');
 const gimlet = require("./gimlet");
-
 const ContentToken = require("./token");
 
 const actions = {
@@ -22,7 +21,7 @@ const actions = {
 
     sessionEnded: sessionEnded,
     unhandledAction: unhandledAction
-}
+};
 
 module.exports = actions;
 
@@ -44,7 +43,8 @@ function help(event, response, model) {
         model.clearAttr("helpCtr");
     }
     else {
-        // TODO
+        // shouldn't reach this point
+        speech = speaker.get("Help");
     }
 
     response.speak(speech);
@@ -111,11 +111,14 @@ function exclusiveChosen(event, response, model) {
             const cardTitle = "Playing Members-Only Exclusive";
             const cardContent = `Now playing ${title}.`;
 
-            const contentUrl = exclusive.content;
-            const token = ContentToken.createExclusive(contentUrl, number-1);
+            const token = ContentToken.createToken(
+                ContentToken.TYPES.EXCLUSIVE,
+                exclusive.content,
+                {index: number-1}
+            );
             
             response.cardRenderer(cardTitle, cardContent)
-                    .audioPlayerPlay('REPLACE_ALL', contentUrl, token.toString(), null, 0)
+                    .audioPlayerPlay('REPLACE_ALL', exclusive.content, token.toString(), null, 0)
                     .send();
         }
         else {

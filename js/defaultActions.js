@@ -7,6 +7,7 @@ const contentHelper = require("./contentHelper");
 const ContentToken = require("./token");
 const utils = require('./utils');
 const _ = require('lodash');
+const playbackState = require("./playbackState");
 
 const appStates = constants.states;
 
@@ -46,13 +47,12 @@ function launchRequest(event, response, model) {
     // we can assume we're in DEFAULT state
     let speech, reprompt;
 
-    const pbState = model.getPlaybackState();
-    if (pbState.isValid() && !pbState.isFinished()) {
+    const pb = model.getPlaybackState();
+    if (playbackState.isValid(pb) && !playbackState.isFinished(pb)) {
         // if there's a track already enqueued, and it hasn't yet finished,
         //  we ask if the user want to continue playback
         model.enterQuestionMode(constants.questions.ConfirmResumePlayback);
-        const contentToken = ContentToken.fromString(pbState.token);
-        speech = speaker.askToResume(pbState.token.showId);
+        speech = speaker.askToResume(pb.token.showId);
     }
     else {
         if (model.getAttr('returningUser')) {
@@ -94,8 +94,8 @@ function help(event, response, model) {
 }
 
 function cancel(event, response, model) {
-    const pbState = model.getPlaybackState();
-    if (pbState.isValid() && !pbState.isFinished()) {
+    const pb = model.getPlaybackState();
+    if (playbackState.isValid(pb) && !playbackState.isFinished(pb)) {
         response.audioPlayerStop();
     }
     else {
@@ -201,17 +201,17 @@ function stop(event, response, model) {
 }
 
 function resume(event, response, model) {
-    const pbState = model.getPlaybackState();
-    if (pbState.isValid() && !pbState.isFinished()) {
-        response.audioPlayerPlay('REPLACE_ALL', pbState.url, pbState.token.toString(), null, pbState.offset);
+    const pb = model.getPlaybackState();
+    if (playbackState.isValid(pb) && !playbackState.isFinished(pb)) {
+        response.audioPlayerPlay('REPLACE_ALL', pb.token.url, pb.token.toString(), null, pb.offset);
     }
     response.send();
 }
 
 function startOver(event, response, model) {
-    const pbState = model.getPlaybackState();
-    if (pbState.isValid()) {
-        response.audioPlayerPlay('REPLACE_ALL', pbState.url, pbState.token.toString(), null, 0);
+    const pb = model.getPlaybackState();
+    if (playbackState.isValid(pb)) {
+        response.audioPlayerPlay('REPLACE_ALL', pb.token.url, pb.token.toString(), null, 0);
     }
     else {
         // otherwise, there was no audio there to restart
@@ -269,7 +269,11 @@ function playLatestHelper(response, model, showId) {
         const cardTitle = `Playing ${showTitle}`;
         const cardContent = `Now playing the most recent episode of ${showTitle}, "${episode.title}".`
 
-        const token = ContentToken.createLatest(episode.url, showId);
+        const token = ContentToken.createToken(
+            ContentToken.TYPES.LATEST,
+            episode.url,
+            {showId: showId}
+        );
 
         if (intro) {
             response.speak(intro);
@@ -291,7 +295,11 @@ function playSerialHelper(response, model, showId, epIndex) {
             const cardTitle = `Playing ${showTitle}`;
             const cardContent = `Now playing the next episode of ${showTitle}, "${episode.title}".`
 
-            const token = ContentToken.createSerial(episode.url, showId, episode.index);
+            const token = ContentToken.createToken(
+                ContentToken.TYPES.SERIAL,
+                episode.url, 
+                {showId: showId, index: episode.index}
+            );
 
             if (intro) {
                 response.speak(intro);
@@ -307,7 +315,11 @@ function playSerialHelper(response, model, showId, epIndex) {
 function playFavoriteHelper(response, model, showId, favIndex) {
     contentHelper.fetchFavoriteEpisode(response, showId, favIndex)
         .then(episode => {
-            const token = ContentToken.createFavorite(episode.url, showId, episode.index);
+            const token = ContentToken.createToken(
+                ContentToken.TYPES.FAVORITE,
+                episode.url,
+                {showId: showId, index: episode.index}
+            );
 
             const intro = speaker.introduceFavorite(showId);
             const showTitle = gimlet.titleForShow(showId);

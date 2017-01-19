@@ -2,34 +2,6 @@
 
 const _ = require("lodash");
 
-const shows = {
-    CrimeTown: 'crimetown',
-    Heavyweight: 'heavyweight',
-    Homecoming: 'homecoming',
-    MysteryShow: 'mysteryshow',
-    ReplyAll: 'replyall',
-    ScienceVs: 'sciencevs',
-    StartUp: 'startup',
-    Sampler: 'sampler',
-    SurprisinglyAwesome: 'surprisinglyawesome',
-    TwiceRemoved: 'twiceremoved',
-    Undone: 'undone'
-};
-
-const titleMap = {
-    crimetown: 'Crime Town',
-    heavyweight: 'Heavyweight',
-    homecoming: 'Homecoming',
-    mysteryshow: 'Mystery Show',
-    replyall: 'Reply All',
-    sciencevs: 'Science Vs',
-    startup: 'StartUp',
-    sampler: 'Sampler',
-    surprisinglyawesome: 'Surprisingly Awesome',
-    twiceremoved: 'Twice Removed',
-    undone: 'Undone'
-};
-
 module.exports = {
     shows: shows,
     
@@ -75,6 +47,35 @@ module.exports = {
             return _.includes(showSlotPatterns[showId], targetVal);
         });
     }
+};
+
+
+const shows = {
+    CrimeTown: 'crimetown',
+    Heavyweight: 'heavyweight',
+    Homecoming: 'homecoming',
+    MysteryShow: 'mysteryshow',
+    ReplyAll: 'replyall',
+    ScienceVs: 'sciencevs',
+    StartUp: 'startup',
+    Sampler: 'sampler',
+    SurprisinglyAwesome: 'surprisinglyawesome',
+    TwiceRemoved: 'twiceremoved',
+    Undone: 'undone'
+};
+
+const titleMap = {
+    crimetown: 'Crime Town',
+    heavyweight: 'Heavyweight',
+    homecoming: 'Homecoming',
+    mysteryshow: 'Mystery Show',
+    replyall: 'Reply All',
+    sciencevs: 'Science Vs',
+    startup: 'StartUp',
+    sampler: 'Sampler',
+    surprisinglyawesome: 'Surprisingly Awesome',
+    twiceremoved: 'Twice Removed',
+    undone: 'Undone'
 };
 
 function fetchJSONData(url) {

@@ -1,36 +1,31 @@
 'use strict';
 
-function PlaybackState(url, token, offsetInMilliseconds) {
-    this.url = url;
-    this.token = token;
-    this.offset = offsetInMilliseconds;
+const _ = require("lodash");
 
-    this.toString = function() {
-        return JSON.stringify(this);
-    }
+module.exports = {
+    createState: createState,
 
-    this.markFinished = function() {
-        this.offset = null;
-        return this;
-    }
-
-    this.isFinished = function() {
-        return this.offset === null;
-    }
-
-    this.isValid = function() {
-        return !!this.url && !!this.token;
-    }
+    isValid: isValid,
+    isFinished: isFinished,
+    markFinished: markFinished
 }
 
-PlaybackState.fromString = function(str) {
-    try {
-        const data = JSON.parse(str);
-        return new PlaybackState(data.url, data.token, data.offset);
-    }
-    catch (e) {
-        return new PlaybackState();
-    }
+function createState(token, offset=0) {
+    return {
+        token: token,
+        offset: offset
+    };
 }
 
-module.exports = PlaybackState;
+function isValid(state) {
+    return !_.isEmpty(state) &&
+        (_.isNull(state.offset) || _.isNumber(state.offset));
+}
+
+function markFinished(state) {
+    pbState.offset = null;
+}
+
+function isFinished(state) {
+    return pbState.offset === null;
+}
