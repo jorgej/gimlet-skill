@@ -3,11 +3,22 @@
 const gimlet = require('./gimlet');
 const rss = require('rss-parser');
 
+const _EpisodeRangeError = 'EpisodeRangeError';
+
 module.exports = {
     fetchLatestEpisode: fetchLatestEpisode,
     fetchSerialEpisode: fetchSerialEpisode,
-    fetchFavoriteEpisode: fetchFavoriteEpisode
+    fetchFavoriteEpisode: fetchFavoriteEpisode,
+
+    EpisodeRangeErrorName: _EpisodeRangeErrorName
 };
+
+function EpisodeRangeError(index) {
+    this.name = _EpisodeRangeErrorName;
+    this.message = `No episode at index ${index} exists`;
+    this.stack = (new Error()).stack;
+}
+EpisodeRangeError.prototype = new Error;
 
 function fetchLatestEpisode(response, showId) {
     return getFeedEntries(showId).then(entries => {
@@ -38,7 +49,7 @@ function fetchSerialEpisode(response, showId, episodeIndex, shouldLoopIndex=true
                 episodeIndex = episodeIndex % entries.length;
             }
             else {
-                throw new Error(`No episode #${episodeIndex} exists`);
+                throw new EpisodeRangeError(episodeIndex);
             }
         }
 
@@ -72,7 +83,7 @@ function fetchFavoriteEpisode(response, showId, favoriteIndex, shouldLoopIndex=t
                 favoriteIndex = favoriteIndex % favs.length;
             }
             else {
-                throw new Error(`No favorite exists at index ${episodeIndex}`);
+                throw new EpisodeRangeError(episodeIndex);
             }
         }
 

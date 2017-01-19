@@ -43,6 +43,7 @@ function getKeyedSpeech(key) {
         "UnsupportedOperation": audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Unsupported+Operation.mp3"),
 
         // TODO: track
+        "EpisodeNotFound":      "Sorry, I couldn't find that episode."
         "Error":                "Sorry, I ran into a problem. Please try again later.",
 
         "_Unhandled":           audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Did+Not+Understand.mp3")

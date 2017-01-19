@@ -107,15 +107,16 @@ function cancel(event, response, model) {
 
 function playLatest(event, response, model) {
     const showId = utils.getShowFromSlotValue(event.request);
+    const epNumber = utils.getNumberFromSlotValue(event.request);
+
     if (showId) {
         if (gimlet.isSerialShow(showId)) {
-            let lastPlayedIndex = model.getLatestSerialFinished(showId);
-            if (lastPlayedIndex === undefined) {
-                lastPlayedIndex = -1
+            if (_.isNumber(epNumber)) {
+                playSerialHelper(response, model, showId, epNumber-1);
             }
-
-            // helper function takes it from here (including calling response.send())
-            playSerialHelper(response, model, showId, lastPlayedIndex+1);
+            else {
+                playSerialHelper(response, model, showId);
+            }
         }
         else {
             // helper function takes it from here (including calling response.send())
@@ -287,6 +288,12 @@ function playLatestHelper(response, model, showId) {
 }
 
 function playSerialHelper(response, model, showId, epIndex) {
+    // default to next unplayed episode according to user data
+    if (epIndex !== undefined) {
+        let lastPlayedIndex = model.getLatestSerialFinished(showId);
+        epIndex = (lastPlayedIndex === undefined) ? 0 : lastPlayedIndex+1;
+    }
+    
     contentHelper.fetchSerialEpisode(response, showId, epIndex)
         .then(episode => {
             const intro = speaker.introduceSerial(showId);
@@ -309,7 +316,15 @@ function playSerialHelper(response, model, showId, epIndex) {
                     .audioPlayerPlay('REPLACE_ALL', episode.url, token.toString(), null, 0)
                     .send();
         })
-        .catch(utils.speakAndSendError(response));
+        .catch(err => {
+            if (err.name === contentHelper.EpisodeRangeErrorName) {
+                response.speak(speaker.say("EpisodeNotFound"))
+                        .send();
+            }
+            else {
+                utils.speakAndSendError(response);
+            } 
+        });
 }
 
 function playFavoriteHelper(response, model, showId, favIndex) {
