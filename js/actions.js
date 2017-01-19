@@ -124,22 +124,22 @@ function playLatest(event, response, model) {
     if (showId) {
         model.exitQuestionMode();
         
-        const callback = function(pbState, err) {
-            if (pbState) {
-                model.setPlaybackState(pbState);
-            }
-            else {
-                response.speak(speaker.get("Error"));
-            }
+        const savePlaybackStateAndRespond = function(pbState) {
+            // if promise used below succeeds, persist the new playback state
+            model.setPlaybackState(pbState);
             response.send();
-        }
+        };
 
         if (gimlet.isSerialShow(showId)) {
             const lastPlayedIndex = model.getLatestSerialFinished(showId);
-            playbackHelpers.startPlayingSerial(response, showId, lastPlayedIndex, callback);
+            playbackHelpers.startPlayingSerial(response, showId, lastPlayedIndex)
+                .then(savePlaybackStateAndRespond)
+                .catch(speakAndSendError(response));
         }
         else {
-            playbackHelpers.startPlayingMostRecent(response, showId, callback);
+            playbackHelpers.startPlayingMostRecent(response, showId)
+                .then(savePlaybackStateAndRespond)
+                .catch(speakAndSendError(response));
         }
     }
     else {
@@ -180,16 +180,13 @@ function playFavorite(event, response, model) {
     model.exitQuestionMode();
     const lastPlayedIndex = model.getLatestFavoriteStart(showId) || 0;
     
-    playbackHelpers.startPlayingFavorite(response, showId, lastPlayedIndex+1, function(pbState, err) {
-        if (pbState) {
+    playbackHelpers.startPlayingFavorite(response, showId, lastPlayedIndex+1)
+        .then(pbState => {
             // if the call succeeded, persist the new playback state
             model.setPlaybackState(pbState);
-        }
-        else {
-            response.speak(speaker.get("Error"));
-        }
-        response.send();
-    });
+            response.send();
+        })
+        .catch(speakAndSendError(response));
 }
 
 function listShows(event, response, model) {
@@ -242,37 +239,38 @@ function cancel(event, response, model) {
 
 function showTitleNamed(event, response, model) {
     const activeQuestion = model.getActiveQuestion();
+    // all branches of logic lead to calling another action function
+    let actionToTake;
     if (isQuestionAskingForShowTitle(activeQuestion)) {
         if(!getShowFromSlotValue(event.request)) {
             // delegate to unhandled input handler for this state
-            unhandledAction.apply(this, arguments);
+            actionToTake = actions.unhandledAction;
         }
         else {
             model.exitQuestionMode();
 
             if (activeQuestion === constants.questions.FavoriteShowTitle) {
-                playFavorite.apply(this, arguments);
+                actionToTake = actions.playFavorite;
             }
             else { // should be MostRecentShowTitle question
-                playLatest.apply(this, arguments);
+                actionToTake = actions.playLatest;
             }
         }
     }
     else {
         // if the user just names a show on its own, take it to mean "play the latest ..."
         model.exitQuestionMode();
-        playLatest.apply(this, arguments);
+        actionToTake = actions.playLatest;
     }
 
-    // TODO: refactor to end request here, way too easy to miss sending for a new branch
-    // note: all branches above send response
+    actionToTake.apply(this, arguments);
 }
 
 function exclusiveChosen(event, response, model) {
     const origArgs = arguments;
     const number = getNumberFromSlotValue(event.request);
 
-    // while in current context, create a function we might use below
+    // while in original execution context, create a function we might use below
     const deferToUnhandled = unhandledAction.bind(this, ...arguments);
 
     gimlet.getExclusives().then(exclusives => {
@@ -405,7 +403,7 @@ function playbackFinished(event, response, model) {
         response.exit(true);
     }
 }
-// 1525991
+
 function playbackFailed(event, response) {
     response.exit(false);;
 }

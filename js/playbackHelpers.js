@@ -37,18 +37,13 @@ function resumePlayback(response, pbState) {
     return undefined;
 }
 
-function startPlayingMostRecent(response, showId, callback) {
-    getFeedEntries(showId, null, function(entries, err) {
-        if (err) {
-            callback(undefined, err);
-            return;
-        }
-
+function startPlayingMostRecent(response, showId) {
+    // TODO: necessary to nest promises?
+    return getFeedEntries(showId).then(entries => {
+        const entry = entries[entries.length-1];
         if (!entry) {
-            callback(undefined, new Error(`No episodes found for showId "${showId}"`));
-            return;
+            throw new Error(`No episodes found for showId "${showId}"`);
         }
-            const entry = entries[entries.length-1];
 
         // Alexa only plays HTTPS urls, feeds give us HTTP ones
         const contentUrl = entry.enclosure.url.replace('http://', 'https://');
@@ -59,22 +54,17 @@ function startPlayingMostRecent(response, showId, callback) {
         const showTitle = gimlet.titleForShow(showId);
         response.speak(intro)
                 .cardRenderer(`Playing ${showTitle}`, 
-                              `Now playing the most recent episode of ${showTitle}, "${entry.title}".`);
+                            `Now playing the most recent episode of ${showTitle}, "${entry.title}".`);
 
         const pbState = beginPlayback(response, contentUrl, token);
-        callback(pbState);
-    });
+        return pbState;
+    })
 }
 
-function startPlayingSerial(response, showId, lastFinishedIndex, callback) {
-    getFeedEntries(showId, isFullLengthEpisode, function(entries, err) {
-        if (err) {
-            callback(undefined, err);
-            return;
-        }
-        else if (!entries.length) {
-            callback(undefined, new Error(`No episodes found for showId "${showId}"`));
-            return;
+function startPlayingSerial(response, showId, lastFinishedIndex) {
+    return getFeedEntries(showId, isFullLengthEpisode).then(entries => {
+        if (!entries.length) {
+            throw new Error(`No episodes found for showId "${showId}"`);
         }
 
         if (lastFinishedIndex === undefined) {
@@ -97,15 +87,15 @@ function startPlayingSerial(response, showId, lastFinishedIndex, callback) {
         
         const showTitle = gimlet.titleForShow(showId);
         response.cardRenderer(`Playing ${showTitle}`, 
-                              `Now playing the next episode of ${showTitle}, "${entry.title}".`);
+                            `Now playing the next episode of ${showTitle}, "${entry.title}".`);
 
         const pbState = beginPlayback(response, contentUrl, token);
-        callback(pbState);
+        return pbState;
     });
 }
 
-function startPlayingFavorite(response, showId, favoriteIndex, callback) {
-    gimlet.getFavoritesMap().then(favoritesMap => {
+function startPlayingFavorite(response, showId, favoriteIndex) {
+    return gimlet.getFavoritesMap().then(favoritesMap => {
         if (!favoritesMap) {
             throw new Error("No favorites configured");
         }
@@ -138,9 +128,8 @@ function startPlayingFavorite(response, showId, favoriteIndex, callback) {
                 .cardRenderer(`Playing ${showTitle}`, cardContent);
 
         const newPbState = beginPlayback(response, contentUrl, token);
-        callback(newPbState);
-    })
-    .catch(err => callback(undefined, err));
+        return newPbState;
+    });
 }
 
 function isFullLengthEpisode(rssEntry) {
@@ -153,32 +142,30 @@ function isFullLengthEpisode(rssEntry) {
     }
 }
 
-// callback arguments: ([entry], err)
-function getFeedEntries(showId, filterFn, callback) {
-    gimlet.getFeedMap().then(feedMap => {
+// resolve arugment: [entry]. sorted in increasing order by time (i.e. [0] is first posted episode)
+function getFeedEntries(showId, filterFn) {
+    return gimlet.getFeedMap().then(feedMap => {
         if (!feedMap[showId]) {
             throw new Error("Problem getting feed URL");
         }
-        
         const url = feedMap[showId];
 
-        rss.parseURL(url, function(err, parsed) {
-            if (err) {
-                callback(undefined, new Error("Problem fetching RSS feed"));
-                return;
-            }
+        // wrap this callback-based API in a promise
+        return new Promise((resolve, reject) => {        
+            rss.parseURL(url, function(err, parsed) {
+                if (err) {
+                    reject(new Error("Problem fetching RSS feed"));
+                }
+                
+                let entries = parsed.feed.entries;
+                entries.reverse();
 
-            if (!filterFn) {
-                filterFn = function() { return true; }
-            }
-            
-            let entries = parsed.feed.entries;
-            entries.reverse();
-            if (filterFn) {
-                entries = entries.filter(filterFn);
-            }
-            callback(entries);
+                if (filterFn) {
+                    entries = entries.filter(filterFn);
+                }
+                resolve(entries);
+            });
         });
-    })
-    .catch(err => callback(undefined, err));
+    });
 }
+

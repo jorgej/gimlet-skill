@@ -49,11 +49,11 @@ module.exports = {
         return fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/favorites.json');
     },
 
-    getExclusives: function(callback) {
+    getExclusives: function() {
         return fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/exclusives.json');
     },
 
-    getMLIs: function(callback) {
+    getMLIs: function() {
         return fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/mattliebris.json');
     },
 
@@ -77,7 +77,7 @@ module.exports = {
     }
 };
 
-function fetchJSONData(url, callback) {
+function fetchJSONData(url) {
     const request = require("request");
     return new Promise((resolve, reject) => {
         request(url, (err, response, body) => {
