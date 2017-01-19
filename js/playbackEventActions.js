@@ -1,3 +1,5 @@
+"use strict";
+
 const ContentToken = require("./token");
 const PlaybackState = require("./playbackState");
 

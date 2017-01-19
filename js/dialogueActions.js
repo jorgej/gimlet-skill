@@ -1,3 +1,5 @@
+"use strict";
+
 const utils = require('./utils');
 const speaker = require('./speaker');
 const defaultStateActions = require('./defaultActions');

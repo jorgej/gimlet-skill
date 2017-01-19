@@ -25,20 +25,10 @@ exports.handler = function(event, context, callback){
     // routers returns an array, so we use apply to pass that on
     alexaPlus.registerRouters.apply(alexaPlus, routers);
 
-    // Needed for interactions triggered from the Service Simulator 
-    // if (!event.context) {
-    //     event.context = {
-    //         System: {
-    //             application: event.session.application,
-    //             user: event.session.user,
-    //             device: {
-    //                 supportedInterfaces: {
-    //                     AudioPlayer:{}
-    //                 }
-    //             }
-    //         }
-    //     };
-    // }
+    if (!event.context) {
+        // Needed for interactions triggered from the Service Simulator 
+        event.context = stubContextForSimulator(event);
+    }
 
     if (!event.context || event.context.System.device.supportedInterfaces.AudioPlayer === undefined) {
         alexaPlus.emit(':tell', 'Sorry, this skill is not supported on this device');
@@ -47,3 +37,17 @@ exports.handler = function(event, context, callback){
         alexaPlus.execute();
     }
 };
+
+function stubContextForSimulator(event) {
+    return {
+        System: {
+            application: event.session.application,
+            user: event.session.user,
+            device: {
+                supportedInterfaces: {
+                    AudioPlayer:{}
+                }
+            }
+        }
+    };
+}

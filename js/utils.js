@@ -1,3 +1,5 @@
+"use strict";
+
 const gimlet = require('./gimlet');
 
 module.exports = {
