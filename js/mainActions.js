@@ -4,7 +4,7 @@ const speaker = require("./speaker");
 const constants = require("./constants");
 const gimlet = require("./gimlet");
 const contentHelper = require("./contentHelper");
-const ContentToken = require("./token");
+const contentToken = require("./contentToken");
 const utils = require('./utils');
 const _ = require('lodash');
 const playbackState = require("./playbackState");
@@ -270,8 +270,8 @@ function playLatestHelper(response, model, showId) {
         const cardTitle = `Playing ${showTitle}`;
         const cardContent = `Now playing the most recent episode of ${showTitle}, "${episode.title}".`
 
-        const token = ContentToken.createToken(
-            ContentToken.TYPES.LATEST,
+        const token = contentToken.create(
+            contentToken.TYPES.LATEST,
             episode.url,
             {showId: showId}
         );
@@ -302,8 +302,8 @@ function playSerialHelper(response, model, showId, epIndex) {
             const cardTitle = `Playing ${showTitle}`;
             const cardContent = `Now playing the next episode of ${showTitle}, "${episode.title}".`
 
-            const token = ContentToken.createToken(
-                ContentToken.TYPES.SERIAL,
+            const token = contentToken.create(
+                contentToken.TYPES.SERIAL,
                 episode.url, 
                 {showId: showId, index: episode.index}
             );
@@ -330,8 +330,8 @@ function playSerialHelper(response, model, showId, epIndex) {
 function playFavoriteHelper(response, model, showId, favIndex) {
     contentHelper.fetchFavoriteEpisode(response, showId, favIndex)
         .then(episode => {
-            const token = ContentToken.createToken(
-                ContentToken.TYPES.FAVORITE,
+            const token = contentToken.create(
+                contentToken.TYPES.FAVORITE,
                 episode.url,
                 {showId: showId, index: episode.index}
             );

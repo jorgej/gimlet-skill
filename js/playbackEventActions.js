@@ -1,6 +1,6 @@
 "use strict";
 
-const ContentToken = require("./token");
+const contentToken = require("./contentToken");
 const playbackState = require("./playbackState");
 
 module.exports = {
@@ -13,9 +13,9 @@ module.exports = {
 
 function playbackStarted(event, response, model) {
     // if this track is a favorite, we want to note it in the user's history
-    const token = ContentToken.createTokenFromString(event.request.token);
+    const token = contentToken.createFromString(event.request.token);
 
-    if (ContentToken.isValid(token)) {
+    if (contentToken.isValid(token)) {
         model.setPlaybackState(playbackState.createState(token, 0));
 
         if (isFavoriteToken(token)) {
@@ -28,9 +28,9 @@ function playbackStarted(event, response, model) {
 
 function playbackStopped(event, response, model) {
     const offset = event.request.offsetInMilliseconds;
-    const token = ContentToken.createTokenFromString(event.request.token);
+    const token = contentToken.createFromString(event.request.token);
 
-    if (ContentToken.isValid(token) && offset !== undefined) {
+    if (contentToken.isValid(token) && offset !== undefined) {
         model.setPlaybackState(playbackState.createState(token, offset));
     }
 
@@ -52,7 +52,7 @@ function playbackFinished(event, response, model) {
     }
 
     // if this track is from a serial episode, we want to note it in the user's history
-    const token = ContentToken.createTokenFromString(event.request.token);
+    const token = contentToken.createFromString(event.request.token);
     if (isSerialToken(token)) {
         model.setLatestSerialFinished(token.showId, token.index);
     }
@@ -65,16 +65,16 @@ function playbackFailed(event, response) {
 }
 
 function isFavoriteToken(token) {
-    return ContentToken.isValid(token) &&
-        token.type === ContentToken.TYPES.FAVORITE &&
+    return contentToken.isValid(token) &&
+        token.type === contentToken.TYPES.FAVORITE &&
         !!token.url &&
         !!token.info.showId &&
         token.info.index !== undefined;
 }
 
 function isSerialToken(token) {
-    return ContentToken.isValid(token) &&
-        token.type === ContentToken.TYPES.SERIAL &&
+    return contentToken.isValid(token) &&
+        token.type === contentToken.TYPES.SERIAL &&
         !!token.url &&
         !!token.info.showId &&
         token.info.index !== undefined;

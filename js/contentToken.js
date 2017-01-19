@@ -5,12 +5,12 @@ const _ = require("lodash");
 module.exports = {
     TYPES: TYPES,
     
-    createToken: createToken,
-    createTokenFromString: createTokenFromString,
+    create: create,
+    createFromString: createFromString,
     isValid: isValid
 };
 
-function createToken(type, url, info={}) {
+function create(type, url, info={}) {
     return {
         type: type,
         url: url,
@@ -18,10 +18,10 @@ function createToken(type, url, info={}) {
     };
 }
 
-function createTokenFromString(str) {
+function createFromString(str) {
     try {
         const data = JSON.parse(str);
-        return createToken(data.type, data.url, data.info);
+        return create(data.type, data.url, data.info);
     }
     catch (e) {
         return {};

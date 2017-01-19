@@ -1,58 +1,11 @@
-// PlayLatest (play|play me|begin|begin playing|start|listen to|let's hear|I want to hear) (the latest {ShowTitle}|the most recent {ShowTitle}|{ShowTitle})
 PlayLatest play the latest {ShowTitle}
 PlayLatest play the most recent {ShowTitle}
 PlayLatest play {ShowTitle}
-PlayLatest play me the latest {ShowTitle}
-PlayLatest play me the most recent {ShowTitle}
-PlayLatest play me {ShowTitle}
-PlayLatest begin the latest {ShowTitle}
-PlayLatest begin the most recent {ShowTitle}
-PlayLatest begin {ShowTitle}
-PlayLatest begin playing the latest {ShowTitle}
-PlayLatest begin playing the most recent {ShowTitle}
-PlayLatest begin playing {ShowTitle}
-PlayLatest start the latest {ShowTitle}
-PlayLatest start the most recent {ShowTitle}
-PlayLatest start {ShowTitle}
+PlayLatest play episode {Number} of {ShowTitle}
 PlayLatest listen to the latest {ShowTitle}
 PlayLatest listen to the most recent {ShowTitle}
 PlayLatest listen to {ShowTitle}
-PlayLatest let's hear the latest {ShowTitle}
-PlayLatest let's hear the most recent {ShowTitle}
-PlayLatest let's hear {ShowTitle}
-PlayLatest I want to hear the latest {ShowTitle}
-PlayLatest I want to hear the most recent {ShowTitle}
-PlayLatest I want to hear {ShowTitle}
-PlayLatest to play the latest {ShowTitle}
-PlayLatest to play the most recent {ShowTitle}
-PlayLatest to play {ShowTitle}
-PlayLatest to play me the latest {ShowTitle}
-PlayLatest to play me the most recent {ShowTitle}
-PlayLatest to play me {ShowTitle}
-PlayLatest to begin the latest {ShowTitle}
-PlayLatest to begin the most recent {ShowTitle}
-PlayLatest to begin {ShowTitle}
-PlayLatest to begin playing the latest {ShowTitle}
-PlayLatest to begin playing the most recent {ShowTitle}
-PlayLatest to begin playing {ShowTitle}
-PlayLatest to start the latest {ShowTitle}
-PlayLatest to start the most recent {ShowTitle}
-PlayLatest to start {ShowTitle}
-PlayLatest play the latest {ShowTitle}
-PlayLatest play the most recent {ShowTitle}
-PlayLatest play {ShowTitle}
-PlayLatest play me the latest {ShowTitle}
-PlayLatest play me the most recent {ShowTitle}
-PlayLatest play me {ShowTitle}
-PlayLatest begin the latest {ShowTitle}
-PlayLatest begin the most recent {ShowTitle}
-PlayLatest begin {ShowTitle}
-PlayLatest begin playing the latest {ShowTitle}
-PlayLatest begin playing the most recent {ShowTitle}
-PlayLatest begin playing {ShowTitle}
-PlayLatest start the latest {ShowTitle}
-PlayLatest start the most recent {ShowTitle}
-PlayLatest start {ShowTitle}
+PlayLatest listen to episode {Number} of {ShowTitle}
 PlayLatest to play
 PlayLatest to begin
 PlayLatest to begin playing
@@ -65,340 +18,23 @@ PlayLatest start
 PlayExclusive play a secret
 PlayExclusive play a bonus
 PlayExclusive play a subscriber
-PlayExclusive play the secret
-PlayExclusive play the bonus
-PlayExclusive play the subscriber
-PlayExclusive start a secret
-PlayExclusive start a bonus
-PlayExclusive start a subscriber
-PlayExclusive start the secret
-PlayExclusive start the bonus
-PlayExclusive start the subscriber
+PlayExclusive play an exclusive
 PlayExclusive listen to a secret
 PlayExclusive listen to a bonus
-PlayExclusive listen to a subscriber
-PlayExclusive listen to the secret
-PlayExclusive listen to the bonus
-PlayExclusive listen to the subscriber
-PlayExclusive begin a secret
-PlayExclusive begin a bonus
-PlayExclusive begin a subscriber
-PlayExclusive begin the secret
-PlayExclusive begin the bonus
-PlayExclusive begin the subscriber
-PlayExclusive for a secret
-PlayExclusive for a bonus
-PlayExclusive for a subscriber
-PlayExclusive for the secret
-PlayExclusive for the bonus
-PlayExclusive for the subscriber
-PlayExclusive play an exclusive
-PlayExclusive play an extra
-PlayExclusive play the exclusive
-PlayExclusive play the extra
-PlayExclusive start an exclusive
-PlayExclusive start an extra
-PlayExclusive start the exclusive
-PlayExclusive start the extra
 PlayExclusive listen to an exclusive
-PlayExclusive listen to an extra
-PlayExclusive listen to the exclusive
-PlayExclusive listen to the extra
-PlayExclusive begin an exclusive
-PlayExclusive begin an extra
-PlayExclusive begin the exclusive
-PlayExclusive begin the extra
-PlayExclusive for an exclusive
-PlayExclusive for an extra
-PlayExclusive for the exclusive
-PlayExclusive for the extra
-PlayExclusive to play a secret
-PlayExclusive to play a bonus
-PlayExclusive to play a subscriber
-PlayExclusive to play the secret
-PlayExclusive to play the bonus
-PlayExclusive to play the subscriber
-PlayExclusive to start a secret
-PlayExclusive to start a bonus
-PlayExclusive to start a subscriber
-PlayExclusive to start the secret
-PlayExclusive to start the bonus
-PlayExclusive to start the subscriber
-PlayExclusive to begin a secret
-PlayExclusive to begin a bonus
-PlayExclusive to begin a subscriber
-PlayExclusive to begin the secret
-PlayExclusive to begin the bonus
-PlayExclusive to begin the subscriber
-PlayExclusive to play an exclusive
-PlayExclusive to play an extra
-PlayExclusive to play the exclusive
-PlayExclusive to play the extra
-PlayExclusive to start an exclusive
-PlayExclusive to start an extra
-PlayExclusive to start the exclusive
-PlayExclusive to start the extra
-PlayExclusive to begin an exclusive
-PlayExclusive to begin an extra
-PlayExclusive to begin the exclusive
-PlayExclusive to begin the extra
 
 PlayFavorite play a favorite episode
 PlayFavorite play a favorite episode from {ShowTitle}
 PlayFavorite play a favorite episode for {ShowTitle}
 PlayFavorite play a favorite episode of {ShowTitle}
-PlayFavorite play a best episode
-PlayFavorite play a best episode from {ShowTitle}
-PlayFavorite play a best episode for {ShowTitle}
-PlayFavorite play a best episode of {ShowTitle}
-PlayFavorite play a good episode
-PlayFavorite play a good episode from {ShowTitle}
-PlayFavorite play a good episode for {ShowTitle}
-PlayFavorite play a good episode of {ShowTitle}
 PlayFavorite play a recommended episode
 PlayFavorite play a recommended episode from {ShowTitle}
 PlayFavorite play a recommended episode for {ShowTitle}
 PlayFavorite play a recommended episode of {ShowTitle}
-PlayFavorite play the favorite episode
-PlayFavorite play the favorite episode from {ShowTitle}
-PlayFavorite play the favorite episode for {ShowTitle}
-PlayFavorite play the favorite episode of {ShowTitle}
-PlayFavorite play the best episode
-PlayFavorite play the best episode from {ShowTitle}
-PlayFavorite play the best episode for {ShowTitle}
-PlayFavorite play the best episode of {ShowTitle}
-PlayFavorite play the good episode
-PlayFavorite play the good episode from {ShowTitle}
-PlayFavorite play the good episode for {ShowTitle}
-PlayFavorite play the good episode of {ShowTitle}
-PlayFavorite play the recommended episode
-PlayFavorite play the recommended episode from {ShowTitle}
-PlayFavorite play the recommended episode for {ShowTitle}
-PlayFavorite play the recommended episode of {ShowTitle}
-PlayFavorite start a favorite episode
-PlayFavorite start a favorite episode from {ShowTitle}
-PlayFavorite start a favorite episode for {ShowTitle}
-PlayFavorite start a favorite episode of {ShowTitle}
-PlayFavorite start a best episode
-PlayFavorite start a best episode from {ShowTitle}
-PlayFavorite start a best episode for {ShowTitle}
-PlayFavorite start a best episode of {ShowTitle}
-PlayFavorite start a good episode
-PlayFavorite start a good episode from {ShowTitle}
-PlayFavorite start a good episode for {ShowTitle}
-PlayFavorite start a good episode of {ShowTitle}
-PlayFavorite start a recommended episode
-PlayFavorite start a recommended episode from {ShowTitle}
-PlayFavorite start a recommended episode for {ShowTitle}
-PlayFavorite start a recommended episode of {ShowTitle}
-PlayFavorite start the favorite episode
-PlayFavorite start the favorite episode from {ShowTitle}
-PlayFavorite start the favorite episode for {ShowTitle}
-PlayFavorite start the favorite episode of {ShowTitle}
-PlayFavorite start the best episode
-PlayFavorite start the best episode from {ShowTitle}
-PlayFavorite start the best episode for {ShowTitle}
-PlayFavorite start the best episode of {ShowTitle}
-PlayFavorite start the good episode
-PlayFavorite start the good episode from {ShowTitle}
-PlayFavorite start the good episode for {ShowTitle}
-PlayFavorite start the good episode of {ShowTitle}
-PlayFavorite start the recommended episode
-PlayFavorite start the recommended episode from {ShowTitle}
-PlayFavorite start the recommended episode for {ShowTitle}
-PlayFavorite start the recommended episode of {ShowTitle}
 PlayFavorite listen to a favorite episode
 PlayFavorite listen to a favorite episode from {ShowTitle}
 PlayFavorite listen to a favorite episode for {ShowTitle}
 PlayFavorite listen to a favorite episode of {ShowTitle}
-PlayFavorite listen to a best episode
-PlayFavorite listen to a best episode from {ShowTitle}
-PlayFavorite listen to a best episode for {ShowTitle}
-PlayFavorite listen to a best episode of {ShowTitle}
-PlayFavorite listen to a good episode
-PlayFavorite listen to a good episode from {ShowTitle}
-PlayFavorite listen to a good episode for {ShowTitle}
-PlayFavorite listen to a good episode of {ShowTitle}
-PlayFavorite listen to a recommended episode
-PlayFavorite listen to a recommended episode from {ShowTitle}
-PlayFavorite listen to a recommended episode for {ShowTitle}
-PlayFavorite listen to a recommended episode of {ShowTitle}
-PlayFavorite listen to the favorite episode
-PlayFavorite listen to the favorite episode from {ShowTitle}
-PlayFavorite listen to the favorite episode for {ShowTitle}
-PlayFavorite listen to the favorite episode of {ShowTitle}
-PlayFavorite listen to the best episode
-PlayFavorite listen to the best episode from {ShowTitle}
-PlayFavorite listen to the best episode for {ShowTitle}
-PlayFavorite listen to the best episode of {ShowTitle}
-PlayFavorite listen to the good episode
-PlayFavorite listen to the good episode from {ShowTitle}
-PlayFavorite listen to the good episode for {ShowTitle}
-PlayFavorite listen to the good episode of {ShowTitle}
-PlayFavorite listen to the recommended episode
-PlayFavorite listen to the recommended episode from {ShowTitle}
-PlayFavorite listen to the recommended episode for {ShowTitle}
-PlayFavorite listen to the recommended episode of {ShowTitle}
-PlayFavorite begin a favorite episode
-PlayFavorite begin a favorite episode from {ShowTitle}
-PlayFavorite begin a favorite episode for {ShowTitle}
-PlayFavorite begin a favorite episode of {ShowTitle}
-PlayFavorite begin a best episode
-PlayFavorite begin a best episode from {ShowTitle}
-PlayFavorite begin a best episode for {ShowTitle}
-PlayFavorite begin a best episode of {ShowTitle}
-PlayFavorite begin a good episode
-PlayFavorite begin a good episode from {ShowTitle}
-PlayFavorite begin a good episode for {ShowTitle}
-PlayFavorite begin a good episode of {ShowTitle}
-PlayFavorite begin a recommended episode
-PlayFavorite begin a recommended episode from {ShowTitle}
-PlayFavorite begin a recommended episode for {ShowTitle}
-PlayFavorite begin a recommended episode of {ShowTitle}
-PlayFavorite begin the favorite episode
-PlayFavorite begin the favorite episode from {ShowTitle}
-PlayFavorite begin the favorite episode for {ShowTitle}
-PlayFavorite begin the favorite episode of {ShowTitle}
-PlayFavorite begin the best episode
-PlayFavorite begin the best episode from {ShowTitle}
-PlayFavorite begin the best episode for {ShowTitle}
-PlayFavorite begin the best episode of {ShowTitle}
-PlayFavorite begin the good episode
-PlayFavorite begin the good episode from {ShowTitle}
-PlayFavorite begin the good episode for {ShowTitle}
-PlayFavorite begin the good episode of {ShowTitle}
-PlayFavorite begin the recommended episode
-PlayFavorite begin the recommended episode from {ShowTitle}
-PlayFavorite begin the recommended episode for {ShowTitle}
-PlayFavorite begin the recommended episode of {ShowTitle}
-PlayFavorite for a favorite episode
-PlayFavorite for a favorite episode from {ShowTitle}
-PlayFavorite for a favorite episode for {ShowTitle}
-PlayFavorite for a favorite episode of {ShowTitle}
-PlayFavorite for a best episode
-PlayFavorite for a best episode from {ShowTitle}
-PlayFavorite for a best episode for {ShowTitle}
-PlayFavorite for a best episode of {ShowTitle}
-PlayFavorite for a good episode
-PlayFavorite for a good episode from {ShowTitle}
-PlayFavorite for a good episode for {ShowTitle}
-PlayFavorite for a good episode of {ShowTitle}
-PlayFavorite for a recommended episode
-PlayFavorite for a recommended episode from {ShowTitle}
-PlayFavorite for a recommended episode for {ShowTitle}
-PlayFavorite for a recommended episode of {ShowTitle}
-PlayFavorite for the favorite episode
-PlayFavorite for the favorite episode from {ShowTitle}
-PlayFavorite for the favorite episode for {ShowTitle}
-PlayFavorite for the favorite episode of {ShowTitle}
-PlayFavorite for the best episode
-PlayFavorite for the best episode from {ShowTitle}
-PlayFavorite for the best episode for {ShowTitle}
-PlayFavorite for the best episode of {ShowTitle}
-PlayFavorite for the good episode
-PlayFavorite for the good episode from {ShowTitle}
-PlayFavorite for the good episode for {ShowTitle}
-PlayFavorite for the good episode of {ShowTitle}
-PlayFavorite for the recommended episode
-PlayFavorite for the recommended episode from {ShowTitle}
-PlayFavorite for the recommended episode for {ShowTitle}
-PlayFavorite for the recommended episode of {ShowTitle}
-PlayFavorite to play a favorite episode
-PlayFavorite to play a favorite episode from {ShowTitle}
-PlayFavorite to play a favorite episode for {ShowTitle}
-PlayFavorite to play a favorite episode of {ShowTitle}
-PlayFavorite to play a best episode
-PlayFavorite to play a best episode from {ShowTitle}
-PlayFavorite to play a best episode for {ShowTitle}
-PlayFavorite to play a best episode of {ShowTitle}
-PlayFavorite to play a good episode
-PlayFavorite to play a good episode from {ShowTitle}
-PlayFavorite to play a good episode for {ShowTitle}
-PlayFavorite to play a good episode of {ShowTitle}
-PlayFavorite to play a recommended episode
-PlayFavorite to play a recommended episode from {ShowTitle}
-PlayFavorite to play a recommended episode for {ShowTitle}
-PlayFavorite to play a recommended episode of {ShowTitle}
-PlayFavorite to play the favorite episode
-PlayFavorite to play the favorite episode from {ShowTitle}
-PlayFavorite to play the favorite episode for {ShowTitle}
-PlayFavorite to play the favorite episode of {ShowTitle}
-PlayFavorite to play the best episode
-PlayFavorite to play the best episode from {ShowTitle}
-PlayFavorite to play the best episode for {ShowTitle}
-PlayFavorite to play the best episode of {ShowTitle}
-PlayFavorite to play the good episode
-PlayFavorite to play the good episode from {ShowTitle}
-PlayFavorite to play the good episode for {ShowTitle}
-PlayFavorite to play the good episode of {ShowTitle}
-PlayFavorite to play the recommended episode
-PlayFavorite to play the recommended episode from {ShowTitle}
-PlayFavorite to play the recommended episode for {ShowTitle}
-PlayFavorite to play the recommended episode of {ShowTitle}
-PlayFavorite to start a favorite episode
-PlayFavorite to start a favorite episode from {ShowTitle}
-PlayFavorite to start a favorite episode for {ShowTitle}
-PlayFavorite to start a favorite episode of {ShowTitle}
-PlayFavorite to start a best episode
-PlayFavorite to start a best episode from {ShowTitle}
-PlayFavorite to start a best episode for {ShowTitle}
-PlayFavorite to start a best episode of {ShowTitle}
-PlayFavorite to start a good episode
-PlayFavorite to start a good episode from {ShowTitle}
-PlayFavorite to start a good episode for {ShowTitle}
-PlayFavorite to start a good episode of {ShowTitle}
-PlayFavorite to start a recommended episode
-PlayFavorite to start a recommended episode from {ShowTitle}
-PlayFavorite to start a recommended episode for {ShowTitle}
-PlayFavorite to start a recommended episode of {ShowTitle}
-PlayFavorite to start the favorite episode
-PlayFavorite to start the favorite episode from {ShowTitle}
-PlayFavorite to start the favorite episode for {ShowTitle}
-PlayFavorite to start the favorite episode of {ShowTitle}
-PlayFavorite to start the best episode
-PlayFavorite to start the best episode from {ShowTitle}
-PlayFavorite to start the best episode for {ShowTitle}
-PlayFavorite to start the best episode of {ShowTitle}
-PlayFavorite to start the good episode
-PlayFavorite to start the good episode from {ShowTitle}
-PlayFavorite to start the good episode for {ShowTitle}
-PlayFavorite to start the good episode of {ShowTitle}
-PlayFavorite to start the recommended episode
-PlayFavorite to start the recommended episode from {ShowTitle}
-PlayFavorite to start the recommended episode for {ShowTitle}
-PlayFavorite to start the recommended episode of {ShowTitle}
-PlayFavorite to begin a favorite episode
-PlayFavorite to begin a favorite episode from {ShowTitle}
-PlayFavorite to begin a favorite episode for {ShowTitle}
-PlayFavorite to begin a favorite episode of {ShowTitle}
-PlayFavorite to begin a best episode
-PlayFavorite to begin a best episode from {ShowTitle}
-PlayFavorite to begin a best episode for {ShowTitle}
-PlayFavorite to begin a best episode of {ShowTitle}
-PlayFavorite to begin a good episode
-PlayFavorite to begin a good episode from {ShowTitle}
-PlayFavorite to begin a good episode for {ShowTitle}
-PlayFavorite to begin a good episode of {ShowTitle}
-PlayFavorite to begin a recommended episode
-PlayFavorite to begin a recommended episode from {ShowTitle}
-PlayFavorite to begin a recommended episode for {ShowTitle}
-PlayFavorite to begin a recommended episode of {ShowTitle}
-PlayFavorite to begin the favorite episode
-PlayFavorite to begin the favorite episode from {ShowTitle}
-PlayFavorite to begin the favorite episode for {ShowTitle}
-PlayFavorite to begin the favorite episode of {ShowTitle}
-PlayFavorite to begin the best episode
-PlayFavorite to begin the best episode from {ShowTitle}
-PlayFavorite to begin the best episode for {ShowTitle}
-PlayFavorite to begin the best episode of {ShowTitle}
-PlayFavorite to begin the good episode
-PlayFavorite to begin the good episode from {ShowTitle}
-PlayFavorite to begin the good episode for {ShowTitle}
-PlayFavorite to begin the good episode of {ShowTitle}
-PlayFavorite to begin the recommended episode
-PlayFavorite to begin the recommended episode from {ShowTitle}
-PlayFavorite to begin the recommended episode for {ShowTitle}
-PlayFavorite to begin the recommended episode of {ShowTitle}
 
 ListShows what shows are there
 ListShows list shows
@@ -420,9 +56,20 @@ WhoIsMatt who matt is
 WhoIsMatt who lieber is
 WhoIsMatt who leeber is
 
+Nevermind nevermind
+Nevermind go back
+Nevermind none
+Nevermind i don't want to
+
+NeedAssistance what can i do
+NeedAssistance what can i say
+NeedAssistance main menu
+NeedAssistance assistance
+NeedAssistance you suck
+
 ShowTitleIntent {ShowTitle}
 
 NumberIntent {Number}
 NumberIntent number {Number}
+NumberIntent listen to number {Number}
 NumberIntent exclusive number {Number}
-NumberIntent exclusive {Number}

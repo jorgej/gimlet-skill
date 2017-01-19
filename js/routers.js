@@ -5,51 +5,51 @@ var Alexa = require('alexa-sdk');
 var constants = require('./constants');
 const decorators = require("./decorators");
 
-var defaultActions = require('./defaultActions');
+var mainActions = require('./mainActions');
 var dialogueActions = require('./dialogueActions');
 var playbackEvents = require('./playbackEventActions');
 
 const states = constants.states;
 
-var defaultIntentHandlers = alexaPlus.createRouter(states.DEFAULT, {
+var mainIntentRouter = alexaPlus.createStateRouter(states.DEFAULT, {
     /*
     *  All Intent Handlers for state : DEFAULT
     */
-    'LaunchRequest': decorators.auth(defaultActions.launchRequest),
-    'PlayLatest': decorators.auth(defaultActions.playLatest),
-    'PlayFavorite': decorators.auth(defaultActions.playFavorite),
-    'PlayExclusive': decorators.auth(defaultActions.playExclusive),
+    'LaunchRequest': decorators.auth(mainActions.launchRequest),
+    'PlayLatest': decorators.auth(mainActions.playLatest),
+    'PlayFavorite': decorators.auth(mainActions.playFavorite),
+    'PlayExclusive': decorators.auth(mainActions.playExclusive),
 
-    'WhoIsMatt': defaultActions.whoIsMatt,
-    'ListShows': defaultActions.listShows,
-    'ShowTitleIntent': defaultActions.showTitleNamed,
+    'WhoIsMatt': mainActions.whoIsMatt,
+    'ListShows': mainActions.listShows,
+    'ShowTitleIntent': mainActions.showTitleNamed,
 
-    'Nevermind': defaultActions.cancel,
-    'NeedAssistance': defaultActions.help,
+    'Nevermind': mainActions.cancel,
+    'NeedAssistance': mainActions.help,
 
-    'AMAZON.HelpIntent': defaultActions.help,
+    'AMAZON.HelpIntent': mainActions.help,
 
-    'AMAZON.PauseIntent': defaultActions.pause,
-    'AMAZON.ResumeIntent': defaultActions.resume,
-    'AMAZON.StopIntent': defaultActions.stop,
-    'AMAZON.CancelIntent': defaultActions.cancel,
-    'AMAZON.StartOverIntent': defaultActions.startOver,
+    'AMAZON.PauseIntent': mainActions.pause,
+    'AMAZON.ResumeIntent': mainActions.resume,
+    'AMAZON.StopIntent': mainActions.stop,
+    'AMAZON.CancelIntent': mainActions.cancel,
+    'AMAZON.StartOverIntent': mainActions.startOver,
 
-    'AMAZON.NextIntent': defaultActions.playbackOperationUnsupported,
-    'AMAZON.PreviousIntent': defaultActions.playbackOperationUnsupported,
-    'AMAZON.LoopOnIntent': defaultActions.playbackOperationUnsupported,
-    'AMAZON.LoopOffIntent': defaultActions.playbackOperationUnsupported,
-    'AMAZON.ShuffleOnIntent': defaultActions.playbackOperationUnsupported,
-    'AMAZON.ShuffleOffIntent': defaultActions.playbackOperationUnsupported,
+    'AMAZON.NextIntent': mainActions.playbackOperationUnsupported,
+    'AMAZON.PreviousIntent': mainActions.playbackOperationUnsupported,
+    'AMAZON.LoopOnIntent': mainActions.playbackOperationUnsupported,
+    'AMAZON.LoopOffIntent': mainActions.playbackOperationUnsupported,
+    'AMAZON.ShuffleOnIntent': mainActions.playbackOperationUnsupported,
+    'AMAZON.ShuffleOffIntent': mainActions.playbackOperationUnsupported,
 
-    'Unhandled': defaultActions.unhandledAction,
-    'SessionEndedRequest': defaultActions.sessionEnded,
+    'Unhandled': mainActions.unhandledAction,
+    'SessionEndedRequest': mainActions.sessionEnded,
 });
 
-defaultIntentHandlers.decorateHandlers(decorators.analytics);
+mainIntentRouter.decorateActions(decorators.analytics);
 
 
-var askShowDialogueHandlers = alexaPlus.createRouter(states.ASK_FOR_SHOW, {
+var askShowDialogueRouter = alexaPlus.createStateRouter(states.ASK_FOR_SHOW, {
     'ListShows': dialogueActions.listShows,
     'ShowTitleIntent': dialogueActions.showTitleNamed,
     
@@ -66,10 +66,10 @@ var askShowDialogueHandlers = alexaPlus.createRouter(states.ASK_FOR_SHOW, {
     'SessionEndedRequest': dialogueActions.sessionEnded,
 });
 
-askShowDialogueHandlers.decorateHandlers(decorators.analytics);
+askShowDialogueRouter.decorateActions(decorators.analytics);
 
 
-var confirmDialogueHandlers = alexaPlus.createRouter(states.QUESTION_CONFIRM, {
+var confirmDialogueRouter = alexaPlus.createStateRouter(states.QUESTION_CONFIRM, {
     'AMAZON.YesIntent': dialogueActions.resumeConfirmationYes,
     'AMAZON.NoIntent': dialogueActions.resumeConfirmationNo,
 
@@ -85,10 +85,10 @@ var confirmDialogueHandlers = alexaPlus.createRouter(states.QUESTION_CONFIRM, {
     'Unhandled': dialogueActions.unhandledAction
 });
 
-confirmDialogueHandlers.decorateHandlers(decorators.analytics);
+confirmDialogueRouter.decorateActions(decorators.analytics);
 
 
-var whichExclusiveDialogueHandlers = alexaPlus.createRouter(states.QUESTION_EXCLUSIVE_NUMBER, {
+var whichExclusiveDialogueRouter = alexaPlus.createStateRouter(states.QUESTION_EXCLUSIVE_NUMBER, {
     'NumberIntent': dialogueActions.exclusiveChosen,
 
     'Nevermind': dialogueActions.cancel,
@@ -103,15 +103,15 @@ var whichExclusiveDialogueHandlers = alexaPlus.createRouter(states.QUESTION_EXCL
     'Unhandled': dialogueActions.unhandledAction
 });
 
-whichExclusiveDialogueHandlers.decorateHandlers(decorators.analytics);
+whichExclusiveDialogueRouter.decorateActions(decorators.analytics);
 
 
-var remoteEventHandlers = alexaPlus.createRouter(states.DEFAULT, {
+var remoteEventRouter = alexaPlus.createStateRouter(states.DEFAULT, {
     /*
     *  All Requests are received using a Remote Control. Calling corresponding handlers for each of them.
     */
-    'PlayCommandIssued': defaultActions.resume,
-    'PauseCommandIssued': defaultActions.pause,
+    'PlayCommandIssued': mainActions.resume,
+    'PauseCommandIssued': mainActions.pause,
     'NextCommandIssued': function() {
         // don't want to react at all to this command
         response.sendNil({saveState: false});
@@ -122,10 +122,10 @@ var remoteEventHandlers = alexaPlus.createRouter(states.DEFAULT, {
     }
 });
 
-remoteEventHandlers.decorateHandlers(decorators.analytics);
+remoteEventRouter.decorateActions(decorators.analytics);
 
 // TODO: probably want to extend so they work for all states
-var playbackEventHandlers = alexaPlus.createRouter(states.DEFAULT, {
+var playbackEventRouter = alexaPlus.createStateRouter(states.DEFAULT, {
     'PlaybackStarted': playbackEvents.playbackStarted,
     'PlaybackStopped': playbackEvents.playbackStopped,
     'PlaybackNearlyFinished': playbackEvents.playbackNearlyFinished,
@@ -134,12 +134,12 @@ var playbackEventHandlers = alexaPlus.createRouter(states.DEFAULT, {
 });
 
 module.exports = [
-    defaultIntentHandlers,
-    askShowDialogueHandlers,
-    confirmDialogueHandlers,
-    whichExclusiveDialogueHandlers,
-    remoteEventHandlers,
-    playbackEventHandlers
+    mainIntentRouter,
+    askShowDialogueRouter,
+    confirmDialogueRouter,
+    whichExclusiveDialogueRouter,
+    remoteEventRouter,
+    playbackEventRouter
 ];
 
 function decorateActions(actions, decorator) {

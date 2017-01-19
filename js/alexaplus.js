@@ -16,9 +16,9 @@ function alexaClient(event, context, callback) {
         session.attributes[Alexa.StateString] = constants.states.DEFAULT;
     }
 
-    Object.defineProperty(underlyingHandler, 'registerRouters', {
+    Object.defineProperty(underlyingHandler, 'registerStateRouters', {
         value: function() {
-            registerRouters.apply(underlyingHandler, arguments);
+            registerStateRouters.apply(underlyingHandler, arguments);
         },
         writable: false
     });
@@ -26,37 +26,37 @@ function alexaClient(event, context, callback) {
     return underlyingHandler;
 }
 
-function createRouter(state, requestHandlers) {
+function createStateRouter(state, actions) {
     return {
         state: state,
-        requestHandlers: requestHandlers,
+        actions: actions,
 
-        decorateHandlers: function(decorator) {
-            _.mapValues(this.requestHandlers, handler => decorator(handler));
+        decorateActions: function(decorator) {
+            _.mapValues(this.actions, action => decorator(action));
         }
     };
 }
 
 // arguments are arrays of objects of AlexaRouter objects
-function registerRouters() {
+function registerStateRouters() {
     for(var arg = 0; arg < arguments.length; arg++) {
         var router = arguments[arg];
 
         // mapping of "Alexa SDK-type" event handlers (e.g. {"AMAZON.HelpIntent": function() {...}})
         var alexaSDKEventHandlers = {};
 
-        const eventNames = Object.keys(router.requestHandlers);
+        const eventNames = Object.keys(router.actions);
         for (var i = 0; i < eventNames.length; i++) {
             const eventName = eventNames[i];
-            if(typeof(router.requestHandlers[eventName]) !== 'function') {
+            if(typeof(router.actions[eventName]) !== 'function') {
                 throw new Error(`Request handler for '${eventName}' was not a function`);
             }
 
-            const requestHandler = router.requestHandlers[eventName];
+            const action = router.actions[eventName];
             alexaSDKEventHandlers[eventName] = function() {
                 // here, "this" is the "handlerContext" defined in alexa.js
                 const [event, response, model] = extractRequestArgs.apply(this);
-                requestHandler(event, response, model, this);
+                action(event, response, model, this);
             };
         }
 
@@ -94,5 +94,5 @@ function extractRequestArgs() {
 
 module.exports = {
     client: alexaClient,
-    createRouter: createRouter
+    createStateRouter: createStateRouter
 }

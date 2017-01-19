@@ -6,7 +6,7 @@ var routers = require('./routers');
 
 const VoiceInsights = require('voice-insights-sdk');
 
-// Note: we fix this in code because development environment was breaking without it. shouldn't be necessary for productions
+// Note: we fix this in code because development environment was breaking without it. shouldn't be necessary for production
 var AWS = require('aws-sdk');
 AWS.config.update({region: 'us-east-1'});
 
@@ -22,8 +22,7 @@ exports.handler = function(event, context, callback){
         VoiceInsights.initialize(event.session, constants.voiceInsightsToken);
     }
 
-    // routers returns an array, so we use apply to pass that on
-    alexaPlus.registerRouters.apply(alexaPlus, routers);
+    alexaPlus.registerStateRouters.apply(alexaPlus, routers);
 
     if (!event.context) {
         // Needed for interactions triggered from the Service Simulator 

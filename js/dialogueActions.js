@@ -2,9 +2,9 @@
 
 const utils = require('./utils');
 const speaker = require('./speaker');
-const defaultStateActions = require('./defaultActions');
+const defaultStateActions = require('./mainActions');
 const gimlet = require("./gimlet");
-const ContentToken = require("./token");
+const contentToken = require("./contentToken");
 
 const actions = {
     launchRequest: launchRequest,
@@ -113,8 +113,8 @@ function exclusiveChosen(event, response, model) {
             const cardTitle = "Playing Members-Only Exclusive";
             const cardContent = `Now playing ${title}.`;
 
-            const token = ContentToken.createToken(
-                ContentToken.TYPES.EXCLUSIVE,
+            const token = contentToken.create(
+                contentToken.TYPES.EXCLUSIVE,
                 exclusive.content,
                 {index: number-1}
             );
