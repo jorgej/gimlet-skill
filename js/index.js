@@ -17,7 +17,10 @@ exports.handler = function(event, context, callback){
     alexaPlus.dynamoDBTableName = constants.dynamoDBTableName;
 
     // initialize analytics
-    VoiceInsights.initialize(event.session, constants.voiceInsightsToken);
+    if (event.session.user) {
+        // session.user won't exist for playback events, we can safely ignore these requests 
+        VoiceInsights.initialize(event.session, constants.voiceInsightsToken);
+    }
 
     // routers returns an array, so we use apply to pass that on
     alexaPlus.registerRouters.apply(alexaPlus, routers);

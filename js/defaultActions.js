@@ -4,46 +4,38 @@ const speaker = require("./speaker");
 const constants = require("./constants");
 const gimlet = require("./gimlet");
 const contentHelper = require("./contentHelper");
-const decorators = require("./decorators");
 const ContentToken = require("./token");
-const PlaybackState = require("./playbackState");
+const utils = require('./utils');
+const _ = require('lodash');
+
 const appStates = constants.states;
 
 const actions = {
-    launchRequest: decorators.auth(launchRequest),
+    launchRequest: launchRequest,
 
     help: help,
     cancel: cancel,
 
-    playLatest: decorators.auth(playLatest),
-    playExclusive: decorators.auth(playExclusive),
-    playFavorite: decorators.auth(playFavorite),
+    playLatest: playLatest,
+    playExclusive: playExclusive,
+    playFavorite: playFavorite,
 
     listShows: listShows,
     whoIsMatt: whoIsMatt,
     showTitleNamed: showTitleNamed,
-    exclusiveChosen: exclusiveChosen,
 
     pause: pause,
     stop: stop,
     resume: resume,
     playbackOperationUnsupported: playbackOperationUnsupported,
     startOver: startOver,
-    resumeConfirmationYes: resumeConfirmationYes,
-    resumeConfirmationNo: resumeConfirmationNo,
 
     sessionEnded: sessionEnded,
-    playbackStarted: playbackStarted,
-    playbackStopped: playbackStopped,
-    playbackNearlyFinished: playbackNearlyFinished,
-    playbackFinished: playbackFinished,
-    playbackFailed: playbackFailed,
-
-    unhandledAction: unhandledAction,
+    unhandledAction: unhandledAction
 };
 
-decorateActions(actions, decorators.helpTracking);
-decorateActions(actions, decorators.analytics);
+// add help tracking "request middleware" to all actions
+_.mapValues(actions, action => helpTrackingDecorator(action));
 
 module.exports = actions;
 
@@ -63,9 +55,6 @@ function launchRequest(event, response, model) {
         speech = speaker.askToResume(pbState.token.showId);
     }
     else {
-        // ensure we're in DEFAULT (should be true, but this will force us out of 
-        //  state transition holes in case the logic is broken and the user is we're stuck) 
-        model.exitQuestionMode();
         if (model.getAttr('returningUser')) {
             speech = speaker.get("Welcome");
             reprompt = speaker.get("WhatToDo")
@@ -86,37 +75,25 @@ function help(event, response, model) {
     let speech;
     let reprompt;
 
-    let activeQuestion = model.getActiveQuestion();
-    if (activeQuestion) {
-        speech = speaker.getQuestionSpeech(activeQuestion, 'help');
-        reprompt = speaker.getQuestionSpeech(activeQuestion, 'reprompt');
-        // ensure the help counter is reset -- it's n/a for question help messages
-        model.clearAttr("helpCtr");
+    const helpCount = model.getAttr("helpCtr");
+    if (helpCount > 2) {
+        speech = speaker.get("Help3");
+    }
+    else if (helpCount === 2) {
+        speech = speaker.get("Help2");
     }
     else {
-        const helpCount = model.getAttr("helpCtr");
-        if (helpCount > 2) {
-            speech = speaker.get("Help3");
-        }
-        else if (helpCount === 2) {
-            speech = speaker.get("Help2");
-        }
-        else {
-            speech = speaker.get("Help");
-        }
-
-        reprompt = speaker.get("WhatToDo");
+        speech = speaker.get("Help");
     }
 
-    response.speak(speech);
-    if (reprompt) {
-        response.listen(reprompt);
-    }
-    response.send();
+    reprompt = speaker.get("WhatToDo");
+
+    response.speak(speech)
+            .listen(speaker.get("WhatToDo"))
+            .send();
 }
 
 function cancel(event, response, model) {
-    model.exitQuestionMode();   // ensure we kill any active questioning
     const pbState = model.getPlaybackState();
     if (pbState.isValid() && !pbState.isFinished()) {
         response.audioPlayerStop();
@@ -129,10 +106,8 @@ function cancel(event, response, model) {
 }
 
 function playLatest(event, response, model) {
-    const showId = getShowFromSlotValue(event.request);
+    const showId = utils.getShowFromSlotValue(event.request);
     if (showId) {
-        model.exitQuestionMode();
-
         if (gimlet.isSerialShow(showId)) {
             let lastPlayedIndex = model.getLatestSerialFinished(showId);
             if (lastPlayedIndex === undefined) {
@@ -171,7 +146,7 @@ function playExclusive(event, response, model) {
 }
 
 function playFavorite(event, response, model) {
-    const showId = getShowFromSlotValue(event.request);    
+    const showId = utils.getShowFromSlotValue(event.request);    
     if (!showId) {
         let activeQuestion = constants.questions.FavoriteShowTitle;
         model.enterQuestionMode(activeQuestion);
@@ -182,7 +157,6 @@ function playFavorite(event, response, model) {
         return;
     }
 
-    model.exitQuestionMode();
     let lastPlayedIndex = model.getLatestFavoriteStart(showId);
     if (lastPlayedIndex === undefined) {
         lastPlayedIndex = -1;
@@ -192,26 +166,7 @@ function playFavorite(event, response, model) {
     playFavoriteHelper(response, model, showId, lastPlayedIndex+1);
 }
 
-function listShows(event, response, model) {
-    let speech = speaker.get("ShowList");
-
-    const activeQuestion = model.getActiveQuestion();
-    
-    if (isQuestionAskingForShowTitle(activeQuestion)) {
-        speech += " " + speaker.getQuestionSpeech(activeQuestion, 'reprompt');
-        response.speak(speech)
-                .listen(speaker.getQuestionSpeech(activeQuestion, 'reprompt'));
-    }
-    else {
-        response.speak(speech);
-    }
-
-    response.send();
-}
-
 function whoIsMatt(event, response, model) {
-    model.exitQuestionMode();
-
     gimlet.getMLIs().then(urls => {
         if (!urls.length) {
             throw new Error("No content URLs were found");
@@ -221,86 +176,31 @@ function whoIsMatt(event, response, model) {
         let mattLieberIndex = Math.floor(Math.random() * urls.length);
         const url = urls[mattLieberIndex];
 
-        const content = urlToSSML(url);
+        const content = utils.urlToSSML(url);
         response.speak(content).send();
     })
-    .catch(speakAndSendError(response));
+    .catch(utils.speakAndSendError(response));
+}
+
+function listShows(event, response, model) {
+    response.speak(speaker.get("ShowList"))
+            .send();
 }
 
 function showTitleNamed(event, response, model) {
-    const activeQuestion = model.getActiveQuestion();
-    // all branches of logic lead to calling another action function
-    let actionToTake;
-    if (isQuestionAskingForShowTitle(activeQuestion)) {
-        if(!getShowFromSlotValue(event.request)) {
-            // delegate to unhandled input handler for this state
-            actionToTake = actions.unhandledAction;
-        }
-        else {
-            model.exitQuestionMode();
-
-            if (activeQuestion === constants.questions.FavoriteShowTitle) {
-                actionToTake = actions.playFavorite;
-            }
-            else { // should be MostRecentShowTitle question
-                actionToTake = actions.playLatest;
-            }
-        }
-    }
-    else {
-        // if the user just names a show on its own, take it to mean "play the latest ..."
-        model.exitQuestionMode();
-        actionToTake = actions.playLatest;
-    }
-
-    actionToTake.apply(this, arguments);
-}
-
-function exclusiveChosen(event, response, model) {
-    const origArgs = arguments;
-    const number = getNumberFromSlotValue(event.request);
-
-    // while in original execution context, create a function we might use below
-    const deferToUnhandled = unhandledAction.bind(this, ...arguments);
-
-    gimlet.getExclusives().then(exclusives => {
-        if (!exclusives) {
-            throw new Error("No exclusive content found");
-        }
-
-        const exclusive = exclusives[number-1];
-        if (exclusive) {
-            model.exitQuestionMode();
-
-            const title = exclusive.title || `Exclusive #${number}`
-            const cardTitle = "Playing Members-Only Exclusive";
-            const cardContent = `Now playing ${title}.`;
-
-            const contentUrl = exclusive.content;
-            const token = ContentToken.createExclusive(contentUrl, number-1);
-            
-            response.cardRenderer(cardTitle, cardContent)
-                    .audioPlayerPlay('REPLACE_ALL', contentUrl, token.toString(), null, 0)
-                    .send();
-        }
-        else {
-            deferToUnhandled();
-        }
-    }).catch(speakAndSendError(response));
+    // if the user just names a show on its own, take it to mean "play the latest ..."
+    playLatest.apply(this, arguments);
 }
 
 function pause(event, response, model) {
-    model.exitQuestionMode();
     response.audioPlayerStop().send();
 }
 
 function stop(event, response, model) {
-    model.exitQuestionMode();
     response.audioPlayerStop().send();
 }
 
 function resume(event, response, model) {
-    model.exitQuestionMode();
     const pbState = model.getPlaybackState();
     if (pbState.isValid() && !pbState.isFinished()) {
         response.audioPlayerPlay('REPLACE_ALL', pbState.url, pbState.token.toString(), null, pbState.offset);
@@ -309,7 +209,6 @@ function resume(event, response, model) {
 }
 
 function startOver(event, response, model) {
-    model.exitQuestionMode();
     const pbState = model.getPlaybackState();
     if (pbState.isValid()) {
         response.audioPlayerPlay('REPLACE_ALL', pbState.url, pbState.token.toString(), null, 0);
@@ -322,95 +221,20 @@ function startOver(event, response, model) {
     response.send();
 }
 
-function resumeConfirmationYes(event, response, model) {
-    model.exitQuestionMode();
-    resume.apply(this, arguments);
-}
-
-function resumeConfirmationNo(event, response, model) {
-    model.exitQuestionMode();
-    model.clearPlaybackState();
-
-    const message = speaker.get("WhatToDo");
-    response.speak(message)
-            .listen(message)
-            .send();
-}
-
 function playbackOperationUnsupported(event, response, model) {
     const speech = speaker.get("UnsupportedOperation");
     response.speak(speech)
             .send();
 }
 
-/**
- * Lifecycle events
- */
-
 function sessionEnded(event, response, model) {
     model.exitQuestionMode();
     response.exit(true);
 }
 
-function playbackStarted(event, response, model) {
-    // if this track is a favorite, we want to note it in the user's history
-    const token = ContentToken.fromString(event.request.token);
-
-    if (token.url) {
-        model.setPlaybackState(new PlaybackState(token.url, token, 0));
-    }
-
-    if (token.isValidFavoriteToken()) {
-        model.setLatestFavoriteStart(token.showId, token.index);
-    }
-
-    response.exit(true);
-}
-
-function playbackStopped(event, response, model) {
-    const offset = event.request.offsetInMilliseconds;
-    const pbState = model.getPlaybackState();
-    if (pbState.isValid() && offset !== undefined) {
-        pbState.offset = offset;
-        model.setPlaybackState(pbState);
-    }
-    response.exit(true);
-}
-
-function playbackNearlyFinished(event, response, model) {
-    // nothing to do here -- we don't support queuing in this version
-    response.exit(false);
-}
-
-function playbackFinished(event, response, model) {
-    // mark playback as finished for the current track, but don't clear it in case 
-    //  the user wants to issue a restart/previous/next command
-    const pbState = model.getPlaybackState();
-    if (pbState.isValid()) {
-        pbState.markFinished();
-        model.setPlaybackState(pbState);
-    }
-
-    // if this track is from a serial episode, we want to note it in the user's history
-    const token = ContentToken.fromString(event.request.token);
-    if (token.isValidSerialToken()) {
-        model.setLatestSerialFinished(token.showId, token.index);
-        response.exit(true);
-    }
-}
-
-function playbackFailed(event, response) {
-    response.exit(false);;
-}
-
 /**
  * Misc. handlers
  */
-
-// Not used currently. For error details: https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/custom-audioplayer-interface-reference#systemexceptionencountered-request
-function systemException(event, response, model, handlerContext) {
-
-}
 
 function unhandledAction(event, response, model) {
     /* This function is triggered whenever an intent is understood by Alexa, 
@@ -436,45 +260,6 @@ function unhandledAction(event, response, model) {
  * Helpers
  */
 
-function getShowFromSlotValue(request) {
-    const slots = request.intent.slots;
-    if (slots) {
-        const slot = slots["ShowTitle"];
-        if (slot && slot.value) {
-            return gimlet.showMatchingSlotValue(slot.value);
-        }
-    }
-}
-
-function isQuestionAskingForShowTitle(question) {
-    return question === constants.questions.FavoriteShowTitle ||
-           question === constants.questions.MostRecentShowTitle;
-}
-
-function getNumberFromSlotValue(request) {
-    const slot = request.intent.slots["Number"];
-    if (slot && slot.value !== undefined) {
-        return Number(slot.value);
-    }
-}
-
-function urlToSSML(url) {
-    return `<audio src="${url}" />`;
-}
-
-function speakAndSendError(response) {
-    return function(err) {
-        response.speak(speaker.get("Error")).send();
-    };
-}
-
-function decorateActions(actions, decorator) {
-    // add help tracking "middleware" to all actions
-    for(let key in actions) {
-        actions[key] = decorator(actions[key]);
-    }
-}
-
 function playLatestHelper(response, model, showId) {
     contentHelper.fetchLatestEpisode(response, showId)
     .then(episode => {
@@ -494,7 +279,7 @@ function playLatestHelper(response, model, showId) {
                 .audioPlayerPlay('REPLACE_ALL', episode.url, token.toString(), null, 0)
                 .send();
     })
-    .catch(speakAndSendError(response));
+    .catch(utils.speakAndSendError(response));
 }
 
 function playSerialHelper(response, model, showId, epIndex) {
@@ -516,7 +301,7 @@ function playSerialHelper(response, model, showId, epIndex) {
                     .audioPlayerPlay('REPLACE_ALL', episode.url, token.toString(), null, 0)
                     .send();
         })
-        .catch(speakAndSendError(response));
+        .catch(utils.speakAndSendError(response));
 }
 
 function playFavoriteHelper(response, model, showId, favIndex) {
@@ -537,5 +322,24 @@ function playFavoriteHelper(response, model, showId, favIndex) {
                     .audioPlayerPlay('REPLACE_ALL', episode.url, token.toString(), null, 0)
                     .send();
         })
-        .catch(speakAndSendError(response));
+        .catch(utils.speakAndSendError(response));
+}
+
+function helpTrackingDecorator(innerFn) {
+    return function(event, response, model) {
+        const resumeAction = innerFn.bind(this, ...arguments);
+        if (event.request.type === "IntentRequest") {
+            // only mess with the help counter if it's an intent request
+            let helpCount = model.getAttr("helpCtr") || 0;
+            const intentName = event.request.intent && event.request.intent.name;
+            if (intentName === "AMAZON.HelpIntent") {
+                helpCount++;
+            }
+            else {
+                helpCount = 0;
+            }
+            model.setAttr("helpCtr", helpCount);
+        }
+        return resumeAction();
+    };
 }

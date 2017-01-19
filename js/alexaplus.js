@@ -4,14 +4,16 @@ const Alexa = require('alexa-sdk');
 
 const constants = require("./constants");
 const RequestModel = require('./model');
+const _ = require('lodash');
 
 function alexaClient(event, context, callback) {
     const underlyingHandler = Alexa.handler(event, context, callback);
 
     // ensure defalt value of application state is our custom DEFAULT value
     // (this gets around a bug mentioned in `constants.js`)
-    if (!underlyingHandler._event.session.attributes[Alexa.StateString]) {
-        underlyingHandler._event.session.attributes[Alexa.StateString] = constants.states.DEFAULT;
+    const session = underlyingHandler._event.session;
+    if (session.attributes && !session.attributes[Alexa.StateString]) {
+        session.attributes[Alexa.StateString] = constants.states.DEFAULT;
     }
 
     Object.defineProperty(underlyingHandler, 'registerRouters', {
@@ -27,7 +29,11 @@ function alexaClient(event, context, callback) {
 function createRouter(state, requestHandlers) {
     return {
         state: state,
-        requestHandlers: requestHandlers
+        requestHandlers: requestHandlers,
+
+        decorateHandlers: function(decorator) {
+            _.mapValues(this.requestHandlers, handler => decorator(handler));
+        }
     };
 }
 

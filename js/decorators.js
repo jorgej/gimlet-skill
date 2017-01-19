@@ -2,33 +2,12 @@
 const _ = require("lodash");
 
 const authHelper = require("./authHelper");
-const constants = require("./constants");
 const VoiceInsights = require('voice-insights-sdk');
 
 module.exports = {
-    helpTracking: helpTrackingDecorator,
     auth: authDecorator,
     analytics: analyticsDecorator
 };
-
-function helpTrackingDecorator(innerFn) {
-    return function(event, response, model) {
-        const resumeAction = innerFn.bind(this, ...arguments);
-        if (event.request.type === "IntentRequest") {
-            // only mess with the help counter if it's an intent request
-            let helpCount = model.getAttr("helpCtr") || 0;
-            const intentName = event.request.intent && event.request.intent.name;
-            if (intentName === "AMAZON.HelpIntent") {
-                helpCount++;
-            }
-            else {
-                helpCount = 0;
-            }
-            model.setAttr("helpCtr", helpCount);
-        }
-        return resumeAction();
-    };
-}
 
 function authDecorator(innerFn) {
     return function(event, response, model) {
@@ -63,6 +42,10 @@ function analyticsDecorator(innerFn) {
 
         if (eventName) {
             VoiceInsights.track(eventName, eventParams, null, (error, response) => {
+                if (error) {
+                    console.error(error);
+                }
+
                 return resumeAction();
             });
         }

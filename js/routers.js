@@ -3,8 +3,11 @@
 const alexaPlus = require('./alexaPlus');
 var Alexa = require('alexa-sdk');
 var constants = require('./constants');
+const decorators = require("./decorators");
 
-var actions = require('./actions.js')
+var defaultActions = require('./defaultActions');
+var dialogueActions = require('./dialogueActions');
+var playbackEvents = require('./playbackEventActions');
 
 const states = constants.states;
 
@@ -12,74 +15,94 @@ var defaultIntentHandlers = alexaPlus.createRouter(states.DEFAULT, {
     /*
     *  All Intent Handlers for state : DEFAULT
     */
-    'LaunchRequest': actions.launchRequest,
-    'PlayLatest': actions.playLatest,
-    'PlayFavorite': actions.playFavorite,
-    'PlayExclusive': actions.playExclusive,
+    'LaunchRequest': decorators.auth(defaultActions.launchRequest),
+    'PlayLatest': decorators.auth(defaultActions.playLatest),
+    'PlayFavorite': decorators.auth(defaultActions.playFavorite),
+    'PlayExclusive': decorators.auth(defaultActions.playExclusive),
 
-    'WhoIsMatt': actions.whoIsMatt,
-    'ListShows': actions.listShows,
+    'WhoIsMatt': defaultActions.whoIsMatt,
+    'ListShows': defaultActions.listShows,
+    'ShowTitleIntent': defaultActions.showTitleNamed,
 
-    'AMAZON.HelpIntent': actions.help,
-    'AMAZON.PauseIntent': actions.pause,
-    'AMAZON.ResumeIntent': actions.resume,
-    'AMAZON.StopIntent': actions.stop,
-    'AMAZON.CancelIntent': actions.cancel,
-    'AMAZON.StartOverIntent': actions.startOver,
+    'AMAZON.HelpIntent': defaultActions.help,
 
-    'AMAZON.NextIntent': actions.playbackOperationUnsupported,
-    'AMAZON.PreviousIntent': actions.playbackOperationUnsupported,
-    'AMAZON.LoopOnIntent': actions.playbackOperationUnsupported,
-    'AMAZON.LoopOffIntent': actions.playbackOperationUnsupported,
-    'AMAZON.ShuffleOnIntent': actions.playbackOperationUnsupported,
-    'AMAZON.ShuffleOffIntent': actions.playbackOperationUnsupported,
+    'AMAZON.PauseIntent': defaultActions.pause,
+    'AMAZON.ResumeIntent': defaultActions.resume,
+    'AMAZON.StopIntent': defaultActions.stop,
+    'AMAZON.CancelIntent': defaultActions.cancel,
+    'AMAZON.StartOverIntent': defaultActions.startOver,
 
-    'Unhandled': actions.unhandledAction,
+    'AMAZON.NextIntent': defaultActions.playbackOperationUnsupported,
+    'AMAZON.PreviousIntent': defaultActions.playbackOperationUnsupported,
+    'AMAZON.LoopOnIntent': defaultActions.playbackOperationUnsupported,
+    'AMAZON.LoopOffIntent': defaultActions.playbackOperationUnsupported,
+    'AMAZON.ShuffleOnIntent': defaultActions.playbackOperationUnsupported,
+    'AMAZON.ShuffleOffIntent': defaultActions.playbackOperationUnsupported,
+
+    'Unhandled': defaultActions.unhandledAction,
+    'SessionEndedRequest': defaultActions.sessionEnded,
 });
 
-var askShowIntentHandlers = alexaPlus.createRouter(states.ASK_FOR_SHOW, {
-    'ShowTitleIntent': actions.showTitleNamed,
-    'ListShows': actions.listShows,
+defaultIntentHandlers.decorateHandlers(decorators.analytics);
+
+
+var askShowDialogueHandlers = alexaPlus.createRouter(states.ASK_FOR_SHOW, {
+    'ListShows': dialogueActions.listShows,
+    'ShowTitleIntent': dialogueActions.showTitleNamed,
     
-    'AMAZON.HelpIntent': actions.help,
+    'AMAZON.HelpIntent': dialogueActions.help,
     
-    'AMAZON.StopIntent': actions.cancel,
-    'AMAZON.CancelIntent': actions.cancel,
+    'AMAZON.StopIntent': dialogueActions.cancel,
+    'AMAZON.CancelIntent': dialogueActions.cancel,
 
-    'Unhandled': actions.unhandledAction,
+    'LaunchRequest': dialogueActions.launchRequest,
+    'Unhandled': dialogueActions.unhandledAction,
 
-    'SessionEndedRequest': actions.sessionEnded,
+    'SessionEndedRequest': dialogueActions.sessionEnded,
 });
 
-var confirmIntentHandlers = alexaPlus.createRouter(states.QUESTION_CONFIRM, {
-    'AMAZON.YesIntent': actions.resumeConfirmationYes,
-    'AMAZON.NoIntent': actions.resumeConfirmationNo,
+askShowDialogueHandlers.decorateHandlers(decorators.analytics);
 
-    'AMAZON.HelpIntent': actions.help,
 
-    'AMAZON.StopIntent': actions.cancel, // NOTE: In this case, treat this like a "cancel".
-    'AMAZON.CancelIntent': actions.cancel,
-    'SessionEndedRequest': actions.sessionEnded,
-    'Unhandled': actions.unhandledAction
+var confirmDialogueHandlers = alexaPlus.createRouter(states.QUESTION_CONFIRM, {
+    'AMAZON.YesIntent': dialogueActions.resumeConfirmationYes,
+    'AMAZON.NoIntent': dialogueActions.resumeConfirmationNo,
+
+    'AMAZON.HelpIntent': dialogueActions.help,
+
+    'AMAZON.StopIntent': dialogueActions.cancel, // NOTE: In this case, treat this like a "cancel".
+    'AMAZON.CancelIntent': dialogueActions.cancel,
+
+    'LaunchRequest': dialogueActions.launchRequest,
+    'SessionEndedRequest': dialogueActions.sessionEnded,
+    'Unhandled': dialogueActions.unhandledAction
 });
 
-var whichExclusiveHandlers = alexaPlus.createRouter(states.QUESTION_EXCLUSIVE_NUMBER, {
-    'NumberIntent': actions.exclusiveChosen,
+confirmDialogueHandlers.decorateHandlers(decorators.analytics);
 
-    'AMAZON.HelpIntent': actions.help,
-    'AMAZON.StopIntent': actions.cancel, // NOTE: In this case, treat this like a "cancel".
-    'AMAZON.CancelIntent': actions.cancel,
-    'SessionEndedRequest': actions.sessionEnded,
-    'Unhandled': actions.unhandledAction
+
+var whichExclusiveDialogueHandlers = alexaPlus.createRouter(states.QUESTION_EXCLUSIVE_NUMBER, {
+    'NumberIntent': dialogueActions.exclusiveChosen,
+
+    'AMAZON.HelpIntent': dialogueActions.help,
+    'AMAZON.StopIntent': dialogueActions.cancel, // NOTE: In this case, treat this like a "cancel".
+    'AMAZON.CancelIntent': dialogueActions.cancel,
+
+    'LaunchRequest': dialogueActions.launchRequest,
+    'SessionEndedRequest': dialogueActions.sessionEnded,
+    'Unhandled': dialogueActions.unhandledAction
 });
 
-var remoteControllerHandlers = alexaPlus.createRouter(states.DEFAULT, {
+whichExclusiveDialogueHandlers.decorateHandlers(decorators.analytics);
+
+
+var remoteEventHandlers = alexaPlus.createRouter(states.DEFAULT, {
     /*
     *  All Requests are received using a Remote Control. Calling corresponding handlers for each of them.
     */
-    'PlayCommandIssued': actions.resume,
-    'PauseCommandIssued': actions.pause,
-    'NextCommandIssued': function(event, response) {
+    'PlayCommandIssued': defaultActions.resume,
+    'PauseCommandIssued': defaultActions.pause,
+    'NextCommandIssued': function() {
         // don't want to react at all to this command
         response.exit(false);
     },
@@ -89,20 +112,29 @@ var remoteControllerHandlers = alexaPlus.createRouter(states.DEFAULT, {
     }
 });
 
+remoteEventHandlers.decorateHandlers(decorators.analytics);
+
 // TODO: probably want to extend so they work for all states
-var audioEventHandlers = alexaPlus.createRouter(states.DEFAULT, {
-    'PlaybackStarted': actions.playbackStarted,
-    'PlaybackStopped': actions.playbackStopped,
-    'PlaybackNearlyFinished': actions.playbackNearlyFinished,
-    'PlaybackFinished': actions.playbackFinished,
-    'PlaybackFailed': actions.playbackFailed,
+var playbackEventHandlers = alexaPlus.createRouter(states.DEFAULT, {
+    'PlaybackStarted': playbackEvents.playbackStarted,
+    'PlaybackStopped': playbackEvents.playbackStopped,
+    'PlaybackNearlyFinished': playbackEvents.playbackNearlyFinished,
+    'PlaybackFinished': playbackEvents.playbackFinished,
+    'PlaybackFailed': playbackEvents.playbackFailed,
 });
 
 module.exports = [
     defaultIntentHandlers,
-    askShowIntentHandlers,
-    confirmIntentHandlers,
-    whichExclusiveHandlers,
-    remoteControllerHandlers,
-    audioEventHandlers
+    askShowDialogueHandlers,
+    confirmDialogueHandlers,
+    whichExclusiveDialogueHandlers,
+    remoteEventHandlers,
+    playbackEventHandlers
 ];
+
+function decorateActions(actions, decorator) {
+    // add help tracking "middleware" to all actions
+    for(let key in actions) {
+        actions[key] = decorator(actions[key]);
+    }
+}
