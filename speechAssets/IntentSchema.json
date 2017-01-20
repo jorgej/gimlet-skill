@@ -12,6 +12,10 @@
         {
           "name": "ShowTitle",
           "type": "LIST_OF_SHOW_TITLES"
+        },
+        {
+          "name": "Number",
+          "type": "AMAZON.NUMBER"
         }
       ]
     },
@@ -50,6 +54,12 @@
           "type": "LIST_OF_SHOW_TITLES"
         }
       ]
+    },
+    {
+      "intent": "Nevermind"
+    },
+    {
+      "intent": "NeedAssistance"
     },
     {
       "intent": "AMAZON.PauseIntent"
