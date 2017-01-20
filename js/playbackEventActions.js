@@ -1,3 +1,12 @@
+/**
+ * playbackActions.js
+ * Author: Greg Nicholas
+ * 
+ * Handlers for standard audio events sent by Alexa during long-form audio 
+ * playback. We use these event notifications to manage playback state and
+ * user listening history.
+ */
+
 "use strict";
 
 const contentToken = require("./contentToken");
@@ -11,8 +20,13 @@ module.exports = {
     playbackFailed: playbackFailed,
 }
 
+/**
+ * Called when audio content begins. We do two things in response:
+ * 1. Take note of the playback state in our saved attributes
+ * 2. If the content is a favorite episode, we take note that the user has
+ *    listened to it.
+ */
 function playbackStarted(event, response, model) {
-    // if this track is a favorite, we want to note it in the user's history
     const token = contentToken.createFromString(event.request.token);
 
     if (contentToken.isValid(token)) {
@@ -26,6 +40,10 @@ function playbackStarted(event, response, model) {
     response.sendNil({saveState: true});
 }
 
+/**
+ * Called when audio content stops or is interrupted. We save the current
+ * playback state to allow for resuming it later.
+ */
 function playbackStopped(event, response, model) {
     const offset = event.request.offsetInMilliseconds;
     const token = contentToken.createFromString(event.request.token);
@@ -37,11 +55,18 @@ function playbackStopped(event, response, model) {
     response.sendNil({saveState: true});
 }
 
+/**
+ * Called when audio is almost finished. This would be the place to queue up
+ * the following track, but we don't support this yet.
+ */
 function playbackNearlyFinished(event, response, model) {
-    // nothing to do here -- we don't support queuing in this version
-    response.sendNil({saveState: false});
+    response.sendNil();
 }
 
+/**
+ * Called when audio content is complete. We update our internal playback state
+ * and note the listening history if the show is serialized.
+ */
 function playbackFinished(event, response, model) {
     // mark playback as finished for the current track, but don't clear it in case 
     //  the user wants to issue a restart/previous/next command
@@ -60,8 +85,11 @@ function playbackFinished(event, response, model) {
     response.sendNil({saveState: true});
 }
 
+/**
+ * Called when there is a problem playing some audio. We don't react to this.
+ */
 function playbackFailed(event, response) {
-    response.sendNil({saveState: false});
+    response.sendNil();
 }
 
 function isFavoriteToken(token) {

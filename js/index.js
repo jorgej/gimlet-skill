@@ -1,20 +1,30 @@
-'use strict';
+/**
+ * index.js
+ * Author: Greg Nicholas
+ * 
+ * Entry point for Lambda function execution.
+ */
 
-var AlexaPlus = require('./alexaplus');
+"use strict";
+
+var BetterAlexa = require('./betterAlexa');
 var constants = require('./constants');
 var routers = require('./routers');
 
 const VoiceInsights = require('voice-insights-sdk');
 
-// Note: we fix this in code because development environment was breaking without it. shouldn't be necessary for production
+// Note: we fix this in code because development environment was breaking 
+// without it. shouldn't be necessary for production
 var AWS = require('aws-sdk');
 AWS.config.update({region: 'us-east-1'});
 
 exports.handler = function(event, context, callback){
-    var alexaPlus = AlexaPlus.client(event, context);
+    // Similar to alexa-sdk's Alexa.handler function. See betterAlexa.js for details of 
+    // the differences.
+    var alexa = BetterAlexa.alexaLambdaHandler(event, context);
 
-    alexaPlus.appId = constants.appId;
-    alexaPlus.dynamoDBTableName = constants.dynamoDBTableName;
+    alexa.appId = constants.appId;
+    alexa.dynamoDBTableName = constants.dynamoDBTableName;
 
     // initialize analytics
     if (event.session.user) {
@@ -22,18 +32,19 @@ exports.handler = function(event, context, callback){
         VoiceInsights.initialize(event.session, constants.voiceInsightsToken);
     }
 
-    alexaPlus.registerStateRouters.apply(alexaPlus, routers);
+    // register all the action functions that will respond to intents/events
+    alexa.registerStateRouters.apply(alexa, routers);
 
-    if (!event.context) {
-        // Needed for interactions triggered from the Service Simulator 
-        event.context = stubContextForSimulator(event);
-    }
+    // Uncomment to support interactions triggered from the Service Simulator
+    // if (!event.context) {
+    //     event.context = stubContextForSimulator(event);
+    // }
 
     if (!event.context || event.context.System.device.supportedInterfaces.AudioPlayer === undefined) {
-        alexaPlus.emit(':tell', 'Sorry, this skill is not supported on this device');
+        alexa.emit(':tell', 'Sorry, this skill is not supported on this device');
     }
     else {
-        alexaPlus.execute();
+        alexa.execute();
     }
 };
 

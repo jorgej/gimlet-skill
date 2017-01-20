@@ -1,9 +1,22 @@
-'use strict';
+/**
+ * authHelper.js
+ * Author: Greg Nicholas
+ * 
+ * Contains helper functions for managing user authentication.
+ */
+
+"use strict";
 
 module.exports = {
     isSessionAuthenticated: isSessionAuthenticated,
 };
 
+/**
+ * Contacts the Memberful OAuth service to ensure the user is authenticated.
+ * 
+ * Returns results of this query asynchronously. Callback will be called with
+ * `true` on success, `false` otherwise.
+ */
 function isSessionAuthenticated(session, callback) {
     if (session.user.accessToken) {
         const https = require('https');

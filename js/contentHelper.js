@@ -1,3 +1,10 @@
+/**
+ * contentHelper.js
+ * Author: Greg Nicholas
+ * 
+ * Contains helper functions for retreiving Gimlet podcasts.
+ */
+
 "use strict";
 
 const gimlet = require('./gimlet');
@@ -10,9 +17,14 @@ module.exports = {
     fetchSerialEpisode: fetchSerialEpisode,
     fetchFavoriteEpisode: fetchFavoriteEpisode,
 
+    // name used in Error subclass
     EpisodeRangeErrorName: _EpisodeRangeErrorName
 };
 
+/**
+ * Error subclass used when a desired episode index is out of range. 
+ * e.g. When episode[6] is requested in a feed that only has 6 episodes.
+ */
 function EpisodeRangeError(index) {
     this.name = _EpisodeRangeErrorName;
     this.message = `No episode at index ${index} exists`;
@@ -20,7 +32,21 @@ function EpisodeRangeError(index) {
 }
 EpisodeRangeError.prototype = new Error;
 
-function fetchLatestEpisode(response, showId) {
+/**
+ * Returns a promise for an object describing the latest episode of
+ * the given show.
+ * 
+ * - showId: String
+ * 
+ * Resolved object contains the following:
+ * { 
+ *   url: String,
+ *   title: String
+ * }
+ * 
+ * On failure, the promise is rejected with an Error.
+ */
+function fetchLatestEpisode(showId) {
     return getFeedEntries(showId).then(entries => {
         const entry = entries[entries.length-1];
         if (!entry) {
@@ -37,7 +63,25 @@ function fetchLatestEpisode(response, showId) {
     });
 }
 
-function fetchSerialEpisode(response, showId, episodeIndex, shouldLoopIndex=true) {
+/**
+ * Returns a promise for an object describing a particular episode of
+ * a given show. 
+ * 
+ * Arguments:
+ * - showId: String
+ * - episodeIndex: Number. Zero-based index into feed.
+ * - shouldLoopIndex: Boolean. If true, an index overflow will be wrapped around.
+ * 
+ * Resolved object contains the following:
+ * { 
+ *   url: String,
+ *   title: String,
+ *   index: Number. Index of episode (could differ from requested index if shouldLoopIndex=true)
+ * }
+ * 
+ * On failure, the promise is rejected with an Error.
+ */
+function fetchSerialEpisode(showId, episodeIndex, shouldLoopIndex=true) {
     return getFeedEntries(showId, isFullLengthEpisode).then(entries => {
         if (!entries.length) {
             throw new Error(`No episodes found for showId "${showId}"`);
@@ -66,14 +110,34 @@ function fetchSerialEpisode(response, showId, episodeIndex, shouldLoopIndex=true
     });
 }
 
-function fetchFavoriteEpisode(response, showId, favoriteIndex, shouldLoopIndex=true) {
+/**
+ * Returns a promise for an object describing a favorite episode of
+ * a given show. See gimlet.js for details about these hand-curated
+ * favorites.
+ * 
+ * Arguments:
+ * - showId: String
+ * - episodeIndex: Number. Zero-based index into feed.
+ * - shouldLoopIndex: Boolean. If true, an index overflow will be wrapped around.
+ * 
+ * Resolved object contains the following:
+ * { 
+ *   url: String,
+ *   title: String,
+ *   intro: String,
+ *   index: Number. Index of episode (could differ from requested index if shouldLoopIndex=true)
+ * }
+ * 
+ * On failure, the promise is rejected with an Error.
+ */
+function fetchFavoriteEpisode(showId, favoriteIndex, shouldLoopIndex=true) {
     return gimlet.getFavoritesMap().then(favoritesMap => {
         if (!favoritesMap) {
             throw new Error("No favorites configured");
         }
 
         const favs = favoritesMap[showId];
-        if (!favs) {
+        if (!favs || !favs.length) {
             throw new Error(`No favorites configured for showId "${showId}"`);
         }
 
@@ -87,30 +151,30 @@ function fetchFavoriteEpisode(response, showId, favoriteIndex, shouldLoopIndex=t
             }
         }
 
-        let fav = favs[favoriteIndex];
-        if (!fav) {
-            throw new Error(`No favorites configured for showId "${showId}"`);
-        }
-
+        const fav = favs[favoriteIndex];
         return {
             url: fav.content,
             title: fav.title,
+            intro: fav.intro || "",
             index: favoriteIndex
         };
     });
 }
 
-function isFullLengthEpisode(rssEntry) {
-    const durationInSec = rssEntry['itunes'] && rssEntry['itunes']['duration'];
-    if (durationInSec == undefined) {
-        return true;    // default to true if no duration can be found
-    }
-    else {
-        return durationInSec > 240;
-    }
-}
+/**
+ * Helpers
+ */
+
 
 // resolve arugment: [entry]. sorted in increasing order by time (i.e. [0] is first posted episode)
+
+/**
+ * Reads the RSS feed for a given show. The feeds are returned in increasing order 
+ * by time (i.e. [0] is first posted episode)
+ * 
+ * Returns a promise that resolves with an array of RSS entries (format defined by 
+ * rss-parser library). Promise will be rejected with an Error on failure.
+ */
 function getFeedEntries(showId, filterFn) {
     return gimlet.getFeedMap().then(feedMap => {
         if (!feedMap[showId]) {
@@ -126,6 +190,8 @@ function getFeedEntries(showId, filterFn) {
                 }
                 
                 let entries = parsed.feed.entries;
+
+                // want entries to be sorted in chronolgical order
                 entries.reverse();
 
                 if (filterFn) {
@@ -137,3 +203,16 @@ function getFeedEntries(showId, filterFn) {
     });
 }
 
+/**
+ * Filter function used in `getFeedEntries`. Rejects all RSS feed entries 
+ * for audio with a duration shorter than 4 minutes.
+ */
+function isFullLengthEpisode(rssEntry) {
+    const durationInSec = rssEntry['itunes'] && rssEntry['itunes']['duration'];
+    if (durationInSec == undefined) {
+        return true;    // default to true if no duration can be found
+    }
+    else {
+        return durationInSec > 240;
+    }
+}

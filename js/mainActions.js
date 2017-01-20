@@ -1,4 +1,12 @@
-'use strict';
+/**
+ * mainActions.js
+ * Author: Greg Nicholas
+ * 
+ * Main actions performed by skill -- these handle the major intents
+ * spoken by the user when not responding to a specific question.
+ */
+
+"use strict";
 
 const speaker = require("./speaker");
 const constants = require("./constants");
@@ -11,6 +19,7 @@ const playbackState = require("./playbackState");
 
 const appStates = constants.states;
 
+// list of all actions that'll be exported
 const actions = {
     launchRequest: launchRequest,
 
@@ -35,7 +44,7 @@ const actions = {
     unhandledAction: unhandledAction
 };
 
-// add help tracking "request middleware" to all actions
+// add help tracking "request middleware" to all actions (see decorator for details)
 _.mapValues(actions, action => helpTrackingDecorator(action));
 
 module.exports = actions;
@@ -43,8 +52,13 @@ module.exports = actions;
 /**
  * Actions
  */
+
+/**
+ * Called when user opens skill without explicit intent. If the user has an episode that
+ * is currently paused, we'll ask them if they want to resume it. Otherwise, we greet 
+ * them with a generic welcome message
+ */
 function launchRequest(event, response, model) {
-    // we can assume we're in DEFAULT state
     let speech, reprompt;
 
     const pb = model.getPlaybackState();
@@ -55,6 +69,7 @@ function launchRequest(event, response, model) {
         speech = speaker.askToResume(pb.token.showId);
     }
     else {
+        // Otherwise, give them a welcome message. Verbosity depend on if they're a first-time user
         if (model.getAttr('returningUser')) {
             speech = speaker.get("Welcome");
             reprompt = speaker.get("WhatToDo")
@@ -71,6 +86,11 @@ function launchRequest(event, response, model) {
             .send();
 }
 
+/**
+ * Give the user help for using the skill. There are multiple "escalation levels"
+ * of help messaging, depending on how many times in a row they've asked
+ * for help. We track this in middleware defined elsewhere in this file.
+ */
 function help(event, response, model) {
     let speech;
     let reprompt;
@@ -93,6 +113,10 @@ function help(event, response, model) {
             .send();
 }
 
+/**
+ * If the audio player is currently playing, we stop it. Otherwise, we say 
+ * goodbye and close out.
+ */
 function cancel(event, response, model) {
     const pb = model.getPlaybackState();
     if (playbackState.isValid(pb) && !playbackState.isFinished(pb)) {
@@ -105,6 +129,16 @@ function cancel(event, response, model) {
     response.send();
 }
 
+/**
+ * Play either the latest episode of a show (for non-serialized shows), or
+ * the next unheard episode according to the user's history (for serailized 
+ * shows). Also supports speaking an explicit episode number for serialized 
+ * shows.
+ * 
+ * Slots:
+ * - ShowTitle: name of a show user wants to hear. If omitted, we'll ask them for it.
+ * - Number: episode number. Optional, and only relevant to serial shows.
+ */
 function playLatest(event, response, model) {
     const showId = utils.getShowFromSlotValue(event.request);
     const epNumber = utils.getNumberFromSlotValue(event.request);
@@ -119,9 +153,10 @@ function playLatest(event, response, model) {
             }
         }
         else {
-            // helper function takes it from here (including calling response.send())
             playLatestHelper(response, model, showId);
         }
+
+        // Note: helper functions take it from here (including calling response.send())
     }
     else {
         let activeQuestion = constants.questions.FavoriteShowTitle;
@@ -133,6 +168,10 @@ function playLatest(event, response, model) {
     }
 }
 
+/**
+ * Indicates the user wants to hear a subscriber-exclusive content. We'll follow-up
+ * by listing the content avaailble and asking for a selection.
+ */
 function playExclusive(event, response, model) {
     const activeQuestion = constants.questions.ExclusiveNumber;
     model.enterQuestionMode(activeQuestion);
@@ -146,6 +185,12 @@ function playExclusive(event, response, model) {
             .send();
 }
 
+/**
+ * Play a staff-favorite episode of a show.
+ * 
+ * Slots:
+ * - ShowTitle: name of a show user wants to hear. If omitted, we'll ask them for it.
+ */
 function playFavorite(event, response, model) {
     const showId = utils.getShowFromSlotValue(event.request);    
     if (!showId) {
@@ -167,6 +212,9 @@ function playFavorite(event, response, model) {
     playFavoriteHelper(response, model, showId, lastPlayedIndex+1);
 }
 
+/**
+ * Plays a "Matt Liber Is..." clip
+ */
 function whoIsMatt(event, response, model) {
     gimlet.getMLIs().then(urls => {
         if (!urls.length) {
@@ -183,24 +231,39 @@ function whoIsMatt(event, response, model) {
     .catch(utils.speakAndSendError(response));
 }
 
+/**
+ * List all Gimlet shows and exit.
+ */
 function listShows(event, response, model) {
     response.speak(speaker.get("ShowList"))
             .send();
 }
 
+/**
+ * If we're in DEFAULT state and the user just names a show on its own, 
+ * take it to mean "play the latest ..."
+ */
 function showTitleNamed(event, response, model) {
-    // if the user just names a show on its own, take it to mean "play the latest ..."
     playLatest.apply(this, arguments);
 }
 
+/**
+ * Pauses playback
+ */
 function pause(event, response, model) {
     response.audioPlayerStop().send();
 }
 
+/**
+ * Stops (in effect, pauses) playback
+ */
 function stop(event, response, model) {
     response.audioPlayerStop().send();
 }
 
+/**
+ * Resumes playback if soemthing unfinished is still queued up
+ */
 function resume(event, response, model) {
     const pb = model.getPlaybackState();
     if (playbackState.isValid(pb) && !playbackState.isFinished(pb)) {
@@ -209,6 +272,10 @@ function resume(event, response, model) {
     response.send();
 }
 
+/**
+ * If an episode is still queued up, retarts playback from the beginning. If there's
+ * nothing in the queue, tell the user that fact.
+ */
 function startOver(event, response, model) {
     const pb = model.getPlaybackState();
     if (playbackState.isValid(pb)) {
@@ -222,39 +289,35 @@ function startOver(event, response, model) {
     response.send();
 }
 
+/**
+ * We don't support a subset of standard Alexa playback operations (e.g. "next", 
+ * "shuffle on", etc.)
+ */
 function playbackOperationUnsupported(event, response, model) {
     const speech = speaker.get("UnsupportedOperation");
     response.speak(speech)
             .send();
 }
 
+/**
+ * Session ends outside of our control
+ */
 function sessionEnded(event, response, model) {
+    // should be impossible to get here with an active question, 
+    // but just in case let's wipe the slate clean
     model.exitQuestionMode();
     response.sendNil({saveState: true});
 }
 
 /**
- * Misc. handlers
+ * Triggered when an intent is understood, but we don't have a handler defined
+ * for it in the current state. We respond to this occasion by telling the
+ * user we didn't understand, and asking for clarification. 
  */
-
 function unhandledAction(event, response, model) {
-    /* This function is triggered whenever an intent is understood by Alexa, 
-        but we define no handler for it in the current application state.
-    */
-    const activeQuestion = model.getActiveQuestion();
-    if (activeQuestion) {
-        const speech = speaker.getQuestionSpeech(activeQuestion, 'unhandled');
-        const reprompt = speaker.getQuestionSpeech(activeQuestion, 'reprompt');
-
-        response.speak(speech)
-                .listen(reprompt);
-    }
-    else {
-        response.speak(speaker.get("_Unhandled"))
-                .listen(speaker.get("WhatToDo"));
-    }
-
-    response.send();
+    response.speak(speaker.get("_Unhandled"))
+            .listen(speaker.get("WhatToDo"));
+            .send();
 }
 
 /**
@@ -262,7 +325,7 @@ function unhandledAction(event, response, model) {
  */
 
 function playLatestHelper(response, model, showId) {
-    contentHelper.fetchLatestEpisode(response, showId)
+    contentHelper.fetchLatestEpisode(showId)
     .then(episode => {
         const intro = speaker.introduceMostRecent(showId);
 
@@ -294,7 +357,7 @@ function playSerialHelper(response, model, showId, epIndex) {
         epIndex = (lastPlayedIndex === undefined) ? 0 : lastPlayedIndex+1;
     }
     
-    contentHelper.fetchSerialEpisode(response, showId, epIndex)
+    contentHelper.fetchSerialEpisode(showId, epIndex)
         .then(episode => {
             const intro = speaker.introduceSerial(showId);
 
@@ -328,7 +391,7 @@ function playSerialHelper(response, model, showId, epIndex) {
 }
 
 function playFavoriteHelper(response, model, showId, favIndex) {
-    contentHelper.fetchFavoriteEpisode(response, showId, favIndex)
+    contentHelper.fetchFavoriteEpisode(showId, favIndex)
         .then(episode => {
             const token = contentToken.create(
                 contentToken.TYPES.FAVORITE,
@@ -336,7 +399,6 @@ function playFavoriteHelper(response, model, showId, favIndex) {
                 {showId: showId, index: episode.index}
             );
 
-            const intro = speaker.introduceFavorite(showId);
             const showTitle = gimlet.titleForShow(showId);
 
             const cardTitle = `Playing ${showTitle}`
@@ -344,8 +406,11 @@ function playFavoriteHelper(response, model, showId, favIndex) {
                 `Now playing a staff-favorite episode of ${showTitle}, "${episode.title}".` :
                 `Now playing a staff-favorite episode of ${showTitle}.`
 
-            response.speak(intro)
-                    .cardRenderer(cardTitle, cardContent)
+            if (episode.intro) {
+                response.speak(episode.intro)
+            }
+            
+            response.cardRenderer(cardTitle, cardContent)
                     .audioPlayerPlay('REPLACE_ALL', episode.url, token.toString(), null, 0)
                     .send();
         })

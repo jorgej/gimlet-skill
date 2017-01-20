@@ -1,37 +1,84 @@
-'use strict';
+/**
+ * gimlet.js
+ * Author: Greg Nicholas
+ * 
+ * Contains fixed information about Gimlet shows and operations
+ * for fetching resources.
+ */
+
+"use strict";
 
 const _ = require("lodash");
 
 module.exports = {
-    shows: shows,
+
+    showIds: showIds,
     
+    /**
+     * Returns the full properly formatted title for a given show.
+     */
     titleForShow: function(showId) {
         return titleMap[showId];
     },
 
+    /**
+     * Return true is the given show ID is for a serialized show.
+     */
     isSerialShow: function(showId) {
         return showId === 'homecoming' || showId === 'crimetown';
     },
 
+    /**
+     * Returns an async promise for an object mapping of show IDs to RSS feed urls
+     */
     getFeedMap: function() {
         return fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/feeds.json');
     },
-
+    
+    /**
+     * Returns an async promise for an object mapping of show IDs to arrays of "favorite" 
+     * objects. These favorites have the following format:
+     * { 
+     *   content: String (mp3 url),
+     *   title: String
+     *   intro: String (optional, mp3 url of audio introducing episode)
+     * }
+     */
     getFavoritesMap: function() {
         return fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/favorites.json');
     },
 
+    /**
+     * Returns an async promise for an array of "exclusive" objects. These exlusives have the 
+     * following format:
+     * { 
+     *   content: String (mp3 url),
+     *   title: String
+     *   intro: String (optional, url for Alexa-friendly mp3 of audio introducing episode)
+     * }
+     */
     getExclusives: function() {
         return fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/exclusives.json');
     },
 
+    /**
+     * Returns an async promise for an array of string URLs of "Matt Lieber is..." clips. 
+     * These URLs should point to Alexa-friendly mp3 files.
+     */
     getMLIs: function() {
-        return fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/mattliebris.json');
+        return fetchJSONData('https://s3.amazonaws.com/amazon-alexa/sources/mattlieberis.json');
     },
 
+    /**
+     * Matches the user-spoken raw value inside a "ShowTitle" slot to a canonical 
+     * show ID. 
+     * 
+     * Some basic logic exists to match common special cases, for example:
+     * "science versus" => "sciencevs"
+     * "heavy weights" => "heavyweight"
+     */
     showMatchingSlotValue: function(slotValue) {
         // first build a list of valid patterns we'll accept for each show based on their English titles
-        const showIds = _.values(shows);
         const showSlotPatterns = _.mapValues(titleMap, function(title) {
             return [title.toLowerCase()];
         });
@@ -43,26 +90,25 @@ module.exports = {
 
         const targetVal = slotValue.toLowerCase();
         // look through the show Ids for a pattern that matches
-        return _.values(shows).find(showId => {
+        return showIds.find(showId => {
             return _.includes(showSlotPatterns[showId], targetVal);
         });
     }
 };
 
-
-const shows = {
-    CrimeTown: 'crimetown',
-    Heavyweight: 'heavyweight',
-    Homecoming: 'homecoming',
-    MysteryShow: 'mysteryshow',
-    ReplyAll: 'replyall',
-    ScienceVs: 'sciencevs',
-    StartUp: 'startup',
-    Sampler: 'sampler',
-    SurprisinglyAwesome: 'surprisinglyawesome',
-    TwiceRemoved: 'twiceremoved',
-    Undone: 'undone'
-};
+const showIds = [
+    'crimetown',
+    'heavyweight',
+    'homecoming',
+    'mysteryshow',
+    'replyall',
+    'sciencevs',
+    'startup',
+    'sampler',
+    'surprisinglyawesome',
+    'twiceremoved',
+    'undone'
+];
 
 const titleMap = {
     crimetown: 'Crime Town',

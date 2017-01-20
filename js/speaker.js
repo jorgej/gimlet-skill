@@ -1,4 +1,11 @@
-'use strict';
+/**
+ * speaker.js
+ * Author: Greg Nicholas
+ * 
+ * Contains configuration for all content spoken by Alexa.
+ */
+
+"use strict";
 
 module.exports = {
     // most static speech comes from here
@@ -8,16 +15,17 @@ module.exports = {
 
     // speech that requires arguments
     introduceMostRecent: introduceMostRecent,
-    introduceFavorite: introduceFavorite,
     introduceSerial: introduceSerial,
     askToResume: askToResume
 };
 
+/**
+ * Returns speech identified by a particular key. Most speech used in the skill
+ * is configured here.
+ * 
+ * Value returned will either be a string containing plain text, or SSML.
+ */
 function getKeyedSpeech(key) {
-
-    // Convert `arguments` to a proper array and leave out the first argument (which is the parameter 'key'). This is a workaround for Lambda's lack of support for ES6 rest parameters (`...args`). See http://whatdoeslambdasupport.com/. 
-    var args = Array.prototype.slice.call(arguments, 1);
-
     var speech = {
         "Welcome":              audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Welcome.mp3"),
         "NewUserWelcome":       audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/New+User+Welcome.mp3"),
@@ -43,7 +51,7 @@ function getKeyedSpeech(key) {
         "UnsupportedOperation": audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Unsupported+Operation.mp3"),
 
         // TODO: track
-        "EpisodeNotFound":      "Sorry, I couldn't find that episode."
+        "EpisodeNotFound":      "Sorry, I couldn't find that episode.",
         "Error":                "Sorry, I ran into a problem. Please try again later.",
 
         "_Unhandled":           audio("https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Did+Not+Understand.mp3")
@@ -53,6 +61,21 @@ function getKeyedSpeech(key) {
 };
 
 // types: 'original', 'help', 'reprompt', 'unhandled'
+
+/**
+ * Returns speech content related to a particular "question state" the skill is in.
+ * Four possible question "types" can be returned:
+ * - "original": The original question to be asked to the user
+ * - "help": A message for when the user asks for help in response to the question
+ * - "reprompt": A message spoken when the question must be asked again (e.g. in
+ *      response to silence by the user)
+ * - "unhandled": A message for when the user responds to a question with an 
+ *      irrelevant intent
+ * 
+ * Arguments:
+ * - question: String, a question mode identifier (defined in constants.js)
+ * - type: String, question type, described above
+ */
 function getQuestionSpeech(question, type) {
     const pack = questionSpeechPacks[question];
     if (pack) {
@@ -91,8 +114,47 @@ const questionSpeechPacks = {
     }
 }
 
+/**
+ * Returns speech to introduce the latest episode of a particular show.
+ */
+function introduceMostRecent(showId) {
+    if (urlSuffixMap[showId]) {
+        return audio(standardMostRecentUrl(urlSuffixMap[showId]));
+    }
+    else {
+        // TODO: handle erroneous arg with Alexa speech?
+        return "";
+    }
+}
+
+/**
+ * Returns speech to introduce an episode of a serialized show.
+ */
+function introduceSerial(showId) {
+    // TODO: track this?
+    return "";
+}
+
+/**
+ * Returns speech to ask the user if they want to resume listening 
+ * to a particular show.
+ */
+function askToResume(showId) {
+    let url;
+    if (showId) {
+        url = `https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Confirm+Resume+${urlSuffixMap[showId]}.mp3`
+    }
+    else {
+        url = "https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Confirm+Resume+Help.mp3";
+    }
+    return audio(url);
+}
+
+/**
+ * Helpers
+ */
+
 const urlSuffixMap = {
-    // Uncomment when these are live
     "crimetown": "Crimetown",
     "heavyweight": "Heavyweight",
     "homecoming": "Homecoming",
@@ -104,42 +166,6 @@ const urlSuffixMap = {
     "surprisinglyawesome": "Surprisingly+Awesome",
     "twiceremoved": "Twice+Removed",
     "undone": "Undone"
-}
-
-function introduceMostRecent(showId) {
-    if (urlSuffixMap[showId]) {
-        return audio(standardMostRecentUrl(urlSuffixMap[showId]));
-    }
-    else {
-        // TODO: handle erroneous arg with Alexa speech?
-        return "";
-    }
-}
-
-function introduceFavorite(showId) {
-    if (urlSuffixMap[showId]) {
-        return audio(standardFavoriteUrl(urlSuffixMap[showId]));
-    }
-    else {
-        // TODO: handle erroneous arg
-        return "";
-    }
-}
-
-function introduceSerial(showId) {
-    // TODO: track this?
-    return "";
-}
-
-function askToResume(showId) {
-    let url;
-    if (showId) {
-        url = `https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Confirm+Resume+${urlSuffixMap[showId]}.mp3`
-    }
-    else {
-        url = "https://s3.amazonaws.com/amazon-alexa/Audio+Files/Prompts/Confirm+Resume+Help.mp3";
-    }
-    return audio(url);
 }
 
 function audio(url) {
