@@ -316,7 +316,7 @@ function sessionEnded(event, response, model) {
  */
 function unhandledAction(event, response, model) {
     response.speak(speaker.get("_Unhandled"))
-            .listen(speaker.get("WhatToDo"));
+            .listen(speaker.get("WhatToDo"))
             .send();
 }
 

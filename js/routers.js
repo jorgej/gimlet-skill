@@ -91,7 +91,7 @@ askShowDialogueRouter.decorateActions(decorators.analytics);
  * returns to the skill with something paused in their queue ("Would you like to 
  * resume where you left off?")
  */
-var confirmDialogueRouter = alexaPlBetterAlexaus.createStateRouter(states.QUESTION_CONFIRM, {
+var confirmDialogueRouter = BetterAlexa.createStateRouter(states.QUESTION_CONFIRM, {
     'AMAZON.YesIntent': dialogueActions.resumeConfirmationYes,
     'AMAZON.NoIntent': dialogueActions.resumeConfirmationNo,
 

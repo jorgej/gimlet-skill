@@ -10,6 +10,20 @@
 
 const _ = require("lodash");
 
+const showIds = [
+    'crimetown',
+    'heavyweight',
+    'homecoming',
+    'mysteryshow',
+    'replyall',
+    'sciencevs',
+    'startup',
+    'sampler',
+    'surprisinglyawesome',
+    'twiceremoved',
+    'undone'
+];
+
 module.exports = {
 
     showIds: showIds,
@@ -96,19 +110,9 @@ module.exports = {
     }
 };
 
-const showIds = [
-    'crimetown',
-    'heavyweight',
-    'homecoming',
-    'mysteryshow',
-    'replyall',
-    'sciencevs',
-    'startup',
-    'sampler',
-    'surprisinglyawesome',
-    'twiceremoved',
-    'undone'
-];
+/**
+ * Config and helpers
+ */
 
 const titleMap = {
     crimetown: 'Crime Town',

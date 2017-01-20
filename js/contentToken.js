@@ -16,6 +16,16 @@
 
 const _ = require("lodash");
 
+/**
+ * All valid token "types"
+ */
+const TYPES = {
+    SERIAL: 'SERIAL',
+    FAVORITE: 'FAVORITE',
+    LATEST: 'LATEST',
+    EXCLUSIVE: 'EXCLUSIVE'
+};
+
 module.exports = {
     TYPES: TYPES,
     
@@ -59,13 +69,3 @@ function isValid(token) {
         _.includes(_.keys(TYPES), token.type) &&
         !!token.url;
 }
-
-/**
- * All valid token "types"
- */
-const TYPES = {
-    SERIAL: 'SERIAL',
-    FAVORITE: 'FAVORITE',
-    LATEST: 'LATEST',
-    EXCLUSIVE: 'EXCLUSIVE'
-};

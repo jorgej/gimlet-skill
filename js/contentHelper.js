@@ -10,7 +10,7 @@
 const gimlet = require('./gimlet');
 const rss = require('rss-parser');
 
-const _EpisodeRangeError = 'EpisodeRangeError';
+const _EpisodeRangeErrorName = 'EpisodeRangeError';
 
 module.exports = {
     fetchLatestEpisode: fetchLatestEpisode,
