@@ -1,75 +1,998 @@
+# (play|play me|listen to|begin|begin playing|start|I want to hear|give me|let's hear|I want|queue up|cue up|do|go to|to play|to play me|to listen to|to begin|to begin playing|to start|to give me|to queue up|to cue up|to do|to go to) (the latest|the most recent|the newest|the last|this week's|a recent) (|episode of) (|{ShowTitle})
+# NOTE: and then clean up the generated utterances by find/replacing "episode of\n" with "episode\n"
+PlayLatest play the latest episode of {ShowTitle}
+PlayLatest play the latest episode
 PlayLatest play the latest {ShowTitle}
+PlayLatest play the latest
+PlayLatest play the most recent episode of {ShowTitle}
+PlayLatest play the most recent episode
 PlayLatest play the most recent {ShowTitle}
-PlayLatest play {ShowTitle}
-PlayLatest play episode {Number} of {ShowTitle}
+PlayLatest play the most recent
+PlayLatest play the newest episode of {ShowTitle}
+PlayLatest play the newest episode
+PlayLatest play the newest {ShowTitle}
+PlayLatest play the newest
+PlayLatest play the last episode of {ShowTitle}
+PlayLatest play the last episode
+PlayLatest play the last {ShowTitle}
+PlayLatest play the last
+PlayLatest play this week's episode of {ShowTitle}
+PlayLatest play this week's episode
+PlayLatest play this week's {ShowTitle}
+PlayLatest play this week's
+PlayLatest play a recent episode of {ShowTitle}
+PlayLatest play a recent episode
+PlayLatest play a recent {ShowTitle}
+PlayLatest play a recent
+PlayLatest play me the latest episode of {ShowTitle}
+PlayLatest play me the latest episode
+PlayLatest play me the latest {ShowTitle}
+PlayLatest play me the latest
+PlayLatest play me the most recent episode of {ShowTitle}
+PlayLatest play me the most recent episode
+PlayLatest play me the most recent {ShowTitle}
+PlayLatest play me the most recent
+PlayLatest play me the newest episode of {ShowTitle}
+PlayLatest play me the newest episode
+PlayLatest play me the newest {ShowTitle}
+PlayLatest play me the newest
+PlayLatest play me the last episode of {ShowTitle}
+PlayLatest play me the last episode
+PlayLatest play me the last {ShowTitle}
+PlayLatest play me the last
+PlayLatest play me this week's episode of {ShowTitle}
+PlayLatest play me this week's episode
+PlayLatest play me this week's {ShowTitle}
+PlayLatest play me this week's
+PlayLatest play me a recent episode of {ShowTitle}
+PlayLatest play me a recent episode
+PlayLatest play me a recent {ShowTitle}
+PlayLatest play me a recent
+PlayLatest listen to the latest episode of {ShowTitle}
+PlayLatest listen to the latest episode
 PlayLatest listen to the latest {ShowTitle}
+PlayLatest listen to the latest
+PlayLatest listen to the most recent episode of {ShowTitle}
+PlayLatest listen to the most recent episode
 PlayLatest listen to the most recent {ShowTitle}
+PlayLatest listen to the most recent
+PlayLatest listen to the newest episode of {ShowTitle}
+PlayLatest listen to the newest episode
+PlayLatest listen to the newest {ShowTitle}
+PlayLatest listen to the newest
+PlayLatest listen to the last episode of {ShowTitle}
+PlayLatest listen to the last episode
+PlayLatest listen to the last {ShowTitle}
+PlayLatest listen to the last
+PlayLatest listen to this week's episode of {ShowTitle}
+PlayLatest listen to this week's episode
+PlayLatest listen to this week's {ShowTitle}
+PlayLatest listen to this week's
+PlayLatest listen to a recent episode of {ShowTitle}
+PlayLatest listen to a recent episode
+PlayLatest listen to a recent {ShowTitle}
+PlayLatest listen to a recent
+PlayLatest begin the latest episode of {ShowTitle}
+PlayLatest begin the latest episode
+PlayLatest begin the latest {ShowTitle}
+PlayLatest begin the latest
+PlayLatest begin the most recent episode of {ShowTitle}
+PlayLatest begin the most recent episode
+PlayLatest begin the most recent {ShowTitle}
+PlayLatest begin the most recent
+PlayLatest begin the newest episode of {ShowTitle}
+PlayLatest begin the newest episode
+PlayLatest begin the newest {ShowTitle}
+PlayLatest begin the newest
+PlayLatest begin the last episode of {ShowTitle}
+PlayLatest begin the last episode
+PlayLatest begin the last {ShowTitle}
+PlayLatest begin the last
+PlayLatest begin this week's episode of {ShowTitle}
+PlayLatest begin this week's episode
+PlayLatest begin this week's {ShowTitle}
+PlayLatest begin this week's
+PlayLatest begin a recent episode of {ShowTitle}
+PlayLatest begin a recent episode
+PlayLatest begin a recent {ShowTitle}
+PlayLatest begin a recent
+PlayLatest begin playing the latest episode of {ShowTitle}
+PlayLatest begin playing the latest episode
+PlayLatest begin playing the latest {ShowTitle}
+PlayLatest begin playing the latest
+PlayLatest begin playing the most recent episode of {ShowTitle}
+PlayLatest begin playing the most recent episode
+PlayLatest begin playing the most recent {ShowTitle}
+PlayLatest begin playing the most recent
+PlayLatest begin playing the newest episode of {ShowTitle}
+PlayLatest begin playing the newest episode
+PlayLatest begin playing the newest {ShowTitle}
+PlayLatest begin playing the newest
+PlayLatest begin playing the last episode of {ShowTitle}
+PlayLatest begin playing the last episode
+PlayLatest begin playing the last {ShowTitle}
+PlayLatest begin playing the last
+PlayLatest begin playing this week's episode of {ShowTitle}
+PlayLatest begin playing this week's episode
+PlayLatest begin playing this week's {ShowTitle}
+PlayLatest begin playing this week's
+PlayLatest begin playing a recent episode of {ShowTitle}
+PlayLatest begin playing a recent episode
+PlayLatest begin playing a recent {ShowTitle}
+PlayLatest begin playing a recent
+PlayLatest start the latest episode of {ShowTitle}
+PlayLatest start the latest episode
+PlayLatest start the latest {ShowTitle}
+PlayLatest start the latest
+PlayLatest start the most recent episode of {ShowTitle}
+PlayLatest start the most recent episode
+PlayLatest start the most recent {ShowTitle}
+PlayLatest start the most recent
+PlayLatest start the newest episode of {ShowTitle}
+PlayLatest start the newest episode
+PlayLatest start the newest {ShowTitle}
+PlayLatest start the newest
+PlayLatest start the last episode of {ShowTitle}
+PlayLatest start the last episode
+PlayLatest start the last {ShowTitle}
+PlayLatest start the last
+PlayLatest start this week's episode of {ShowTitle}
+PlayLatest start this week's episode
+PlayLatest start this week's {ShowTitle}
+PlayLatest start this week's
+PlayLatest start a recent episode of {ShowTitle}
+PlayLatest start a recent episode
+PlayLatest start a recent {ShowTitle}
+PlayLatest start a recent
+PlayLatest I want to hear the latest episode of {ShowTitle}
+PlayLatest I want to hear the latest episode
+PlayLatest I want to hear the latest {ShowTitle}
+PlayLatest I want to hear the latest
+PlayLatest I want to hear the most recent episode of {ShowTitle}
+PlayLatest I want to hear the most recent episode
+PlayLatest I want to hear the most recent {ShowTitle}
+PlayLatest I want to hear the most recent
+PlayLatest I want to hear the newest episode of {ShowTitle}
+PlayLatest I want to hear the newest episode
+PlayLatest I want to hear the newest {ShowTitle}
+PlayLatest I want to hear the newest
+PlayLatest I want to hear the last episode of {ShowTitle}
+PlayLatest I want to hear the last episode
+PlayLatest I want to hear the last {ShowTitle}
+PlayLatest I want to hear the last
+PlayLatest I want to hear this week's episode of {ShowTitle}
+PlayLatest I want to hear this week's episode
+PlayLatest I want to hear this week's {ShowTitle}
+PlayLatest I want to hear this week's
+PlayLatest I want to hear a recent episode of {ShowTitle}
+PlayLatest I want to hear a recent episode
+PlayLatest I want to hear a recent {ShowTitle}
+PlayLatest I want to hear a recent
+PlayLatest give me the latest episode of {ShowTitle}
+PlayLatest give me the latest episode
+PlayLatest give me the latest {ShowTitle}
+PlayLatest give me the latest
+PlayLatest give me the most recent episode of {ShowTitle}
+PlayLatest give me the most recent episode
+PlayLatest give me the most recent {ShowTitle}
+PlayLatest give me the most recent
+PlayLatest give me the newest episode of {ShowTitle}
+PlayLatest give me the newest episode
+PlayLatest give me the newest {ShowTitle}
+PlayLatest give me the newest
+PlayLatest give me the last episode of {ShowTitle}
+PlayLatest give me the last episode
+PlayLatest give me the last {ShowTitle}
+PlayLatest give me the last
+PlayLatest give me this week's episode of {ShowTitle}
+PlayLatest give me this week's episode
+PlayLatest give me this week's {ShowTitle}
+PlayLatest give me this week's
+PlayLatest give me a recent episode of {ShowTitle}
+PlayLatest give me a recent episode
+PlayLatest give me a recent {ShowTitle}
+PlayLatest give me a recent
+PlayLatest let's hear the latest episode of {ShowTitle}
+PlayLatest let's hear the latest episode
+PlayLatest let's hear the latest {ShowTitle}
+PlayLatest let's hear the latest
+PlayLatest let's hear the most recent episode of {ShowTitle}
+PlayLatest let's hear the most recent episode
+PlayLatest let's hear the most recent {ShowTitle}
+PlayLatest let's hear the most recent
+PlayLatest let's hear the newest episode of {ShowTitle}
+PlayLatest let's hear the newest episode
+PlayLatest let's hear the newest {ShowTitle}
+PlayLatest let's hear the newest
+PlayLatest let's hear the last episode of {ShowTitle}
+PlayLatest let's hear the last episode
+PlayLatest let's hear the last {ShowTitle}
+PlayLatest let's hear the last
+PlayLatest let's hear this week's episode of {ShowTitle}
+PlayLatest let's hear this week's episode
+PlayLatest let's hear this week's {ShowTitle}
+PlayLatest let's hear this week's
+PlayLatest let's hear a recent episode of {ShowTitle}
+PlayLatest let's hear a recent episode
+PlayLatest let's hear a recent {ShowTitle}
+PlayLatest let's hear a recent
+PlayLatest I want the latest episode of {ShowTitle}
+PlayLatest I want the latest episode
+PlayLatest I want the latest {ShowTitle}
+PlayLatest I want the latest
+PlayLatest I want the most recent episode of {ShowTitle}
+PlayLatest I want the most recent episode
+PlayLatest I want the most recent {ShowTitle}
+PlayLatest I want the most recent
+PlayLatest I want the newest episode of {ShowTitle}
+PlayLatest I want the newest episode
+PlayLatest I want the newest {ShowTitle}
+PlayLatest I want the newest
+PlayLatest I want the last episode of {ShowTitle}
+PlayLatest I want the last episode
+PlayLatest I want the last {ShowTitle}
+PlayLatest I want the last
+PlayLatest I want this week's episode of {ShowTitle}
+PlayLatest I want this week's episode
+PlayLatest I want this week's {ShowTitle}
+PlayLatest I want this week's
+PlayLatest I want a recent episode of {ShowTitle}
+PlayLatest I want a recent episode
+PlayLatest I want a recent {ShowTitle}
+PlayLatest I want a recent
+PlayLatest queue up the latest episode of {ShowTitle}
+PlayLatest queue up the latest episode
+PlayLatest queue up the latest {ShowTitle}
+PlayLatest queue up the latest
+PlayLatest queue up the most recent episode of {ShowTitle}
+PlayLatest queue up the most recent episode
+PlayLatest queue up the most recent {ShowTitle}
+PlayLatest queue up the most recent
+PlayLatest queue up the newest episode of {ShowTitle}
+PlayLatest queue up the newest episode
+PlayLatest queue up the newest {ShowTitle}
+PlayLatest queue up the newest
+PlayLatest queue up the last episode of {ShowTitle}
+PlayLatest queue up the last episode
+PlayLatest queue up the last {ShowTitle}
+PlayLatest queue up the last
+PlayLatest queue up this week's episode of {ShowTitle}
+PlayLatest queue up this week's episode
+PlayLatest queue up this week's {ShowTitle}
+PlayLatest queue up this week's
+PlayLatest queue up a recent episode of {ShowTitle}
+PlayLatest queue up a recent episode
+PlayLatest queue up a recent {ShowTitle}
+PlayLatest queue up a recent
+PlayLatest cue up the latest episode of {ShowTitle}
+PlayLatest cue up the latest episode
+PlayLatest cue up the latest {ShowTitle}
+PlayLatest cue up the latest
+PlayLatest cue up the most recent episode of {ShowTitle}
+PlayLatest cue up the most recent episode
+PlayLatest cue up the most recent {ShowTitle}
+PlayLatest cue up the most recent
+PlayLatest cue up the newest episode of {ShowTitle}
+PlayLatest cue up the newest episode
+PlayLatest cue up the newest {ShowTitle}
+PlayLatest cue up the newest
+PlayLatest cue up the last episode of {ShowTitle}
+PlayLatest cue up the last episode
+PlayLatest cue up the last {ShowTitle}
+PlayLatest cue up the last
+PlayLatest cue up this week's episode of {ShowTitle}
+PlayLatest cue up this week's episode
+PlayLatest cue up this week's {ShowTitle}
+PlayLatest cue up this week's
+PlayLatest cue up a recent episode of {ShowTitle}
+PlayLatest cue up a recent episode
+PlayLatest cue up a recent {ShowTitle}
+PlayLatest cue up a recent
+PlayLatest do the latest episode of {ShowTitle}
+PlayLatest do the latest episode
+PlayLatest do the latest {ShowTitle}
+PlayLatest do the latest
+PlayLatest do the most recent episode of {ShowTitle}
+PlayLatest do the most recent episode
+PlayLatest do the most recent {ShowTitle}
+PlayLatest do the most recent
+PlayLatest do the newest episode of {ShowTitle}
+PlayLatest do the newest episode
+PlayLatest do the newest {ShowTitle}
+PlayLatest do the newest
+PlayLatest do the last episode of {ShowTitle}
+PlayLatest do the last episode
+PlayLatest do the last {ShowTitle}
+PlayLatest do the last
+PlayLatest do this week's episode of {ShowTitle}
+PlayLatest do this week's episode
+PlayLatest do this week's {ShowTitle}
+PlayLatest do this week's
+PlayLatest do a recent episode of {ShowTitle}
+PlayLatest do a recent episode
+PlayLatest do a recent {ShowTitle}
+PlayLatest do a recent
+PlayLatest go to the latest episode of {ShowTitle}
+PlayLatest go to the latest episode
+PlayLatest go to the latest {ShowTitle}
+PlayLatest go to the latest
+PlayLatest go to the most recent episode of {ShowTitle}
+PlayLatest go to the most recent episode
+PlayLatest go to the most recent {ShowTitle}
+PlayLatest go to the most recent
+PlayLatest go to the newest episode of {ShowTitle}
+PlayLatest go to the newest episode
+PlayLatest go to the newest {ShowTitle}
+PlayLatest go to the newest
+PlayLatest go to the last episode of {ShowTitle}
+PlayLatest go to the last episode
+PlayLatest go to the last {ShowTitle}
+PlayLatest go to the last
+PlayLatest go to this week's episode of {ShowTitle}
+PlayLatest go to this week's episode
+PlayLatest go to this week's {ShowTitle}
+PlayLatest go to this week's
+PlayLatest go to a recent episode of {ShowTitle}
+PlayLatest go to a recent episode
+PlayLatest go to a recent {ShowTitle}
+PlayLatest go to a recent
+PlayLatest to play the latest episode of {ShowTitle}
+PlayLatest to play the latest episode
+PlayLatest to play the latest {ShowTitle}
+PlayLatest to play the latest
+PlayLatest to play the most recent episode of {ShowTitle}
+PlayLatest to play the most recent episode
+PlayLatest to play the most recent {ShowTitle}
+PlayLatest to play the most recent
+PlayLatest to play the newest episode of {ShowTitle}
+PlayLatest to play the newest episode
+PlayLatest to play the newest {ShowTitle}
+PlayLatest to play the newest
+PlayLatest to play the last episode of {ShowTitle}
+PlayLatest to play the last episode
+PlayLatest to play the last {ShowTitle}
+PlayLatest to play the last
+PlayLatest to play this week's episode of {ShowTitle}
+PlayLatest to play this week's episode
+PlayLatest to play this week's {ShowTitle}
+PlayLatest to play this week's
+PlayLatest to play a recent episode of {ShowTitle}
+PlayLatest to play a recent episode
+PlayLatest to play a recent {ShowTitle}
+PlayLatest to play a recent
+PlayLatest to play me the latest episode of {ShowTitle}
+PlayLatest to play me the latest episode
+PlayLatest to play me the latest {ShowTitle}
+PlayLatest to play me the latest
+PlayLatest to play me the most recent episode of {ShowTitle}
+PlayLatest to play me the most recent episode
+PlayLatest to play me the most recent {ShowTitle}
+PlayLatest to play me the most recent
+PlayLatest to play me the newest episode of {ShowTitle}
+PlayLatest to play me the newest episode
+PlayLatest to play me the newest {ShowTitle}
+PlayLatest to play me the newest
+PlayLatest to play me the last episode of {ShowTitle}
+PlayLatest to play me the last episode
+PlayLatest to play me the last {ShowTitle}
+PlayLatest to play me the last
+PlayLatest to play me this week's episode of {ShowTitle}
+PlayLatest to play me this week's episode
+PlayLatest to play me this week's {ShowTitle}
+PlayLatest to play me this week's
+PlayLatest to play me a recent episode of {ShowTitle}
+PlayLatest to play me a recent episode
+PlayLatest to play me a recent {ShowTitle}
+PlayLatest to play me a recent
+PlayLatest to listen to the latest episode of {ShowTitle}
+PlayLatest to listen to the latest episode
+PlayLatest to listen to the latest {ShowTitle}
+PlayLatest to listen to the latest
+PlayLatest to listen to the most recent episode of {ShowTitle}
+PlayLatest to listen to the most recent episode
+PlayLatest to listen to the most recent {ShowTitle}
+PlayLatest to listen to the most recent
+PlayLatest to listen to the newest episode of {ShowTitle}
+PlayLatest to listen to the newest episode
+PlayLatest to listen to the newest {ShowTitle}
+PlayLatest to listen to the newest
+PlayLatest to listen to the last episode of {ShowTitle}
+PlayLatest to listen to the last episode
+PlayLatest to listen to the last {ShowTitle}
+PlayLatest to listen to the last
+PlayLatest to listen to this week's episode of {ShowTitle}
+PlayLatest to listen to this week's episode
+PlayLatest to listen to this week's {ShowTitle}
+PlayLatest to listen to this week's
+PlayLatest to listen to a recent episode of {ShowTitle}
+PlayLatest to listen to a recent episode
+PlayLatest to listen to a recent {ShowTitle}
+PlayLatest to listen to a recent
+PlayLatest to begin the latest episode of {ShowTitle}
+PlayLatest to begin the latest episode
+PlayLatest to begin the latest {ShowTitle}
+PlayLatest to begin the latest
+PlayLatest to begin the most recent episode of {ShowTitle}
+PlayLatest to begin the most recent episode
+PlayLatest to begin the most recent {ShowTitle}
+PlayLatest to begin the most recent
+PlayLatest to begin the newest episode of {ShowTitle}
+PlayLatest to begin the newest episode
+PlayLatest to begin the newest {ShowTitle}
+PlayLatest to begin the newest
+PlayLatest to begin the last episode of {ShowTitle}
+PlayLatest to begin the last episode
+PlayLatest to begin the last {ShowTitle}
+PlayLatest to begin the last
+PlayLatest to begin this week's episode of {ShowTitle}
+PlayLatest to begin this week's episode
+PlayLatest to begin this week's {ShowTitle}
+PlayLatest to begin this week's
+PlayLatest to begin a recent episode of {ShowTitle}
+PlayLatest to begin a recent episode
+PlayLatest to begin a recent {ShowTitle}
+PlayLatest to begin a recent
+PlayLatest to begin playing the latest episode of {ShowTitle}
+PlayLatest to begin playing the latest episode
+PlayLatest to begin playing the latest {ShowTitle}
+PlayLatest to begin playing the latest
+PlayLatest to begin playing the most recent episode of {ShowTitle}
+PlayLatest to begin playing the most recent episode
+PlayLatest to begin playing the most recent {ShowTitle}
+PlayLatest to begin playing the most recent
+PlayLatest to begin playing the newest episode of {ShowTitle}
+PlayLatest to begin playing the newest episode
+PlayLatest to begin playing the newest {ShowTitle}
+PlayLatest to begin playing the newest
+PlayLatest to begin playing the last episode of {ShowTitle}
+PlayLatest to begin playing the last episode
+PlayLatest to begin playing the last {ShowTitle}
+PlayLatest to begin playing the last
+PlayLatest to begin playing this week's episode of {ShowTitle}
+PlayLatest to begin playing this week's episode
+PlayLatest to begin playing this week's {ShowTitle}
+PlayLatest to begin playing this week's
+PlayLatest to begin playing a recent episode of {ShowTitle}
+PlayLatest to begin playing a recent episode
+PlayLatest to begin playing a recent {ShowTitle}
+PlayLatest to begin playing a recent
+PlayLatest to start the latest episode of {ShowTitle}
+PlayLatest to start the latest episode
+PlayLatest to start the latest {ShowTitle}
+PlayLatest to start the latest
+PlayLatest to start the most recent episode of {ShowTitle}
+PlayLatest to start the most recent episode
+PlayLatest to start the most recent {ShowTitle}
+PlayLatest to start the most recent
+PlayLatest to start the newest episode of {ShowTitle}
+PlayLatest to start the newest episode
+PlayLatest to start the newest {ShowTitle}
+PlayLatest to start the newest
+PlayLatest to start the last episode of {ShowTitle}
+PlayLatest to start the last episode
+PlayLatest to start the last {ShowTitle}
+PlayLatest to start the last
+PlayLatest to start this week's episode of {ShowTitle}
+PlayLatest to start this week's episode
+PlayLatest to start this week's {ShowTitle}
+PlayLatest to start this week's
+PlayLatest to start a recent episode of {ShowTitle}
+PlayLatest to start a recent episode
+PlayLatest to start a recent {ShowTitle}
+PlayLatest to start a recent
+PlayLatest to give me the latest episode of {ShowTitle}
+PlayLatest to give me the latest episode
+PlayLatest to give me the latest {ShowTitle}
+PlayLatest to give me the latest
+PlayLatest to give me the most recent episode of {ShowTitle}
+PlayLatest to give me the most recent episode
+PlayLatest to give me the most recent {ShowTitle}
+PlayLatest to give me the most recent
+PlayLatest to give me the newest episode of {ShowTitle}
+PlayLatest to give me the newest episode
+PlayLatest to give me the newest {ShowTitle}
+PlayLatest to give me the newest
+PlayLatest to give me the last episode of {ShowTitle}
+PlayLatest to give me the last episode
+PlayLatest to give me the last {ShowTitle}
+PlayLatest to give me the last
+PlayLatest to give me this week's episode of {ShowTitle}
+PlayLatest to give me this week's episode
+PlayLatest to give me this week's {ShowTitle}
+PlayLatest to give me this week's
+PlayLatest to give me a recent episode of {ShowTitle}
+PlayLatest to give me a recent episode
+PlayLatest to give me a recent {ShowTitle}
+PlayLatest to give me a recent
+PlayLatest to queue up the latest episode of {ShowTitle}
+PlayLatest to queue up the latest episode
+PlayLatest to queue up the latest {ShowTitle}
+PlayLatest to queue up the latest
+PlayLatest to queue up the most recent episode of {ShowTitle}
+PlayLatest to queue up the most recent episode
+PlayLatest to queue up the most recent {ShowTitle}
+PlayLatest to queue up the most recent
+PlayLatest to queue up the newest episode of {ShowTitle}
+PlayLatest to queue up the newest episode
+PlayLatest to queue up the newest {ShowTitle}
+PlayLatest to queue up the newest
+PlayLatest to queue up the last episode of {ShowTitle}
+PlayLatest to queue up the last episode
+PlayLatest to queue up the last {ShowTitle}
+PlayLatest to queue up the last
+PlayLatest to queue up this week's episode of {ShowTitle}
+PlayLatest to queue up this week's episode
+PlayLatest to queue up this week's {ShowTitle}
+PlayLatest to queue up this week's
+PlayLatest to queue up a recent episode of {ShowTitle}
+PlayLatest to queue up a recent episode
+PlayLatest to queue up a recent {ShowTitle}
+PlayLatest to queue up a recent
+PlayLatest to cue up the latest episode of {ShowTitle}
+PlayLatest to cue up the latest episode
+PlayLatest to cue up the latest {ShowTitle}
+PlayLatest to cue up the latest
+PlayLatest to cue up the most recent episode of {ShowTitle}
+PlayLatest to cue up the most recent episode
+PlayLatest to cue up the most recent {ShowTitle}
+PlayLatest to cue up the most recent
+PlayLatest to cue up the newest episode of {ShowTitle}
+PlayLatest to cue up the newest episode
+PlayLatest to cue up the newest {ShowTitle}
+PlayLatest to cue up the newest
+PlayLatest to cue up the last episode of {ShowTitle}
+PlayLatest to cue up the last episode
+PlayLatest to cue up the last {ShowTitle}
+PlayLatest to cue up the last
+PlayLatest to cue up this week's episode of {ShowTitle}
+PlayLatest to cue up this week's episode
+PlayLatest to cue up this week's {ShowTitle}
+PlayLatest to cue up this week's
+PlayLatest to cue up a recent episode of {ShowTitle}
+PlayLatest to cue up a recent episode
+PlayLatest to cue up a recent {ShowTitle}
+PlayLatest to cue up a recent
+PlayLatest to do the latest episode of {ShowTitle}
+PlayLatest to do the latest episode
+PlayLatest to do the latest {ShowTitle}
+PlayLatest to do the latest
+PlayLatest to do the most recent episode of {ShowTitle}
+PlayLatest to do the most recent episode
+PlayLatest to do the most recent {ShowTitle}
+PlayLatest to do the most recent
+PlayLatest to do the newest episode of {ShowTitle}
+PlayLatest to do the newest episode
+PlayLatest to do the newest {ShowTitle}
+PlayLatest to do the newest
+PlayLatest to do the last episode of {ShowTitle}
+PlayLatest to do the last episode
+PlayLatest to do the last {ShowTitle}
+PlayLatest to do the last
+PlayLatest to do this week's episode of {ShowTitle}
+PlayLatest to do this week's episode
+PlayLatest to do this week's {ShowTitle}
+PlayLatest to do this week's
+PlayLatest to do a recent episode of {ShowTitle}
+PlayLatest to do a recent episode
+PlayLatest to do a recent {ShowTitle}
+PlayLatest to do a recent
+PlayLatest to go to the latest episode of {ShowTitle}
+PlayLatest to go to the latest episode
+PlayLatest to go to the latest {ShowTitle}
+PlayLatest to go to the latest
+PlayLatest to go to the most recent episode of {ShowTitle}
+PlayLatest to go to the most recent episode
+PlayLatest to go to the most recent {ShowTitle}
+PlayLatest to go to the most recent
+PlayLatest to go to the newest episode of {ShowTitle}
+PlayLatest to go to the newest episode
+PlayLatest to go to the newest {ShowTitle}
+PlayLatest to go to the newest
+PlayLatest to go to the last episode of {ShowTitle}
+PlayLatest to go to the last episode
+PlayLatest to go to the last {ShowTitle}
+PlayLatest to go to the last
+PlayLatest to go to this week's episode of {ShowTitle}
+PlayLatest to go to this week's episode
+PlayLatest to go to this week's {ShowTitle}
+PlayLatest to go to this week's
+PlayLatest to go to a recent episode of {ShowTitle}
+PlayLatest to go to a recent episode
+PlayLatest to go to a recent {ShowTitle}
+PlayLatest to go to a recent
+
+# (play|play me|listen to|begin|begin playing|start|I want to hear|give me|let's hear|I want|queue up|cue up|do|go to|to play|to play me|to listen to|to begin|to begin playing|to start|to give me|to queue up|to cue up|to do|to go to) ({ShowTitle}|something)
+
+PlayLatest play {ShowTitle}
+PlayLatest play something
+PlayLatest play me {ShowTitle}
+PlayLatest play me something
 PlayLatest listen to {ShowTitle}
+PlayLatest listen to something
+PlayLatest begin {ShowTitle}
+PlayLatest begin something
+PlayLatest begin playing {ShowTitle}
+PlayLatest begin playing something
+PlayLatest start {ShowTitle}
+PlayLatest start something
+PlayLatest I want to hear {ShowTitle}
+PlayLatest I want to hear something
+PlayLatest give me {ShowTitle}
+PlayLatest give me something
+PlayLatest let's hear {ShowTitle}
+PlayLatest let's hear something
+PlayLatest I want {ShowTitle}
+PlayLatest I want something
+PlayLatest queue up {ShowTitle}
+PlayLatest queue up something
+PlayLatest cue up {ShowTitle}
+PlayLatest cue up something
+PlayLatest do {ShowTitle}
+PlayLatest do something
+PlayLatest go to {ShowTitle}
+PlayLatest go to something
+PlayLatest to play {ShowTitle}
+PlayLatest to play something
+PlayLatest to play me {ShowTitle}
+PlayLatest to play me something
+PlayLatest to listen to {ShowTitle}
+PlayLatest to listen to something
+PlayLatest to begin {ShowTitle}
+PlayLatest to begin something
+PlayLatest to begin playing {ShowTitle}
+PlayLatest to begin playing something
+PlayLatest to start {ShowTitle}
+PlayLatest to start something
+PlayLatest to give me {ShowTitle}
+PlayLatest to give me something
+PlayLatest to queue up {ShowTitle}
+PlayLatest to queue up something
+PlayLatest to cue up {ShowTitle}
+PlayLatest to cue up something
+PlayLatest to do {ShowTitle}
+PlayLatest to do something
+PlayLatest to go to {ShowTitle}
+PlayLatest to go to something
+
+# (play|play me|listen to|begin|begin playing|start|I want to hear|give me|let's hear|I want|queue up|cue up|do|go to|to play|to play me|to listen to|to begin|to begin playing|to start|to give me|to queue up|to cue up|to do|to go to) episode {Number} of {ShowTitle}
+PlayLatest play episode {Number} of {ShowTitle}
+PlayLatest play me episode {Number} of {ShowTitle}
 PlayLatest listen to episode {Number} of {ShowTitle}
-PlayLatest to play
-PlayLatest to begin
-PlayLatest to begin playing
-PlayLatest to start
-PlayLatest play
-PlayLatest begin
-PlayLatest begin playing
-PlayLatest start
+PlayLatest begin episode {Number} of {ShowTitle}
+PlayLatest begin playing episode {Number} of {ShowTitle}
+PlayLatest start episode {Number} of {ShowTitle}
+PlayLatest I want to hear episode {Number} of {ShowTitle}
+PlayLatest give me episode {Number} of {ShowTitle}
+PlayLatest let's hear episode {Number} of {ShowTitle}
+PlayLatest I want episode {Number} of {ShowTitle}
+PlayLatest queue up episode {Number} of {ShowTitle}
+PlayLatest cue up episode {Number} of {ShowTitle}
+PlayLatest do episode {Number} of {ShowTitle}
+PlayLatest go to episode {Number} of {ShowTitle}
+PlayLatest to play episode {Number} of {ShowTitle}
+PlayLatest to play me episode {Number} of {ShowTitle}
+PlayLatest to listen to episode {Number} of {ShowTitle}
+PlayLatest to begin episode {Number} of {ShowTitle}
+PlayLatest to begin playing episode {Number} of {ShowTitle}
+PlayLatest to start episode {Number} of {ShowTitle}
+PlayLatest to give me episode {Number} of {ShowTitle}
+PlayLatest to queue up episode {Number} of {ShowTitle}
+PlayLatest to cue up episode {Number} of {ShowTitle}
+PlayLatest to do episode {Number} of {ShowTitle}
+PlayLatest to go to episode {Number} of {ShowTitle}
 
-PlayExclusive play a secret
-PlayExclusive play a bonus
-PlayExclusive play a subscriber
-PlayExclusive play an exclusive
-PlayExclusive listen to a secret
-PlayExclusive listen to a bonus
-PlayExclusive listen to an exclusive
+PlayLatest serve me up a hot and fresh {ShowTitle}
+PlayLatest latest
+PlayLatest most recent
+PlayLatest recent
+PlayLatest newest
+PlayLatest new
 
-PlayFavorite play a favorite episode
-PlayFavorite play a favorite episode from {ShowTitle}
-PlayFavorite play a favorite episode for {ShowTitle}
-PlayFavorite play a favorite episode of {ShowTitle}
-PlayFavorite play a recommended episode
-PlayFavorite play a recommended episode from {ShowTitle}
-PlayFavorite play a recommended episode for {ShowTitle}
-PlayFavorite play a recommended episode of {ShowTitle}
-PlayFavorite listen to a favorite episode
-PlayFavorite listen to a favorite episode from {ShowTitle}
-PlayFavorite listen to a favorite episode for {ShowTitle}
-PlayFavorite listen to a favorite episode of {ShowTitle}
 
+
+# (play|listen to|start|to play|to listen to|to start) (a secret|a bonus|an exclusive|a subscriber) episode
+PlayExclusive play a secret episode
+PlayExclusive play a bonus episode
+PlayExclusive play an exclusive episode
+PlayExclusive play a subscriber episode
+PlayExclusive listen to a secret episode
+PlayExclusive listen to a bonus episode
+PlayExclusive listen to an exclusive episode
+PlayExclusive listen to a subscriber episode
+PlayExclusive start a secret episode
+PlayExclusive start a bonus episode
+PlayExclusive start an exclusive episode
+PlayExclusive start a subscriber episode
+PlayExclusive to play a secret episode
+PlayExclusive to play a bonus episode
+PlayExclusive to play an exclusive episode
+PlayExclusive to play a subscriber episode
+PlayExclusive to listen to a secret episode
+PlayExclusive to listen to a bonus episode
+PlayExclusive to listen to an exclusive episode
+PlayExclusive to listen to a subscriber episode
+PlayExclusive to start a secret episode
+PlayExclusive to start a bonus episode
+PlayExclusive to start an exclusive episode
+PlayExclusive to start a subscriber episode
+
+
+
+# (play|listen to|start|recommend|to play|to listen to|to start|to recommend) the (favorite|recommended|best|popular) (|episode|episode of {ShowTitle}|{ShowTitle} episode|{ShowTitle})
+PlayFavorite play the favorite episode
+PlayFavorite play the favorite episode of {ShowTitle}
+PlayFavorite play the favorite {ShowTitle} episode
+PlayFavorite play the favorite {ShowTitle}
+PlayFavorite play the recommended episode
+PlayFavorite play the recommended episode of {ShowTitle}
+PlayFavorite play the recommended {ShowTitle} episode
+PlayFavorite play the recommended {ShowTitle}
+PlayFavorite play the best episode
+PlayFavorite play the best episode of {ShowTitle}
+PlayFavorite play the best {ShowTitle} episode
+PlayFavorite play the best {ShowTitle}
+PlayFavorite play the popular episode
+PlayFavorite play the popular episode of {ShowTitle}
+PlayFavorite play the popular {ShowTitle} episode
+PlayFavorite play the popular {ShowTitle}
+PlayFavorite listen to the favorite episode
+PlayFavorite listen to the favorite episode of {ShowTitle}
+PlayFavorite listen to the favorite {ShowTitle} episode
+PlayFavorite listen to the favorite {ShowTitle}
+PlayFavorite listen to the recommended episode
+PlayFavorite listen to the recommended episode of {ShowTitle}
+PlayFavorite listen to the recommended {ShowTitle} episode
+PlayFavorite listen to the recommended {ShowTitle}
+PlayFavorite listen to the best episode
+PlayFavorite listen to the best episode of {ShowTitle}
+PlayFavorite listen to the best {ShowTitle} episode
+PlayFavorite listen to the best {ShowTitle}
+PlayFavorite listen to the popular episode
+PlayFavorite listen to the popular episode of {ShowTitle}
+PlayFavorite listen to the popular {ShowTitle} episode
+PlayFavorite listen to the popular {ShowTitle}
+PlayFavorite start the favorite episode
+PlayFavorite start the favorite episode of {ShowTitle}
+PlayFavorite start the favorite {ShowTitle} episode
+PlayFavorite start the favorite {ShowTitle}
+PlayFavorite start the recommended episode
+PlayFavorite start the recommended episode of {ShowTitle}
+PlayFavorite start the recommended {ShowTitle} episode
+PlayFavorite start the recommended {ShowTitle}
+PlayFavorite start the best episode
+PlayFavorite start the best episode of {ShowTitle}
+PlayFavorite start the best {ShowTitle} episode
+PlayFavorite start the best {ShowTitle}
+PlayFavorite start the popular episode
+PlayFavorite start the popular episode of {ShowTitle}
+PlayFavorite start the popular {ShowTitle} episode
+PlayFavorite start the popular {ShowTitle}
+PlayFavorite recommend the favorite episode
+PlayFavorite recommend the favorite episode of {ShowTitle}
+PlayFavorite recommend the favorite {ShowTitle} episode
+PlayFavorite recommend the favorite {ShowTitle}
+PlayFavorite recommend the recommended episode
+PlayFavorite recommend the recommended episode of {ShowTitle}
+PlayFavorite recommend the recommended {ShowTitle} episode
+PlayFavorite recommend the recommended {ShowTitle}
+PlayFavorite recommend the best episode
+PlayFavorite recommend the best episode of {ShowTitle}
+PlayFavorite recommend the best {ShowTitle} episode
+PlayFavorite recommend the best {ShowTitle}
+PlayFavorite recommend the popular episode
+PlayFavorite recommend the popular episode of {ShowTitle}
+PlayFavorite recommend the popular {ShowTitle} episode
+PlayFavorite recommend the popular {ShowTitle}
+PlayFavorite to play the favorite episode
+PlayFavorite to play the favorite episode of {ShowTitle}
+PlayFavorite to play the favorite {ShowTitle} episode
+PlayFavorite to play the favorite {ShowTitle}
+PlayFavorite to play the recommended episode
+PlayFavorite to play the recommended episode of {ShowTitle}
+PlayFavorite to play the recommended {ShowTitle} episode
+PlayFavorite to play the recommended {ShowTitle}
+PlayFavorite to play the best episode
+PlayFavorite to play the best episode of {ShowTitle}
+PlayFavorite to play the best {ShowTitle} episode
+PlayFavorite to play the best {ShowTitle}
+PlayFavorite to play the popular episode
+PlayFavorite to play the popular episode of {ShowTitle}
+PlayFavorite to play the popular {ShowTitle} episode
+PlayFavorite to play the popular {ShowTitle}
+PlayFavorite to listen to the favorite episode
+PlayFavorite to listen to the favorite episode of {ShowTitle}
+PlayFavorite to listen to the favorite {ShowTitle} episode
+PlayFavorite to listen to the favorite {ShowTitle}
+PlayFavorite to listen to the recommended episode
+PlayFavorite to listen to the recommended episode of {ShowTitle}
+PlayFavorite to listen to the recommended {ShowTitle} episode
+PlayFavorite to listen to the recommended {ShowTitle}
+PlayFavorite to listen to the best episode
+PlayFavorite to listen to the best episode of {ShowTitle}
+PlayFavorite to listen to the best {ShowTitle} episode
+PlayFavorite to listen to the best {ShowTitle}
+PlayFavorite to listen to the popular episode
+PlayFavorite to listen to the popular episode of {ShowTitle}
+PlayFavorite to listen to the popular {ShowTitle} episode
+PlayFavorite to listen to the popular {ShowTitle}
+PlayFavorite to start the favorite episode
+PlayFavorite to start the favorite episode of {ShowTitle}
+PlayFavorite to start the favorite {ShowTitle} episode
+PlayFavorite to start the favorite {ShowTitle}
+PlayFavorite to start the recommended episode
+PlayFavorite to start the recommended episode of {ShowTitle}
+PlayFavorite to start the recommended {ShowTitle} episode
+PlayFavorite to start the recommended {ShowTitle}
+PlayFavorite to start the best episode
+PlayFavorite to start the best episode of {ShowTitle}
+PlayFavorite to start the best {ShowTitle} episode
+PlayFavorite to start the best {ShowTitle}
+PlayFavorite to start the popular episode
+PlayFavorite to start the popular episode of {ShowTitle}
+PlayFavorite to start the popular {ShowTitle} episode
+PlayFavorite to start the popular {ShowTitle}
+PlayFavorite to recommend the favorite episode
+PlayFavorite to recommend the favorite episode of {ShowTitle}
+PlayFavorite to recommend the favorite {ShowTitle} episode
+PlayFavorite to recommend the favorite {ShowTitle}
+PlayFavorite to recommend the recommended episode
+PlayFavorite to recommend the recommended episode of {ShowTitle}
+PlayFavorite to recommend the recommended {ShowTitle} episode
+PlayFavorite to recommend the recommended {ShowTitle}
+PlayFavorite to recommend the best episode
+PlayFavorite to recommend the best episode of {ShowTitle}
+PlayFavorite to recommend the best {ShowTitle} episode
+PlayFavorite to recommend the best {ShowTitle}
+PlayFavorite to recommend the popular episode
+PlayFavorite to recommend the popular episode of {ShowTitle}
+PlayFavorite to recommend the popular {ShowTitle} episode
+PlayFavorite to recommend the popular {ShowTitle}
+
+# (play|listen to|start|recommend|to play|to listen to|to start|to recommend) one of {ShowTitle} (favorite|recommended|best|popular) episodes
+PlayFavorite play one of {ShowTitle} favorite episodes
+PlayFavorite play one of {ShowTitle} recommended episodes
+PlayFavorite play one of {ShowTitle} best episodes
+PlayFavorite play one of {ShowTitle} popular episodes
+PlayFavorite listen to one of {ShowTitle} favorite episodes
+PlayFavorite listen to one of {ShowTitle} recommended episodes
+PlayFavorite listen to one of {ShowTitle} best episodes
+PlayFavorite listen to one of {ShowTitle} popular episodes
+PlayFavorite start one of {ShowTitle} favorite episodes
+PlayFavorite start one of {ShowTitle} recommended episodes
+PlayFavorite start one of {ShowTitle} best episodes
+PlayFavorite start one of {ShowTitle} popular episodes
+PlayFavorite recommend one of {ShowTitle} favorite episodes
+PlayFavorite recommend one of {ShowTitle} recommended episodes
+PlayFavorite recommend one of {ShowTitle} best episodes
+PlayFavorite recommend one of {ShowTitle} popular episodes
+PlayFavorite to play one of {ShowTitle} favorite episodes
+PlayFavorite to play one of {ShowTitle} recommended episodes
+PlayFavorite to play one of {ShowTitle} best episodes
+PlayFavorite to play one of {ShowTitle} popular episodes
+PlayFavorite to listen to one of {ShowTitle} favorite episodes
+PlayFavorite to listen to one of {ShowTitle} recommended episodes
+PlayFavorite to listen to one of {ShowTitle} best episodes
+PlayFavorite to listen to one of {ShowTitle} popular episodes
+PlayFavorite to start one of {ShowTitle} favorite episodes
+PlayFavorite to start one of {ShowTitle} recommended episodes
+PlayFavorite to start one of {ShowTitle} best episodes
+PlayFavorite to start one of {ShowTitle} popular episodes
+PlayFavorite to recommend one of {ShowTitle} favorite episodes
+PlayFavorite to recommend one of {ShowTitle} recommended episodes
+PlayFavorite to recommend one of {ShowTitle} best episodes
+PlayFavorite to recommend one of {ShowTitle} popular episodes
+
+PlayFavorite what do you suggest
+PlayFavorite what would you recommend
+PlayFavorite favorite
+PlayFavorite exclusive
+
+
+
+ListShows what are the shows
+ListShows what shows can you play
+ListShows what's on Gimlet
+ListShows what can I hear
+ListShows what can you play
 ListShows what shows are there
 ListShows list shows
 ListShows list the shows
 ListShows list available shows
-ListShows what shows
+ListShows which shows are there
+ListShows which shows can you play
+ListShows which shows does Gimlet have
+ListShows what is there
+ListShows what have you got
+ListShows show us what you got
+ListShows give me a list of shows
+ListShows tell me the shows
+ListShows give me the shows
 ListShows tell me what shows there are
+ListShows what shows
 ListShows shows
 ListShows tell me shows
+ListShows what else can I listen to
 
+
+
+# (who|what|where|when|why|how) is matt (|lieber|leeber|leaper)
 WhoIsMatt who is matt lieber
 WhoIsMatt who is matt leeber
-WhoIsMatt who is matt
-WhoIsMatt who is lieber
-WhoIsMatt who is leeber
+WhoIsMatt who is matt leaper
+WhoIsMatt what is matt lieber
+WhoIsMatt what is matt leeber
+WhoIsMatt what is matt leaper
+WhoIsMatt where is matt lieber
+WhoIsMatt where is matt leeber
+WhoIsMatt where is matt leaper
+WhoIsMatt when is matt lieber
+WhoIsMatt when is matt leeber
+WhoIsMatt when is matt leaper
+WhoIsMatt why is matt lieber
+WhoIsMatt why is matt leeber
+WhoIsMatt why is matt leaper
+WhoIsMatt how is matt lieber
+WhoIsMatt how is matt leeber
+WhoIsMatt how is matt leaper
+
+# (who|what|where|when|why|how) matt (|lieber|leeber|leaper) is
 WhoIsMatt who matt lieber is
 WhoIsMatt who matt leeber is
-WhoIsMatt who matt is
-WhoIsMatt who lieber is
-WhoIsMatt who leeber is
+WhoIsMatt who matt leaper is
+WhoIsMatt what matt lieber is
+WhoIsMatt what matt leeber is
+WhoIsMatt what matt leaper is
+WhoIsMatt where matt lieber is
+WhoIsMatt where matt leeber is
+WhoIsMatt where matt leaper is
+WhoIsMatt when matt lieber is
+WhoIsMatt when matt leeber is
+WhoIsMatt when matt leaper is
+WhoIsMatt why matt lieber is
+WhoIsMatt why matt leeber is
+WhoIsMatt why matt leaper is
+WhoIsMatt how matt lieber is
+WhoIsMatt how matt leeber is
+WhoIsMatt how matt leaper is
+
+
 
 Nevermind nevermind
+Nevermind never mind
 Nevermind go back
 Nevermind none
 Nevermind i don't want to
+Nevermind I don't want to hear any of them
+
+
 
 NeedAssistance what can i do
 NeedAssistance what can i say
 NeedAssistance main menu
 NeedAssistance assistance
 NeedAssistance you suck
+NeedAssistance what does this do
+NeedAssistance what can you do
+NeedAssistance what are my options
+NeedAssistance what's available
+NeedAssistance main menu
+NeedAssistance options
+NeedAssistance start over
+NeedAssistance you tell me
+NeedAssistance why don't you tell me
+NeedAssistance what would you do
+NeedAssistance what's on the menu
+NeedAssistance argh
+NeedAssistance ugh
+NeedAssistance stop
+
+
+
 
 ShowTitleIntent {ShowTitle}
+
+
 
 NumberIntent {Number}
 NumberIntent number {Number}
 NumberIntent listen to number {Number}
-NumberIntent exclusive number {Number}
