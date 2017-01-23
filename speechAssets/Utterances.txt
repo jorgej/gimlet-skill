@@ -975,17 +975,13 @@ NeedAssistance what does this do
 NeedAssistance what can you do
 NeedAssistance what are my options
 NeedAssistance what's available
-NeedAssistance help
-NeedAssistance get help
 NeedAssistance main menu
 NeedAssistance options
-NeedAssistance more help
 NeedAssistance start over
 NeedAssistance you tell me
 NeedAssistance why don't you tell me
 NeedAssistance what would you do
 NeedAssistance what's on the menu
-NeedAssistance help me
 NeedAssistance argh
 NeedAssistance ugh
 NeedAssistance stop
