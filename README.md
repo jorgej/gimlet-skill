@@ -107,3 +107,37 @@ This means you don't have to worry about messing with the number of favorites av
 All things spoken by the skill run through the _speaker.js_ file, so all changes to speech content can be achieved by there. 
 
 Note that you can only change the content of speech already being said in the flow of the skill. Adding or removing speech prompts is only possible through code changes.
+
+### Generating utterances
+
+Utterances corresponding to each intent are uploaded to Alexa via the "Sample Utterances" text field in the Interaction Model tab of the Alexa developer portal. All of the utterances are kept in the project files at `speechAssets/Utterances.txt`, and are simply copy-and-pasted to the Alexa portal when any changes are made. This way, we can keep track of any changes in source control.
+
+There are a lot of slightly different ways a user might speak an intent (check out [this Alexa tutorial](https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/defining-the-voice-interface) for details). To help us create the complete list, we use an [Alexa Utterance Generator](http://alexa-utter-gen.paperplane.io/). It makes it easy to generate all the different permutations using a simple regex-like syntax. For example, setting the intent to WhoIsMatt and entering "(who|what) is matt (lieber|leeber)" would generate the following four utterances:
+
+- WhoIsMatt who is matt lieber
+- WhoIsMatt who is matt leeber
+- WhoIsMatt what is matt lieber
+- WhoIsMatt what is matt leeber
+
+You can find the syntax we used to generate the existing utterances as comments in `Utterances.txt` (search for "#"). Copying that line (without the "#") into the Alexa Utterance Generator will create the list of utterances immediately below that comment. 
+
+>
+IMPORTANT: When you're copy-and-pasting into the Alexa console, leave out the commented lines. Otherwise your interaction model won't build (though there will be a warning message, so it should be pretty obvious if you forgot to delete those lines). It's a good idea to keep the comments in source control, though, in case you want to make any tweaks and regenerate the utterances later on.
+
+You should have utterances for each of the following intents, and the intent name must be the first thing in each line:
+
+- PlayLatest
+- PlayExclusive
+- PlayFavorite
+- ListShows
+- WhoIsMatt
+- Nevermind
+- NeedAssistance
+- ShowTitleIntent
+- NumberIntent
+
+(You shouldn't ever need to add anything to ShowTitleIntent).
+
+You'll notice that there are a lot more utterances for PlayLatest than any of the other intents, and that's intentional. It's pretty opaque how Alexa's natural language processing works, but we're trying to influence which intent Alexa prefers when it's not sure of the right answer. In this case, we think PlayLatest is the most common action, so we're more thorough when generating its utterances than those for PlayExclusive or PlayFavorite, for example.
+
+Final note: I think you're allowed a maximum of 10,000 sample utterances, but I can't find any source for that. If you decide to expand your utterances and are running into issues, keep in mind that there may be an upper limit.
