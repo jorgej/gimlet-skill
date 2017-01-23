@@ -14,6 +14,7 @@ const speaker = require('./speaker');
 const defaultStateActions = require('./mainActions');
 const gimlet = require("./gimlet");
 const contentToken = require("./contentToken");
+const constants = require("./constants");
 
 const actions = {
     launchRequest: launchRequest,
@@ -164,7 +165,7 @@ function exclusiveChosen(event, response, model) {
             }
 
             response.cardRenderer(cardTitle, cardContent)
-                    .audioPlayerPlay('REPLACE_ALL', exclusive.content, token.toString(), null, 0)
+                    .audioPlayerPlay('REPLACE_ALL', exclusive.content, contentToken.serialize(token), null, 0)
                     .send();
         }
         else {
@@ -206,7 +207,8 @@ function unhandledAction(event, response, model) {
         const reprompt = speaker.getQuestionSpeech(activeQuestion, 'reprompt');
 
         response.speak(speech)
-                .listen(reprompt);
+                .listen(reprompt)
+                .send();
     }
     else {
         // shouldn't happen, but clear out just in case

@@ -30,7 +30,8 @@ module.exports = {
     TYPES: TYPES,
     
     create: create,
-    createFromString: createFromString,
+    serialize: serialize,
+    deserialize: deserialize,
     isValid: isValid
 };
 
@@ -41,8 +42,15 @@ function create(type, url, info={}) {
     return {
         type: type,
         url: url,
-        info: info
+        info: info,
     };
+}
+
+/**
+ * Turns a token into a string (just JSON blob).
+ */
+function serialize(token) {
+    return JSON.stringify(token);
 }
 
 /**
@@ -50,7 +58,7 @@ function create(type, url, info={}) {
  * `create` function, we're assured that all properties will be
  * created with acceptable defaults.
  */
-function createFromString(str) {
+function deserialize(str) {
     try {
         const data = JSON.parse(str);
         return create(data.type, data.url, data.info);

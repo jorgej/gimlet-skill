@@ -20,7 +20,7 @@ const playbackState = require("./playbackState");
 const appStates = constants.states;
 
 // list of all actions that'll be exported
-const actions = {
+let actions = {
     launchRequest: launchRequest,
 
     help: help,
@@ -45,7 +45,7 @@ const actions = {
 };
 
 // add help tracking "request middleware" to all actions (see decorator for details)
-_.mapValues(actions, action => helpTrackingDecorator(action));
+actions = _.mapValues(actions, action => helpTrackingDecorator(action));
 
 module.exports = actions;
 
@@ -66,7 +66,8 @@ function launchRequest(event, response, model) {
         // if there's a track already enqueued, and it hasn't yet finished,
         //  we ask if the user want to continue playback
         model.enterQuestionMode(constants.questions.ConfirmResumePlayback);
-        speech = speaker.askToResume(pb.token.showId);
+
+        speech = speaker.askToResume(pb.token.info.showId);
     }
     else {
         // Otherwise, give them a welcome message. Verbosity depend on if they're a first-time user
@@ -267,7 +268,7 @@ function stop(event, response, model) {
 function resume(event, response, model) {
     const pb = model.getPlaybackState();
     if (playbackState.isValid(pb) && !playbackState.isFinished(pb)) {
-        response.audioPlayerPlay('REPLACE_ALL', pb.token.url, pb.token.toString(), null, pb.offset);
+        response.audioPlayerPlay('REPLACE_ALL', pb.token.url, contentToken.serialize(pb.token), null, pb.offset);
     }
     response.send();
 }
@@ -279,7 +280,7 @@ function resume(event, response, model) {
 function startOver(event, response, model) {
     const pb = model.getPlaybackState();
     if (playbackState.isValid(pb)) {
-        response.audioPlayerPlay('REPLACE_ALL', pb.token.url, pb.token.toString(), null, 0);
+        response.audioPlayerPlay('REPLACE_ALL', pb.token.url, contentToken.serialize(pb.token), null, 0);
     }
     else {
         // otherwise, there was no audio there to restart
@@ -344,7 +345,7 @@ function playLatestHelper(response, model, showId) {
         }
 
         response.cardRenderer(cardTitle, cardContent)
-                .audioPlayerPlay('REPLACE_ALL', episode.url, token.toString(), null, 0)
+                .audioPlayerPlay('REPLACE_ALL', episode.url, contentToken.serialize(token), null, 0)
                 .send();
     })
     .catch(utils.speakAndSendError(response));
@@ -352,7 +353,7 @@ function playLatestHelper(response, model, showId) {
 
 function playSerialHelper(response, model, showId, epIndex) {
     // default to next unplayed episode according to user data
-    if (epIndex !== undefined) {
+    if (epIndex === undefined) {
         let lastPlayedIndex = model.getLatestSerialFinished(showId);
         epIndex = (lastPlayedIndex === undefined) ? 0 : lastPlayedIndex+1;
     }
@@ -376,7 +377,7 @@ function playSerialHelper(response, model, showId, epIndex) {
             }
 
             response.cardRenderer(cardTitle, cardContent)
-                    .audioPlayerPlay('REPLACE_ALL', episode.url, token.toString(), null, 0)
+                    .audioPlayerPlay('REPLACE_ALL', episode.url, contentToken.serialize(token), null, 0)
                     .send();
         })
         .catch(err => {
@@ -411,7 +412,7 @@ function playFavoriteHelper(response, model, showId, favIndex) {
             }
             
             response.cardRenderer(cardTitle, cardContent)
-                    .audioPlayerPlay('REPLACE_ALL', episode.url, token.toString(), null, 0)
+                    .audioPlayerPlay('REPLACE_ALL', episode.url, contentToken.serialize(token), null, 0)
                     .send();
         })
         .catch(utils.speakAndSendError(response));
@@ -424,7 +425,7 @@ function helpTrackingDecorator(innerFn) {
             // only mess with the help counter if it's an intent request
             let helpCount = model.getAttr("helpCtr") || 0;
             const intentName = event.request.intent && event.request.intent.name;
-            if (intentName === "AMAZON.HelpIntent") {
+            if (intentName === "AMAZON.HelpIntent" || intentName === "NeedAssistance") {
                 helpCount++;
             }
             else {

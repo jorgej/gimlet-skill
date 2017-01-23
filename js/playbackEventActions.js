@@ -27,7 +27,7 @@ module.exports = {
  *    listened to it.
  */
 function playbackStarted(event, response, model) {
-    const token = contentToken.createFromString(event.request.token);
+    const token = contentToken.deserialize(event.request.token);
 
     if (contentToken.isValid(token)) {
         model.setPlaybackState(playbackState.createState(token, 0));
@@ -46,7 +46,7 @@ function playbackStarted(event, response, model) {
  */
 function playbackStopped(event, response, model) {
     const offset = event.request.offsetInMilliseconds;
-    const token = contentToken.createFromString(event.request.token);
+    const token = contentToken.deserialize(event.request.token);
 
     if (contentToken.isValid(token) && offset !== undefined) {
         model.setPlaybackState(playbackState.createState(token, offset));
@@ -71,15 +71,15 @@ function playbackFinished(event, response, model) {
     // mark playback as finished for the current track, but don't clear it in case 
     //  the user wants to issue a restart/previous/next command
     const pbState = model.getPlaybackState();
-    if (pbState.isValid()) {
+    if (playbackState.isValid(pbState)) {
         playbackState.markFinished(pbState);
         model.setPlaybackState(pbState);
     }
 
     // if this track is from a serial episode, we want to note it in the user's history
-    const token = contentToken.createFromString(event.request.token);
+    const token = contentToken.deserialize(event.request.token);
     if (isSerialToken(token)) {
-        model.setLatestSerialFinished(token.showId, token.index);
+        model.setLatestSerialFinished(token.info.showId, token.info.index);
     }
 
     response.sendNil({saveState: true});

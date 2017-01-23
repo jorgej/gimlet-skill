@@ -63,4 +63,3 @@ function speakAndSendError(response) {
         response.speak(speaker.get("Error")).send();
     };
 }
-

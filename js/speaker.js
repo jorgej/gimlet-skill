@@ -136,8 +136,8 @@ function introduceSerial(showId) {
 }
 
 /**
- * Returns speech to ask the user if they want to resume listening 
- * to a particular show.
+ * Returns speech to ask the user if they want to resume listening to a
+ * particular show. If the show id is invalid, a generic response is returned.
  */
 function askToResume(showId) {
     let url;

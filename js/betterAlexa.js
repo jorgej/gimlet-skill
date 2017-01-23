@@ -78,7 +78,7 @@ function createStateRouter(state, actions) {
 * Add "request middleware" to all actions in the router.
 */
 function decorateActions(decorator) {
-    _.mapValues(this.actions, action => decorator(action));
+    this.actions = _.mapValues(this.actions, action => decorator(action));
 }
 
 /**

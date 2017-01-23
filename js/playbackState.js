@@ -41,12 +41,12 @@ function isValid(state) {
  * of its content.
  */
 function markFinished(state) {
-    pbState.offset = null;
+    state.offset = null;
 }
 
 /**
  * Returns true if the state was previously marked finished.
  */
 function isFinished(state) {
-    return pbState.offset === null;
+    return state.offset === null;
 }
