@@ -719,7 +719,6 @@ PlayExclusive to start a subscriber episode
 
 
 # (play|listen to|start|recommend|to play|to listen to|to start|to recommend) the (favorite|recommended|best|popular) (|episode|episode of {ShowTitle}|{ShowTitle} episode|{ShowTitle})
-PlayFavorite
 PlayFavorite play the favorite episode
 PlayFavorite play the favorite episode of {ShowTitle}
 PlayFavorite play the favorite {ShowTitle} episode
@@ -849,39 +848,39 @@ PlayFavorite to recommend the popular episode of {ShowTitle}
 PlayFavorite to recommend the popular {ShowTitle} episode
 PlayFavorite to recommend the popular {ShowTitle}
 
-# (play|listen to|start|recommend|to play|to listen to|to start|to recommend) one of {ShowTitle}'s (favorite|recommended|best|popular) episodes
-PlayFavorite play one of {ShowTitle}'s favorite episodes
-PlayFavorite play one of {ShowTitle}'s recommended episodes
-PlayFavorite play one of {ShowTitle}'s best episodes
-PlayFavorite play one of {ShowTitle}'s popular episodes
-PlayFavorite listen to one of {ShowTitle}'s favorite episodes
-PlayFavorite listen to one of {ShowTitle}'s recommended episodes
-PlayFavorite listen to one of {ShowTitle}'s best episodes
-PlayFavorite listen to one of {ShowTitle}'s popular episodes
-PlayFavorite start one of {ShowTitle}'s favorite episodes
-PlayFavorite start one of {ShowTitle}'s recommended episodes
-PlayFavorite start one of {ShowTitle}'s best episodes
-PlayFavorite start one of {ShowTitle}'s popular episodes
-PlayFavorite recommend one of {ShowTitle}'s favorite episodes
-PlayFavorite recommend one of {ShowTitle}'s recommended episodes
-PlayFavorite recommend one of {ShowTitle}'s best episodes
-PlayFavorite recommend one of {ShowTitle}'s popular episodes
-PlayFavorite to play one of {ShowTitle}'s favorite episodes
-PlayFavorite to play one of {ShowTitle}'s recommended episodes
-PlayFavorite to play one of {ShowTitle}'s best episodes
-PlayFavorite to play one of {ShowTitle}'s popular episodes
-PlayFavorite to listen to one of {ShowTitle}'s favorite episodes
-PlayFavorite to listen to one of {ShowTitle}'s recommended episodes
-PlayFavorite to listen to one of {ShowTitle}'s best episodes
-PlayFavorite to listen to one of {ShowTitle}'s popular episodes
-PlayFavorite to start one of {ShowTitle}'s favorite episodes
-PlayFavorite to start one of {ShowTitle}'s recommended episodes
-PlayFavorite to start one of {ShowTitle}'s best episodes
-PlayFavorite to start one of {ShowTitle}'s popular episodes
-PlayFavorite to recommend one of {ShowTitle}'s favorite episodes
-PlayFavorite to recommend one of {ShowTitle}'s recommended episodes
-PlayFavorite to recommend one of {ShowTitle}'s best episodes
-PlayFavorite to recommend one of {ShowTitle}'s popular episodes
+# (play|listen to|start|recommend|to play|to listen to|to start|to recommend) one of {ShowTitle} (favorite|recommended|best|popular) episodes
+PlayFavorite play one of {ShowTitle} favorite episodes
+PlayFavorite play one of {ShowTitle} recommended episodes
+PlayFavorite play one of {ShowTitle} best episodes
+PlayFavorite play one of {ShowTitle} popular episodes
+PlayFavorite listen to one of {ShowTitle} favorite episodes
+PlayFavorite listen to one of {ShowTitle} recommended episodes
+PlayFavorite listen to one of {ShowTitle} best episodes
+PlayFavorite listen to one of {ShowTitle} popular episodes
+PlayFavorite start one of {ShowTitle} favorite episodes
+PlayFavorite start one of {ShowTitle} recommended episodes
+PlayFavorite start one of {ShowTitle} best episodes
+PlayFavorite start one of {ShowTitle} popular episodes
+PlayFavorite recommend one of {ShowTitle} favorite episodes
+PlayFavorite recommend one of {ShowTitle} recommended episodes
+PlayFavorite recommend one of {ShowTitle} best episodes
+PlayFavorite recommend one of {ShowTitle} popular episodes
+PlayFavorite to play one of {ShowTitle} favorite episodes
+PlayFavorite to play one of {ShowTitle} recommended episodes
+PlayFavorite to play one of {ShowTitle} best episodes
+PlayFavorite to play one of {ShowTitle} popular episodes
+PlayFavorite to listen to one of {ShowTitle} favorite episodes
+PlayFavorite to listen to one of {ShowTitle} recommended episodes
+PlayFavorite to listen to one of {ShowTitle} best episodes
+PlayFavorite to listen to one of {ShowTitle} popular episodes
+PlayFavorite to start one of {ShowTitle} favorite episodes
+PlayFavorite to start one of {ShowTitle} recommended episodes
+PlayFavorite to start one of {ShowTitle} best episodes
+PlayFavorite to start one of {ShowTitle} popular episodes
+PlayFavorite to recommend one of {ShowTitle} favorite episodes
+PlayFavorite to recommend one of {ShowTitle} recommended episodes
+PlayFavorite to recommend one of {ShowTitle} best episodes
+PlayFavorite to recommend one of {ShowTitle} popular episodes
 
 PlayFavorite what do you suggest
 PlayFavorite what would you recommend
