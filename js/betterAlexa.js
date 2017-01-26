@@ -102,8 +102,8 @@ function registerStateRouters() {
             const action = router.actions[eventName];
             alexaSDKEventHandlers[eventName] = function() {
                 // here, "this" is the "handlerContext" defined in alexa.js
-                const [event, response, model] = extractRequestArgs.apply(this);
-                action(event, response, model, this);
+                const requestArgs = extractRequestArgs.apply(this);
+                action(requestArgs.event, requestArgs.response, requestArgs.model, this);
             };
         }
 
@@ -141,7 +141,8 @@ function extractRequestArgs() {
         },
         
         // end the request immediately without sending a response object
-        sendNil: function(options={}) {        // options: saveState:Boolean
+        sendNil: function(options) {        // options: saveState:Boolean
+            options = options || {};
             if (options.saveState) {
                 // save the attributes in DynamoDB before finishing
                 handlerContext.emit(":saveState", true);
@@ -153,11 +154,11 @@ function extractRequestArgs() {
         }
     });
 
-    return [
-        handlerContext.event,
-        handlerContext.response,
-        new RequestModel(handlerContext)
-    ];
+    return {
+        event: handlerContext.event,
+        response: handlerContext.response,
+        model: new RequestModel(handlerContext)
+    };
 }
 
 module.exports = {

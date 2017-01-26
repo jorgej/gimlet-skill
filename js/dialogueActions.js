@@ -138,8 +138,9 @@ function exclusiveChosen(event, response, model) {
     const origArgs = arguments;
     const number = utils.getNumberFromSlotValue(event.request);
 
-    // while in original execution context, create a function we might use below
-    const deferToUnhandled = unhandledAction.bind(this, ...arguments);
+    // we might need to defer to the unhandledAction function below -- bind
+    // the context and arguments to it now
+    const deferToUnhandled = Function.apply.bind(unhandledAction, this, arguments);
 
     gimlet.getExclusives().then(exclusives => {
         if (!exclusives) {

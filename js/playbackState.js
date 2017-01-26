@@ -21,7 +21,8 @@ module.exports = {
 /**
  * Creates a PlaybackState object
  */
-function createState(token, offset=0) {
+function createState(token, offset) {
+    offset = offset || 0;
     return {
         token: token,
         offset: offset

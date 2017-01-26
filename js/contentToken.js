@@ -38,7 +38,8 @@ module.exports = {
 /** 
  * Creates a token 
  */
-function create(type, url, info={}) {
+function create(type, url, info) {
+    info = info || {};
     return {
         type: type,
         url: url,

@@ -70,7 +70,7 @@ function fetchLatestEpisode(showId) {
  * Arguments:
  * - showId: String
  * - episodeIndex: Number. Zero-based index into feed.
- * - shouldLoopIndex: Boolean. If true, an index overflow will be wrapped around.
+ * - shouldLoopIndex: Boolean, default=true. If true, an index overflow will be wrapped around.
  * 
  * Resolved object contains the following:
  * { 
@@ -81,7 +81,11 @@ function fetchLatestEpisode(showId) {
  * 
  * On failure, the promise is rejected with an Error.
  */
-function fetchSerialEpisode(showId, episodeIndex, shouldLoopIndex=true) {
+function fetchSerialEpisode(showId, episodeIndex, shouldLoopIndex) {
+    if (shouldLoopIndex === undefined) {
+        shouldLoopIndex = true;
+    }
+
     return getFeedEntries(showId, isFullLengthEpisode).then(entries => {
         if (!entries.length) {
             throw new Error(`No episodes found for showId "${showId}"`);
@@ -118,7 +122,7 @@ function fetchSerialEpisode(showId, episodeIndex, shouldLoopIndex=true) {
  * Arguments:
  * - showId: String
  * - episodeIndex: Number. Zero-based index into feed.
- * - shouldLoopIndex: Boolean. If true, an index overflow will be wrapped around.
+ * - shouldLoopIndex: Boolean, default=true. If true, an index overflow will be wrapped around.
  * 
  * Resolved object contains the following:
  * { 
@@ -130,7 +134,11 @@ function fetchSerialEpisode(showId, episodeIndex, shouldLoopIndex=true) {
  * 
  * On failure, the promise is rejected with an Error.
  */
-function fetchFavoriteEpisode(showId, favoriteIndex, shouldLoopIndex=true) {
+function fetchFavoriteEpisode(showId, favoriteIndex, shouldLoopIndex) {
+    if (shouldLoopIndex === undefined) {
+        shouldLoopIndex = true;
+    }
+
     return gimlet.getFavoritesMap().then(favoritesMap => {
         if (!favoritesMap) {
             throw new Error("No favorites configured");

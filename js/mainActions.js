@@ -420,7 +420,6 @@ function playFavoriteHelper(response, model, showId, favIndex) {
 
 function helpTrackingDecorator(innerFn) {
     return function(event, response, model) {
-        const resumeAction = innerFn.bind(this, ...arguments);
         if (event.request.type === "IntentRequest") {
             // only mess with the help counter if it's an intent request
             let helpCount = model.getAttr("helpCtr") || 0;
@@ -433,6 +432,6 @@ function helpTrackingDecorator(innerFn) {
             }
             model.setAttr("helpCtr", helpCount);
         }
-        return resumeAction();
+        return innerFn.apply(this, arguments);
     };
 }

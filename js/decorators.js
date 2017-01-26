@@ -26,8 +26,8 @@ module.exports = {
  * account and the underlying action function is never called.
  */
 function authDecorator(innerFn) {
-    return function(event, response, model) {
-        const resumeAction = innerFn.bind(this, ...arguments);
+    return function(event, response, model) {        
+        const resumeAction = Function.apply.bind(innerFn, this, arguments);
         authHelper.isSessionAuthenticated(event.session, function(auth) {
             if (auth) {
                 return resumeAction();
@@ -47,8 +47,6 @@ function authDecorator(innerFn) {
  */
 function analyticsDecorator(innerFn) {
     return function(event, response, model) {
-        const resumeAction = innerFn.bind(this, ...arguments);
-        
         let eventName, eventParams;
 
         if (event.request.type === 'LaunchRequest') {
@@ -60,6 +58,7 @@ function analyticsDecorator(innerFn) {
             eventParams = extractSlotsFromIntent(event.request.intent);
         }
 
+        const resumeAction = Function.apply.bind(innerFn, this, arguments);
         if (eventName) {
             // if it's a trackable event, do so, and continue on when finished
             VoiceInsights.track(eventName, eventParams, null, (error, response) => {
