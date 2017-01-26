@@ -9,7 +9,7 @@
 
 "use strict";
 
-const BetterAlexa = require('./BetterAlexa');
+const BetterAlexa = require('./betterAlexa');
 var constants = require('./constants');
 const decorators = require("./decorators");
 
