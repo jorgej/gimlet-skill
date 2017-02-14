@@ -83,7 +83,7 @@ When adding (or removing) a show from the list that the skill supports, the foll
     - https://s3.amazonaws.com/amazon-alexa/sources/favorites.json
     - https://s3.amazonaws.com/amazon-alexa/sources/feeds.json
 4. Update the `urlSuffixMap` in _speaker.js_. These values are used by the speaker module to fetch show-specific host audio. For example, the "Here's the most recent episode of Reply All" audio lives at https://s3.amazonaws.com/.../Most+Recent+Reply+All.mp3, so the suffix there is **Reply+All**.
-5. If the show is serailized, edit the 
+5. If the show is serialized, edit the 'isSerialShow' in _gimlet.js_ to add a new showID
 
 ### Updating favorites/exclusives/"Matt Lieber Is"
 
