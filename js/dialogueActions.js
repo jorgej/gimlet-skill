@@ -162,7 +162,7 @@ function exclusiveChosen(event, response, model) {
             );
             
             if (exclusive.intro) {
-                response.speak(exclusive.intro);
+                response.speak(utils.urlToSSML(exclusive.intro));
             }
 
             response.cardRenderer(cardTitle, cardContent)
