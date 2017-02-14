@@ -9,12 +9,11 @@
 
 module.exports = Object.freeze({
     
-    appId : 'amzn1.ask.skill.fb7cbf45-1f45-4307-b2ce-b36bc871625f',
+    appId : 'amzn1.ask.skill.e9cc574a-1216-4126-a4ea-03f11c25e104',
     
     dynamoDBTableName : 'GimletMedia',
 
-    voiceInsightsToken : '67ea3f10-ddb6-11a6-1b95-0e61e4c2ee12',
-    // voiceInsightsToken : 'a773b2f0-ddb7-11a6-320b-0e2486876586',
+    voiceInsightsToken : 'a773b2f0-ddb7-11a6-320b-0e2486876586',
     
     /**
      * Application states in this skill. For the most part, these states fall under
