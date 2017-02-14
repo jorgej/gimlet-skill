@@ -1,3 +1,5 @@
+GREG's Notes to himself
+
 Need to do most of development with an Alexa stub object.
 BSTAlexa looks promising. But does it handle persistance?
 We could rig our own replacement up -- subclass from Alexa and override saveState, responseReady, spy for response object, etc.
