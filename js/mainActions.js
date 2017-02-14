@@ -408,7 +408,7 @@ function playFavoriteHelper(response, model, showId, favIndex) {
                 `Now playing a staff-favorite episode of ${showTitle}.`
 
             if (episode.intro) {
-                response.speak(episode.intro)
+                response.speak(utils.urlToSSML(episode.intro));
             }
             
             response.cardRenderer(cardTitle, cardContent)
